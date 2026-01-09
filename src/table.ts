@@ -1,30 +1,41 @@
+import { Observable } from "../node_modules/rxjs/dist/types/index";
+import { Camera } from "./camera";
+import { DrawCanvas } from "./draw-canvas";
+import { SourceData, TableConfig } from "./table-config";
+import { TableBody } from "./table/body";
+import { TableHeader } from "./table/header";
+
 export class Table {
-  private canvas: HTMLCanvasElement;
-  private canvasCtx: CanvasRenderingContext2D;
-  private dpr = window.devicePixelRatio || 1;
+  private container: HTMLDivElement;
+  private camera: Camera;
+  private header: TableHeader;
+  private body: TableBody;
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
-    this.canvasCtx = canvas.getContext("2d")!;
+  constructor(
+    container: HTMLDivElement,
+    source: Observable<SourceData<string>>,
+    tableConfig: TableConfig
+  ) {
+    this.camera = new Camera();
+    this.container = container;
+    this.container.style.display = "flex";
+    this.container.style.flexDirection = "column";
 
-    const resizeObserver = new ResizeObserver(() => this.resize());
-    resizeObserver.observe(this.canvas);
+    this.header = new TableHeader(tableConfig, this.camera, {
+      w: 600,
+      h: 40,
+    });
+    this.header.attach(this.container);
 
-    this.resize();
-  }
-
-  private resize(): void {
-    const rect = this.canvas.getBoundingClientRect();
-
-    this.canvas.width = rect.width * this.dpr;
-    this.canvas.height = rect.height * this.dpr;
-
-    this.canvasCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-
-    this.draw();
-  }
-
-  private draw() {
-    this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.body = new TableBody(
+      tableConfig,
+      this.camera,
+      {
+        w: 600,
+        h: 500,
+      },
+      source
+    );
+    this.body.attach(this.container);
   }
 }
