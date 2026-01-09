@@ -1,7 +1,8 @@
 import { filter, Observable, Subscription, takeWhile } from "rxjs";
-import { SourceData } from "./table-config";
+import { RowData, SourceData } from "./table-config";
 import { WorldObject } from "../canvas/world-object";
 import { Camera } from "../canvas/camera";
+import { TableData } from "./table-data";
 
 export type TableCellConfig = {
   textAlignment: "middle" | "left" | "right";
@@ -13,12 +14,10 @@ export type TableCellConfig = {
   placeholder?: string;
 };
 
-const FALLBACK = "--";
-
-export class TableCell<TCellData> extends WorldObject {
-  private content: string | undefined;
+export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
+  private content: TableData<TCellData>;
   public readonly rowId: string;
-  public readonly columnId: string;
+  public readonly columnId: keyof TRow;
   private readonly canvasCtx: CanvasRenderingContext2D;
   public readonly config: TableCellConfig;
   private readonly redraw: () => void;
@@ -32,7 +31,8 @@ export class TableCell<TCellData> extends WorldObject {
     config: TableCellConfig,
     x: number,
     y: number,
-    redraw: () => void
+    redraw: () => void,
+    tableDataFactory: () => TableData<TCellData>
   ) {
     super(x, y);
     this.rowId = rowId;
@@ -40,7 +40,7 @@ export class TableCell<TCellData> extends WorldObject {
     this.canvasCtx = canvasCtx;
     this.config = config;
     this.redraw = redraw;
-    this.content = config.placeholder ?? FALLBACK;
+    this.content = tableDataFactory();
   }
 
   public destroy(): void {
@@ -50,10 +50,7 @@ export class TableCell<TCellData> extends WorldObject {
     }
   }
 
-  public listen(
-    source: Observable<SourceData<TCellData>>,
-    camera: Camera
-  ): void {
+  public listen(source: Observable<SourceData<TRow>>, camera: Camera): void {
     camera.onCameraChange(() => {
       this.updateSubscription(source, camera);
     });
@@ -62,7 +59,7 @@ export class TableCell<TCellData> extends WorldObject {
   }
 
   private updateSubscription(
-    source: Observable<SourceData<TCellData>>,
+    source: Observable<SourceData<TRow>>,
     camera: Camera
   ): void {
     const isVisible = camera.isVisible(this);
@@ -74,7 +71,7 @@ export class TableCell<TCellData> extends WorldObject {
           takeWhile(() => camera.isVisible(this) ?? false)
         )
         .subscribe((e) => {
-          this.content = e.content as string; // TODO -- need to update when e.content can be a different type
+          this.content.setValue(e.content);
           this.redraw();
         });
     } else if (!isVisible && this.subscription) {
@@ -130,6 +127,6 @@ export class TableCell<TCellData> extends WorldObject {
 
     const y = this.worldY + this.config.pY + cellHeight / 2;
 
-    ctx.fillText(this.content, x, y);
+    ctx.fillText(this.content.getDisplayableContent(), x, y);
   }
 }

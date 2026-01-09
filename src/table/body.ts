@@ -1,19 +1,19 @@
 import { Observable } from "../../node_modules/rxjs/dist/types/index";
 import { Camera } from "../canvas/camera";
 import { DrawCanvas, DrawCanvasDimensions } from "../canvas/draw-canvas";
-import { SourceData, TableConfig } from "./table-config";
+import { RowData, SourceData, TableConfig } from "./table-config";
 import { TableCell, TableCellConfig } from "./cell";
 import { TableCellCollection } from "./cell-collection";
 
-export class TableBody extends DrawCanvas {
+export class TableBody<TRow extends RowData> extends DrawCanvas {
   private readonly camera: Camera;
-  private readonly config: TableConfig;
-  private cells: TableCellCollection<string>;
+  private readonly config: TableConfig<TRow>;
+  private cells: TableCellCollection<TRow>;
 
   constructor(
-    config: TableConfig,
+    config: TableConfig<TRow>,
     dimensions: DrawCanvasDimensions,
-    source: Observable<SourceData<string>>
+    source: Observable<SourceData<TRow>>
   ) {
     super(dimensions);
 
@@ -96,7 +96,7 @@ export class TableBody extends DrawCanvas {
     return { startRow, endRow, startCol, endCol };
   }
 
-  private initCells(source: Observable<SourceData<string>>): void {
+  private initCells(source: Observable<SourceData<TRow>>): void {
     const { columns, rows, rowHeight } = this.config;
     let worldY = 0;
 
@@ -113,19 +113,19 @@ export class TableBody extends DrawCanvas {
           height: rowHeight,
         };
 
-        const cell = new TableCell<string>(
+        const cell = new TableCell<TRow, TRow[typeof column.id]>(
           row.id,
           column.id,
           this.canvasCtx,
           cellConfig,
           worldX,
           worldY,
-          () => this.draw()
+          () => this.draw(),
+          column.cellDataFactory
         );
 
         cell.listen(source, this.camera);
 
-        // Add to the new class
         this.cells.addCell(cell);
 
         worldX += cellConfig.maxW;

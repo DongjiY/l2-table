@@ -1,14 +1,15 @@
 import { Camera } from "../canvas/camera";
 import { DrawCanvas, DrawCanvasDimensions } from "../canvas/draw-canvas";
-import { TableConfig } from "./table-config";
+import { RowData, TableConfig } from "./table-config";
 import { TableCell, TableCellConfig } from "./cell";
+import { StringTableData } from "./table-data";
 
-export class TableHeader extends DrawCanvas {
+export class TableHeader<TRow extends RowData> extends DrawCanvas {
   private readonly camera: Camera;
-  private readonly config: TableConfig;
-  private headerCells: Set<TableCell<string>> = new Set();
+  private readonly config: TableConfig<TRow>;
+  private headerCells: Set<TableCell<TRow, any>> = new Set();
 
-  constructor(config: TableConfig, dimensions: DrawCanvasDimensions) {
+  constructor(config: TableConfig<TRow>, dimensions: DrawCanvasDimensions) {
     super(dimensions);
 
     this.config = config;
@@ -39,14 +40,15 @@ export class TableHeader extends DrawCanvas {
         height: headerHeight,
         placeholder: column.header,
       };
-      const header = new TableCell<string>(
+      const header = new TableCell<TRow, string>(
         `header-${index}`,
-        `header-${column.id}`,
+        column.id,
         this.canvasCtx,
         tableCellConfig,
         worldX,
         0,
-        () => this.draw()
+        () => this.draw(),
+        () => new StringTableData(column.header)
       );
       worldX += tableCellConfig.maxW;
       this.headerCells.add(header);

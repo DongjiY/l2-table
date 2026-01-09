@@ -1,19 +1,19 @@
 import { Observable } from "rxjs";
 import { Camera } from "../canvas/camera";
 import { DrawCanvas } from "../canvas/draw-canvas";
-import { SourceData, TableConfig } from "./table-config";
+import { RowData, SourceData, TableConfig } from "./table-config";
 import { TableBody } from "./body";
 import { TableHeader } from "./header";
 
-export class Table {
+export class Table<TRow extends RowData> {
   private container: HTMLDivElement;
-  private header: TableHeader;
-  private body: TableBody;
+  private header: TableHeader<TRow>;
+  private body: TableBody<TRow>;
 
   constructor(
     container: HTMLDivElement,
-    source: Observable<SourceData<string>>,
-    tableConfig: TableConfig
+    source: Observable<SourceData<TRow>>,
+    tableConfig: TableConfig<TRow>
   ) {
     this.container = container;
     this.container.style.display = "flex";
