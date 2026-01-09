@@ -18,10 +18,12 @@
       const columns = Array.from({ length: 10 }, (_, i) => ({
         id: String(i),
         header: `Column ${i + 1}`,
+        minW: 80,
+        maxW: 150,
       }));
 
       // Generate thousands of rows (adjust this number for your stress test)
-      const numRows = 40; // Change this to test different sizes (e.g., 1000, 5000, 10000)
+      const numRows = 200; // Change this to test different sizes (e.g., 1000, 5000, 10000)
       const rows = Array.from({ length: numRows }, (_, i) => ({
         id: String(i),
       }));
@@ -30,6 +32,7 @@
       const tableConfig = {
         columns: columns,
         rows: rows,
+        headerHeight: 40,
         rowHeight: 40,
       };
 
@@ -41,7 +44,7 @@
       // Observable source emitting random data for each cell
       // Note: With thousands of rows and 40 columns, this will emit a LOT of data
       // You might want to throttle this or only update visible cells
-      const sourceObservable = interval(1000).pipe(
+      const sourceObservable = interval(400).pipe(
         map(() => {
           const updates = [];
           // For stress testing, you might want to only update a subset

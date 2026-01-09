@@ -1,13 +1,12 @@
-import { Observable } from "../node_modules/rxjs/dist/types/index";
-import { Camera } from "./camera";
-import { DrawCanvas } from "./draw-canvas";
+import { Observable } from "rxjs";
+import { Camera } from "../canvas/camera";
+import { DrawCanvas } from "../canvas/draw-canvas";
 import { SourceData, TableConfig } from "./table-config";
-import { TableBody } from "./table/body";
-import { TableHeader } from "./table/header";
+import { TableBody } from "./body";
+import { TableHeader } from "./header";
 
 export class Table {
   private container: HTMLDivElement;
-  private camera: Camera;
   private header: TableHeader;
   private body: TableBody;
 
@@ -16,26 +15,32 @@ export class Table {
     source: Observable<SourceData<string>>,
     tableConfig: TableConfig
   ) {
-    this.camera = new Camera();
     this.container = container;
     this.container.style.display = "flex";
     this.container.style.flexDirection = "column";
 
-    this.header = new TableHeader(tableConfig, this.camera, {
+    // Create canvases
+    this.header = new TableHeader(tableConfig, {
       w: 600,
       h: 40,
     });
-    this.header.attach(this.container);
 
     this.body = new TableBody(
       tableConfig,
-      this.camera,
       {
         w: 600,
         h: 500,
       },
       source
     );
+
+    // Sync header camera to body (horizontal scroll only)
+    this.body.getCamera().onCameraChange(({ dx }) => {
+      this.header.getCamera().updateCamera({ dx });
+    });
+
+    // Attach canvases to DOM
+    this.header.attach(this.container);
     this.body.attach(this.container);
   }
 }

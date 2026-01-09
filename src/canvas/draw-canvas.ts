@@ -1,4 +1,3 @@
-import { Camera } from "./camera";
 import { Drawable } from "./drawable";
 
 export type DrawCanvasDimensions = {
@@ -9,10 +8,8 @@ export type DrawCanvasDimensions = {
 export abstract class DrawCanvas implements Drawable {
   protected canvas: HTMLCanvasElement;
   protected canvasCtx: CanvasRenderingContext2D;
-  protected camera: Camera;
 
-  constructor(camera: Camera, dimensions: DrawCanvasDimensions) {
-    this.camera = camera;
+  constructor(dimensions: DrawCanvasDimensions) {
     this.canvas = document.createElement("canvas");
     this.canvasCtx = this.canvas.getContext("2d")!;
     this.setSize(dimensions.w, dimensions.h);
