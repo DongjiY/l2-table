@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style></style>
+  </head>
+  <body>
+    <h1>Test Page</h1>
+    <p>This is a simple test page.</p>
+    <div id="table"></div>
+
+    <script src="https://unpkg.com/rxjs@7/dist/bundles/rxjs.umd.min.js"></script>
+    <script src="../dist/index.global.js"></script>
+    <script>
+      const { interval } = rxjs;
+      const { map, mergeMap } = rxjs.operators;
+
+      // Generate 40 columns
+      const columns = Array.from({ length: 10 }, (_, i) => ({
+        id: String(i),
+        header: `Column ${i + 1}`,
+      }));
+
+      // Generate thousands of rows (adjust this number for your stress test)
+      const numRows = 40; // Change this to test different sizes (e.g., 1000, 5000, 10000)
+      const rows = Array.from({ length: numRows }, (_, i) => ({
+        id: String(i),
+      }));
+
+      // Table configuration
+      const tableConfig = {
+        columns: columns,
+        rows: rows,
+        rowHeight: 40,
+      };
+
+      // Random string generator
+      function randomString() {
+        return Math.random().toString(36).substring(2, 6);
+      }
+
+      // Observable source emitting random data for each cell
+      // Note: With thousands of rows and 40 columns, this will emit a LOT of data
+      // You might want to throttle this or only update visible cells
+      const sourceObservable = interval(1000).pipe(
+        map(() => {
+          const updates = [];
+          // For stress testing, you might want to only update a subset
+          // Uncomment the next line to only update first 100 rows for performance
+          // const rowsToUpdate = rows.slice(0, 100);
+          const rowsToUpdate = rows;
+
+          for (const row of rowsToUpdate) {
+            for (const column of columns) {
+              updates.push({
+                rowId: row.id,
+                columnId: column.id,
+                content: randomString(),
+              });
+            }
+          }
+          return updates;
+        }),
+        mergeMap((arr) => arr) // flatten so each emission is a single SourceData
+      );
+
+      const table = new L2Table.Table(
+        document.getElementById("table"),
+        sourceObservable,
+        tableConfig
+      );
+    </script>
+  </body>
+</html>

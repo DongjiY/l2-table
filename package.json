@@ -2,14 +2,27 @@
   "name": "l2-table",
   "version": "1.0.0",
   "description": "fast, observable-driven, canvas tables",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "serve": "serve . -l 3000",
+    "dev:all": "concurrently \"npm run dev\" \"npm run serve\""
   },
   "author": "Dongji Y",
   "license": "ISC",
   "types": "dist/index.d.ts",
   "files": [
     "/dist"
-  ]
+  ],
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "serve": "^14.2.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "rxjs": "^7.8.2"
+  }
 }
