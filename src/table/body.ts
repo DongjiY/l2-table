@@ -1,20 +1,28 @@
 import { Observable } from "../../node_modules/rxjs/dist/types/index";
-import { Camera } from "../camera";
-import { DrawCanvas, DrawCanvasDimensions } from "../draw-canvas";
-import { SourceData, TableConfig } from "../table-config";
+import { Camera } from "../canvas/camera";
+import { DrawCanvas, DrawCanvasDimensions } from "../canvas/draw-canvas";
+import { SourceData, TableConfig } from "./table-config";
 import { TableCell, TableCellConfig } from "./cell";
+import { TableCellCollection } from "./cell-collection";
 
 export class TableBody extends DrawCanvas {
+  private readonly camera: Camera;
   private readonly config: TableConfig;
-  private cells: Map<string, Map<string, TableCell<string>>> = new Map();
+  private cells: TableCellCollection<string>;
 
   constructor(
     config: TableConfig,
-    camera: Camera,
     dimensions: DrawCanvasDimensions,
     source: Observable<SourceData<string>>
   ) {
-    super(camera, dimensions);
+    super(dimensions);
+
+    this.cells = new TableCellCollection();
+
+    this.camera = new Camera({
+      viewportWidth: dimensions.w,
+      viewportHeight: dimensions.h,
+    });
 
     this.config = config;
     this.initCells(source);
@@ -22,8 +30,8 @@ export class TableBody extends DrawCanvas {
     this.canvas.addEventListener("wheel", (e) => {
       e.preventDefault();
       this.camera.updateCamera({
-        x: e.deltaX,
-        y: e.deltaY,
+        dx: e.deltaX,
+        dy: e.deltaY,
       });
     });
     this.camera.onCameraChange(this.draw);
@@ -31,26 +39,80 @@ export class TableBody extends DrawCanvas {
     this.draw();
   }
 
-  private initCells(source: Observable<SourceData<string>>): void {
-    const { rowHeight, columns } = this.config;
+  public getCamera(): Camera {
+    return this.camera;
+  }
 
+  private getVisibleRange() {
+    const { rows, columns, rowHeight } = this.config;
+    const { X, Y } = this.camera;
+    const viewportHeight = this.camera.getViewportHeight();
+    const viewportWidth = this.camera.getViewportWidth();
+
+    let startRow = 0;
+    let endRow = rows.length - 1;
+
+    let y = 0;
+    for (let i = 0; i < rows.length; i++) {
+      if (y + rowHeight >= Y) {
+        startRow = i;
+        break;
+      }
+      y += rowHeight;
+    }
+
+    y = 0;
+    for (let i = 0; i < rows.length; i++) {
+      if (y > Y + viewportHeight) {
+        endRow = i;
+        break;
+      }
+      y += rowHeight;
+    }
+
+    let startCol = 0;
+    let endCol = columns.length - 1;
+
+    let x = 0;
+    for (let i = 0; i < columns.length; i++) {
+      const w = columns[i].maxW;
+      if (x + w >= X) {
+        startCol = i;
+        break;
+      }
+      x += w;
+    }
+
+    x = 0;
+    for (let i = 0; i < columns.length; i++) {
+      const w = columns[i].maxW;
+      if (x > X + viewportWidth) {
+        endCol = i;
+        break;
+      }
+      x += w;
+    }
+
+    return { startRow, endRow, startCol, endCol };
+  }
+
+  private initCells(source: Observable<SourceData<string>>): void {
+    const { columns, rows, rowHeight } = this.config;
     let worldY = 0;
 
-    for (const row of this.config.rows) {
+    for (const row of rows) {
       let worldX = 0;
-      const rowMap = new Map<string, TableCell<string>>();
 
-      for (const column of this.config.columns) {
+      for (const column of columns) {
         const cellConfig: TableCellConfig = {
           textAlignment: "left",
-          minW: 80,
-          maxW: 150,
+          minW: column.minW,
+          maxW: column.maxW,
           pX: 5,
           pY: 0,
-          height: this.config.rowHeight,
+          height: rowHeight,
         };
 
-        // Pass world coordinates in constructor
         const cell = new TableCell<string>(
           row.id,
           column.id,
@@ -61,29 +123,31 @@ export class TableBody extends DrawCanvas {
           () => this.draw()
         );
 
-        cell.listen(source);
-        rowMap.set(column.id, cell);
+        cell.listen(source, this.camera);
 
-        worldX += cellConfig.maxW; // Increment for next cell
+        // Add to the new class
+        this.cells.addCell(cell);
+
+        worldX += cellConfig.maxW;
       }
 
-      this.cells.set(row.id, rowMap);
-      worldY += rowHeight; // Increment for next row
+      worldY += rowHeight;
     }
   }
 
   private drawRows(): void {
-    // No need to calculate positions - cells already know their world coordinates
-    // Just iterate and draw each cell
-    for (const row of this.config.rows) {
-      const rowMap = this.cells.get(row.id);
+    const { startRow, endRow, startCol, endCol } = this.getVisibleRange();
+
+    for (let r = startRow; r <= endRow; r++) {
+      const row = this.config.rows[r];
+      const rowMap = this.cells.getRow(row.id);
       if (!rowMap) continue;
 
-      for (const column of this.config.columns) {
+      for (let c = startCol; c <= endCol; c++) {
+        const column = this.config.columns[c];
         const cell = rowMap.get(column.id);
         if (!cell) continue;
 
-        // No translate needed - cell draws at its world coordinates
         cell.draw();
       }
     }
