@@ -13,6 +13,8 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
   private readonly config: TableConfig<TRow>;
   private cells: TableCellCollection<TRow>;
   private bufferedCells: BufferedCellCollection<TRow>;
+  private columnOffsets: number[] = [];
+  private totalTableWidth = 0;
 
   constructor(
     config: TableConfig<TRow>,
@@ -30,6 +32,7 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
     });
 
     this.config = config;
+    this.buildColumnOffsets();
     this.initCells(source);
 
     this.canvas.addEventListener("wheel", (e) => {
@@ -39,9 +42,37 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
         dy: e.deltaY,
       });
     });
-    this.camera.onCameraChange(this.draw);
+    this.camera.onCameraChange(this.invalidate);
 
-    this.draw();
+    this.invalidate();
+  }
+
+  private findIndexAtOrBefore(offsets: number[], value: number): number {
+    let lo = 0;
+    let hi = offsets.length - 1;
+
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (offsets[mid] <= value) {
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+
+    return Math.max(0, hi);
+  }
+
+  private buildColumnOffsets(): void {
+    this.columnOffsets.length = 0;
+
+    let x = 0;
+    for (const col of this.config.columns) {
+      this.columnOffsets.push(x);
+      x += col.maxW;
+    }
+
+    this.totalTableWidth = x;
   }
 
   public getCamera(): Camera {
@@ -49,60 +80,34 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
   }
 
   private getVisibleRange(bufferCells: number = DEFAULT_CELL_BUFFER) {
-    const { rows, columns, rowHeight } = this.config;
-    const { X, Y } = this.camera;
-    const viewportHeight = this.camera.getViewportHeight();
-    const viewportWidth = this.camera.getViewportWidth();
+    const { rows, rowHeight } = this.config;
+    const camera = this.camera;
 
-    let startRow = 0;
-    let endRow = rows.length - 1;
+    const viewportHeight = camera.getViewportHeight();
+    const viewportWidth = camera.getViewportWidth();
 
-    let y = 0;
-    for (let i = 0; i < rows.length; i++) {
-      if (y + rowHeight >= Y) {
-        startRow = i;
-        break;
-      }
-      y += rowHeight;
-    }
+    /* ---------- ROWS (O(1)) ---------- */
 
-    y = 0;
-    for (let i = 0; i < rows.length; i++) {
-      if (y > Y + viewportHeight) {
-        endRow = i;
-        break;
-      }
-      y += rowHeight;
-    }
+    const rawStartRow = Math.floor(camera.Y / rowHeight);
+    const rawEndRow = Math.ceil((camera.Y + viewportHeight) / rowHeight);
 
-    startRow = Math.max(0, startRow - bufferCells);
-    endRow = Math.min(rows.length - 1, endRow + bufferCells);
+    const startRow = Math.max(0, rawStartRow - bufferCells);
+    const endRow = Math.min(rows.length - 1, rawEndRow + bufferCells);
 
-    let startCol = 0;
-    let endCol = columns.length - 1;
+    /* ---------- COLUMNS (O(log N)) ---------- */
 
-    let x = 0;
-    for (let i = 0; i < columns.length; i++) {
-      const w = columns[i].maxW;
-      if (x + w >= X) {
-        startCol = i;
-        break;
-      }
-      x += w;
-    }
+    const rawStartCol = this.findIndexAtOrBefore(this.columnOffsets, camera.X);
 
-    x = 0;
-    for (let i = 0; i < columns.length; i++) {
-      const w = columns[i].maxW;
-      if (x > X + viewportWidth) {
-        endCol = i;
-        break;
-      }
-      x += w;
-    }
+    const rawEndCol = this.findIndexAtOrBefore(
+      this.columnOffsets,
+      camera.X + viewportWidth
+    );
 
-    startCol = Math.max(0, startCol - bufferCells);
-    endCol = Math.min(columns.length - 1, endCol + bufferCells);
+    const startCol = Math.max(0, rawStartCol - bufferCells);
+    const endCol = Math.min(
+      this.config.columns.length - 1,
+      rawEndCol + bufferCells
+    );
 
     return { startRow, endRow, startCol, endCol };
   }
@@ -131,7 +136,7 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
           cellConfig,
           worldX,
           worldY,
-          () => this.draw(),
+          () => this.invalidate(),
           column.cellDataFactory,
           source,
           this.camera

@@ -20,11 +20,11 @@ export class TableHeader<TRow extends RowData> extends DrawCanvas {
       viewportHeight: dimensions.h,
     });
 
-    this.camera.onCameraChange(this.draw);
+    this.camera.onCameraChange(this.invalidate);
 
     this.initHeaderCells();
 
-    this.draw();
+    this.invalidate();
   }
 
   private initHeaderCells(): void {
@@ -48,7 +48,7 @@ export class TableHeader<TRow extends RowData> extends DrawCanvas {
         tableCellConfig,
         worldX,
         0,
-        () => this.draw(),
+        () => this.invalidate(),
         () => new StringTableData(column.header),
         EMPTY,
         this.camera

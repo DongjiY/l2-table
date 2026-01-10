@@ -4,11 +4,13 @@ import { DrawCanvas } from "../canvas/draw-canvas";
 import { RowData, SourceData, TableConfig } from "./table-config";
 import { TableBody } from "./body";
 import { TableHeader } from "./header";
+import { CanvasRenderer } from "../canvas/canvas-renderer";
 
 export class Table<TRow extends RowData> {
   private container: HTMLDivElement;
   private header: TableHeader<TRow>;
   private body: TableBody<TRow>;
+  private canvasRenderer: CanvasRenderer;
 
   constructor(
     container: HTMLDivElement,
@@ -33,6 +35,8 @@ export class Table<TRow extends RowData> {
       },
       source
     );
+
+    this.canvasRenderer = new CanvasRenderer([this.header, this.body]);
 
     // Sync header camera to body (horizontal scroll only)
     this.body.getCamera().onCameraChange(({ dx }) => {
