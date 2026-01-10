@@ -1,4 +1,4 @@
-import { Observable, Subject } from "rxjs";
+import { Observable, ReplaySubject, Subject } from "rxjs";
 import { Drawable } from "./drawable";
 
 export type DrawCanvasDimensions = {
@@ -9,14 +9,14 @@ export type DrawCanvasDimensions = {
 export abstract class DrawCanvas implements Drawable {
   protected canvas: HTMLCanvasElement;
   protected canvasCtx: CanvasRenderingContext2D;
-  private readonly invalidate$: Subject<void>;
+  private readonly invalidate$: ReplaySubject<void>;
 
   constructor(dimensions: DrawCanvasDimensions) {
     this.canvas = document.createElement("canvas");
     this.canvasCtx = this.canvas.getContext("2d")!;
     this.setSize(dimensions.w, dimensions.h);
 
-    this.invalidate$ = new Subject();
+    this.invalidate$ = new ReplaySubject(1);
 
     this.draw = this.draw.bind(this);
     this.invalidate = this.invalidate.bind(this);
