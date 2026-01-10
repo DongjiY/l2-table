@@ -1,32 +1,26 @@
-// import { merge, animationFrameScheduler } from "rxjs";
-// import { auditTime } from "rxjs/operators";
-// import { DrawCanvas } from "./draw-canvas";
+import { merge } from "rxjs";
+import { DrawCanvas } from "./draw-canvas";
 
-// export class CanvasRenderer {
-//   private dirty = true;
+export class CanvasRenderer {
+  private scheduled = false;
 
-//   constructor(private layers: DrawCanvas[]) {
-//     const invalidations$ = merge(...layers.map((l) => l.invalidateStream));
+  constructor(private layers: DrawCanvas[]) {
+    const invalidations$ = merge(...layers.map((l) => l.invalidateStream));
 
-//     invalidations$
-//       .pipe(auditTime(0, animationFrameScheduler))
-//       .subscribe(() => this.invalidate());
+    invalidations$.subscribe(() => this.scheduleDraw());
+  }
 
-//     this.frame = this.frame.bind(this);
-//     requestAnimationFrame(this.frame);
-//   }
+  private scheduleDraw() {
+    if (this.scheduled) return;
 
-//   private invalidate() {
-//     this.dirty = true;
-//   }
+    this.scheduled = true;
 
-//   private frame() {
-//     if (this.dirty) {
-//       for (const layer of this.layers) {
-//         layer.draw();
-//       }
-//       this.dirty = false;
-//     }
-//     requestAnimationFrame(this.frame);
-//   }
-// }
+    requestAnimationFrame(() => {
+      this.scheduled = false;
+
+      for (const layer of this.layers) {
+        layer.draw();
+      }
+    });
+  }
+}

@@ -10,21 +10,21 @@ export class TableHeader<TRow extends RowData> extends DrawCanvas {
   private readonly config: TableConfig<TRow>;
   private headerCells: Set<TableCell<TRow, any>> = new Set();
 
-  constructor(config: TableConfig<TRow>, dimensions: DrawCanvasDimensions) {
+  constructor(
+    config: TableConfig<TRow>,
+    dimensions: DrawCanvasDimensions,
+    camera: Camera
+  ) {
     super(dimensions);
 
     this.config = config;
+    this.camera = camera;
 
-    this.camera = new Camera({
-      viewportWidth: dimensions.w,
-      viewportHeight: dimensions.h,
-    });
-
-    this.camera.onCameraChange(this.draw);
+    this.camera.onCameraChange(this.invalidate);
 
     this.initHeaderCells();
 
-    this.draw();
+    this.invalidate();
   }
 
   private initHeaderCells(): void {
@@ -48,7 +48,7 @@ export class TableHeader<TRow extends RowData> extends DrawCanvas {
         tableCellConfig,
         worldX,
         0,
-        () => this.draw(),
+        () => this.invalidate(),
         () => new StringTableData(column.header),
         EMPTY,
         this.camera

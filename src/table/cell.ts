@@ -20,7 +20,7 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
   public readonly columnId: keyof TRow;
   private readonly canvasCtx: CanvasRenderingContext2D;
   public readonly config: TableCellConfig;
-  private readonly redraw: () => void;
+  private readonly invalidate: () => void;
   private isBuffered: boolean = false;
   private source: Observable<SourceData<TRow>>;
   private camera: Camera;
@@ -34,7 +34,7 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
     config: TableCellConfig,
     x: number,
     y: number,
-    redraw: () => void,
+    invalidate: () => void,
     tableDataFactory: () => TableData<TCellData>,
     source: Observable<SourceData<TRow>>,
     camera: Camera
@@ -44,7 +44,7 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
     this.columnId = columnId;
     this.canvasCtx = canvasCtx;
     this.config = config;
-    this.redraw = redraw;
+    this.invalidate = invalidate;
     this.content = tableDataFactory();
     this.source = source;
     this.camera = camera;
@@ -71,7 +71,7 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
         )
         .subscribe((e) => {
           this.content.setValue(e.content);
-          if (this.camera.isVisible(this)) this.redraw();
+          if (this.camera.isVisible(this)) this.invalidate();
         });
     } else if (!this.isBuffered && this.subscription) {
       this.subscription.unsubscribe();
