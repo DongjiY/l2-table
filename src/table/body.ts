@@ -19,18 +19,15 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
   constructor(
     config: TableConfig<TRow>,
     dimensions: DrawCanvasDimensions,
-    source: Observable<SourceData<TRow>>
+    source: Observable<SourceData<TRow>>,
+    camera: Camera
   ) {
     super(dimensions);
 
     this.cells = new TableCellCollection();
     this.bufferedCells = new BufferedCellCollection();
 
-    this.camera = new Camera({
-      viewportWidth: dimensions.w,
-      viewportHeight: dimensions.h,
-    });
-
+    this.camera = camera;
     this.config = config;
     this.buildColumnOffsets();
     this.initCells(source);

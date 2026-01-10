@@ -10,15 +10,15 @@ export class TableHeader<TRow extends RowData> extends DrawCanvas {
   private readonly config: TableConfig<TRow>;
   private headerCells: Set<TableCell<TRow, any>> = new Set();
 
-  constructor(config: TableConfig<TRow>, dimensions: DrawCanvasDimensions) {
+  constructor(
+    config: TableConfig<TRow>,
+    dimensions: DrawCanvasDimensions,
+    camera: Camera
+  ) {
     super(dimensions);
 
     this.config = config;
-
-    this.camera = new Camera({
-      viewportWidth: dimensions.w,
-      viewportHeight: dimensions.h,
-    });
+    this.camera = camera;
 
     this.camera.onCameraChange(this.invalidate);
 

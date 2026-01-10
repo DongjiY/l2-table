@@ -11,6 +11,7 @@ export class Table<TRow extends RowData> {
   private header: TableHeader<TRow>;
   private body: TableBody<TRow>;
   private canvasRenderer: CanvasRenderer;
+  private readonly camera: Camera;
 
   constructor(
     container: HTMLDivElement,
@@ -20,12 +21,19 @@ export class Table<TRow extends RowData> {
     this.container = container;
     this.container.style.display = "flex";
     this.container.style.flexDirection = "column";
-
-    // Create canvases
-    this.header = new TableHeader(tableConfig, {
-      w: 600,
-      h: 40,
+    this.camera = new Camera({
+      viewportHeight: 500,
+      viewportWidth: 600,
     });
+
+    this.header = new TableHeader(
+      tableConfig,
+      {
+        w: 600,
+        h: 40,
+      },
+      this.camera
+    );
 
     this.body = new TableBody(
       tableConfig,
@@ -33,17 +41,12 @@ export class Table<TRow extends RowData> {
         w: 600,
         h: 500,
       },
-      source
+      source,
+      this.camera
     );
 
     this.canvasRenderer = new CanvasRenderer([this.header, this.body]);
 
-    // Sync header camera to body (horizontal scroll only)
-    this.body.getCamera().onCameraChange(({ dx }) => {
-      this.header.getCamera().updateCamera({ dx });
-    });
-
-    // Attach canvases to DOM
     this.header.attach(this.container);
     this.body.attach(this.container);
   }
