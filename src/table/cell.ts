@@ -21,6 +21,9 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
   private readonly canvasCtx: CanvasRenderingContext2D;
   public readonly config: TableCellConfig;
   private readonly redraw: () => void;
+  private isBuffered: boolean = false;
+  private source: Observable<SourceData<TRow>>;
+  private camera: Camera;
 
   private subscription: Subscription | undefined;
 
@@ -32,7 +35,9 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
     x: number,
     y: number,
     redraw: () => void,
-    tableDataFactory: () => TableData<TCellData>
+    tableDataFactory: () => TableData<TCellData>,
+    source: Observable<SourceData<TRow>>,
+    camera: Camera
   ) {
     super(x, y);
     this.rowId = rowId;
@@ -41,6 +46,8 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
     this.config = config;
     this.redraw = redraw;
     this.content = tableDataFactory();
+    this.source = source;
+    this.camera = camera;
   }
 
   public destroy(): void {
@@ -50,31 +57,23 @@ export class TableCell<TRow extends RowData, TCellData> extends WorldObject {
     }
   }
 
-  public listen(source: Observable<SourceData<TRow>>, camera: Camera): void {
-    camera.onCameraChange(() => {
-      this.updateSubscription(source, camera);
-    });
-
-    this.updateSubscription(source, camera);
+  public setIsBuffered(isBuffered: boolean): void {
+    this.isBuffered = isBuffered;
+    this.updateSubscription();
   }
 
-  private updateSubscription(
-    source: Observable<SourceData<TRow>>,
-    camera: Camera
-  ): void {
-    const isVisible = camera.isVisible(this);
-
-    if (isVisible && !this.subscription) {
-      this.subscription = source
+  private updateSubscription(): void {
+    if (this.isBuffered && !this.subscription) {
+      this.subscription = this.source
         .pipe(
           filter((e) => e.columnId === this.columnId && e.rowId === this.rowId),
-          takeWhile(() => camera.isVisible(this) ?? false)
+          takeWhile(() => this.isBuffered)
         )
         .subscribe((e) => {
           this.content.setValue(e.content);
-          this.redraw();
+          if (this.camera.isVisible(this)) this.redraw();
         });
-    } else if (!isVisible && this.subscription) {
+    } else if (!this.isBuffered && this.subscription) {
       this.subscription.unsubscribe();
       this.subscription = undefined;
     }

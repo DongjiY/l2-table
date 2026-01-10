@@ -2,7 +2,7 @@ export abstract class TableData<TUnderlyingData> {
   private value: TUnderlyingData | undefined;
   private placeholder: string = "--";
 
-  constructor(value: TUnderlyingData, placeholder?: string) {
+  constructor(value: TUnderlyingData | undefined, placeholder?: string) {
     this.value = value;
     if (placeholder) this.placeholder = placeholder;
   }
