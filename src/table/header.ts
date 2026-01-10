@@ -3,6 +3,7 @@ import { DrawCanvas, DrawCanvasDimensions } from "../canvas/draw-canvas";
 import { RowData, TableConfig } from "./table-config";
 import { TableCell, TableCellConfig } from "./cell";
 import { StringTableData } from "./table-data";
+import { EMPTY } from "rxjs";
 
 export class TableHeader<TRow extends RowData> extends DrawCanvas {
   private readonly camera: Camera;
@@ -48,7 +49,9 @@ export class TableHeader<TRow extends RowData> extends DrawCanvas {
         worldX,
         0,
         () => this.draw(),
-        () => new StringTableData(column.header)
+        () => new StringTableData(column.header),
+        EMPTY,
+        this.camera
       );
       worldX += tableCellConfig.maxW;
       this.headerCells.add(header);

@@ -4,11 +4,15 @@ import { DrawCanvas, DrawCanvasDimensions } from "../canvas/draw-canvas";
 import { RowData, SourceData, TableConfig } from "./table-config";
 import { TableCell, TableCellConfig } from "./cell";
 import { TableCellCollection } from "./cell-collection";
+import { BufferedCellCollection } from "./buffered-cell-collection";
+
+const DEFAULT_CELL_BUFFER = 4;
 
 export class TableBody<TRow extends RowData> extends DrawCanvas {
   private readonly camera: Camera;
   private readonly config: TableConfig<TRow>;
   private cells: TableCellCollection<TRow>;
+  private bufferedCells: BufferedCellCollection<TRow>;
 
   constructor(
     config: TableConfig<TRow>,
@@ -18,6 +22,7 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
     super(dimensions);
 
     this.cells = new TableCellCollection();
+    this.bufferedCells = new BufferedCellCollection();
 
     this.camera = new Camera({
       viewportWidth: dimensions.w,
@@ -43,7 +48,7 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
     return this.camera;
   }
 
-  private getVisibleRange() {
+  private getVisibleRange(bufferCells: number = DEFAULT_CELL_BUFFER) {
     const { rows, columns, rowHeight } = this.config;
     const { X, Y } = this.camera;
     const viewportHeight = this.camera.getViewportHeight();
@@ -70,6 +75,9 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
       y += rowHeight;
     }
 
+    startRow = Math.max(0, startRow - bufferCells);
+    endRow = Math.min(rows.length - 1, endRow + bufferCells);
+
     let startCol = 0;
     let endCol = columns.length - 1;
 
@@ -92,6 +100,9 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
       }
       x += w;
     }
+
+    startCol = Math.max(0, startCol - bufferCells);
+    endCol = Math.min(columns.length - 1, endCol + bufferCells);
 
     return { startRow, endRow, startCol, endCol };
   }
@@ -121,10 +132,10 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
           worldX,
           worldY,
           () => this.draw(),
-          column.cellDataFactory
+          column.cellDataFactory,
+          source,
+          this.camera
         );
-
-        cell.listen(source, this.camera);
 
         this.cells.addCell(cell);
 
@@ -138,6 +149,8 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
   private drawRows(): void {
     const { startRow, endRow, startCol, endCol } = this.getVisibleRange();
 
+    const visibleCells = new Set<TableCell<TRow, any>>();
+
     for (let r = startRow; r <= endRow; r++) {
       const row = this.config.rows[r];
       const rowMap = this.cells.getRow(row.id);
@@ -149,8 +162,17 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
         if (!cell) continue;
 
         cell.draw();
+        visibleCells.add(cell);
       }
     }
+
+    this.bufferedCells.forEach((cell) => {
+      if (!visibleCells.has(cell)) {
+        this.bufferedCells.remove(cell);
+      }
+    });
+
+    visibleCells.forEach((cell) => this.bufferedCells.add(cell));
   }
 
   protected drawImpl(): void {
