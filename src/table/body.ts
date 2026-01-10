@@ -126,6 +126,7 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
           height: rowHeight,
         };
 
+        const invalidateCallback = () => this.invalidate();
         const cell = new TableCell<TRow, TRow[typeof column.id]>(
           row.id,
           column.id,
@@ -133,7 +134,7 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
           cellConfig,
           worldX,
           worldY,
-          () => this.invalidate(),
+          invalidateCallback,
           column.cellDataFactory,
           source,
           this.camera
