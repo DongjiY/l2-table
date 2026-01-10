@@ -54,36 +54,39 @@ export class Camera {
     return Math.max(0, Math.min(y, this.worldHeight - this.viewportHeight));
   }
 
-  public setX(x: number): void {
-    this.x = x;
+  public setWorldDimensions({
+    worldHeight = Infinity,
+    worldWidth = Infinity,
+  }: {
+    worldHeight?: number;
+    worldWidth?: number;
+  }): void {
+    this.worldHeight = worldHeight;
+    this.worldWidth = worldWidth;
   }
 
   public get X(): number {
     return this.x;
   }
 
-  public getX(): number {
-    return this.x;
-  }
-
-  public setY(y: number): void {
-    this.y = y;
-  }
-
   public get Y(): number {
     return this.y;
   }
 
-  public getY(): number {
-    return this.y;
+  public get ViewportHeight(): number {
+    return this.viewportHeight;
   }
 
-  public getViewportWidth(): number {
+  public get ViewportWidth(): number {
     return this.viewportWidth;
   }
 
-  public getViewportHeight(): number {
-    return this.viewportHeight;
+  public get WorldHeight(): number {
+    return this.worldHeight;
+  }
+
+  public get WorldWidth(): number {
+    return this.worldWidth;
   }
 
   public updateCamera(coords: { dx?: number; dy?: number }): void {

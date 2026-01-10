@@ -14,7 +14,8 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
   private cells: TableCellCollection<TRow>;
   private bufferedCells: BufferedCellCollection<TRow>;
   private columnOffsets: number[] = [];
-  private totalTableWidth = 0;
+  private computedTableWidth = 0;
+  private computedTableHeight = 0;
 
   constructor(
     config: TableConfig<TRow>,
@@ -30,6 +31,11 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
     this.camera = camera;
     this.config = config;
     this.buildColumnOffsets();
+    this.computedTableHeight = this.config.rows.length * this.config.rowHeight;
+    this.camera.setWorldDimensions({
+      worldHeight: this.computedTableHeight,
+      worldWidth: this.computedTableWidth,
+    });
     this.initCells(source);
 
     this.canvas.addEventListener("wheel", (e) => {
@@ -69,7 +75,7 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
       x += col.maxW;
     }
 
-    this.totalTableWidth = x;
+    this.computedTableWidth = x;
   }
 
   public getCamera(): Camera {
@@ -80,8 +86,8 @@ export class TableBody<TRow extends RowData> extends DrawCanvas {
     const { rows, rowHeight } = this.config;
     const camera = this.camera;
 
-    const viewportHeight = camera.getViewportHeight();
-    const viewportWidth = camera.getViewportWidth();
+    const viewportHeight = camera.ViewportHeight;
+    const viewportWidth = camera.ViewportWidth;
 
     /* ---------- ROWS (O(1)) ---------- */
 
