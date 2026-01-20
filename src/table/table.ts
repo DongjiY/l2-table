@@ -1,89 +1,45 @@
-import { Observable } from "rxjs";
-import { Camera } from "../canvas/camera";
-import { DrawCanvas } from "../canvas/draw-canvas";
-import { RowData, SourceData, TableConfig } from "./table-config";
-import { TableBody } from "./body";
-import { TableHeader } from "./header";
-import { CanvasRenderer } from "../canvas/canvas-renderer";
-import { HorizontalScrollbar } from "../scroll/horizontal-scrollbar";
-import { VerticalScrollbar } from "../scroll/vertical-scrollbar";
-
-export class Table<TRow extends RowData> {
-  private container: HTMLDivElement;
-  private verticalWrapper: HTMLDivElement;
-  private horizontalWrapper: HTMLDivElement;
-
-  private header: TableHeader<TRow>;
-  private body: TableBody<TRow>;
-  private xScrollBar: HorizontalScrollbar;
-  private yScrollBar: VerticalScrollbar;
-  private canvasRenderer: CanvasRenderer;
-  private readonly camera: Camera;
+import { TableColumns, TableConfig, TableOptions } from "../types/table-config";
+import { TableBody } from "./components/table-body";
+import { TableWorker } from "./table-worker";
+export class Table<C extends TableColumns> {
+  private tableConfig: TableConfig<C>;
+  private resizeObserver: ResizeObserver;
+  private tableWorker: TableWorker;
+  private body: TableBody;
 
   constructor(
-    container: HTMLDivElement,
-    source: Observable<SourceData<TRow>>,
-    tableConfig: TableConfig<TRow>
+    private root: HTMLDivElement,
+    opts: TableOptions<C>,
   ) {
-    this.container = container;
+    this.tableConfig = opts.config;
 
-    this.horizontalWrapper = document.createElement("div");
-    this.horizontalWrapper.style.display = "flex";
-    this.container.appendChild(this.horizontalWrapper);
+    this.tableWorker = new TableWorker();
+    this.body = new TableBody(this.tableWorker);
 
-    this.verticalWrapper = document.createElement("div");
-    this.verticalWrapper.style.display = "flex";
-    this.verticalWrapper.style.flexDirection = "column";
-    this.horizontalWrapper.appendChild(this.verticalWrapper);
+    this.root.appendChild(this.body.getElement());
 
-    this.camera = new Camera({
-      viewportHeight: 500,
-      viewportWidth: 600,
+    this.resizeObserver = new ResizeObserver(() => {
+      const dimensions = this.root.getBoundingClientRect();
+      console.log("resizing", dimensions.width, dimensions.height);
+      this.body.onResize(dimensions.width, dimensions.height);
     });
 
-    this.header = new TableHeader(
-      tableConfig,
-      {
-        w: 600,
-        h: 40,
-      },
-      this.camera
-    );
+    this.resizeObserver.observe(this.root);
 
-    this.body = new TableBody(
-      tableConfig,
-      {
-        w: 600,
-        h: 500,
-      },
-      source,
-      this.camera
-    );
-
-    this.xScrollBar = new HorizontalScrollbar(
-      {
-        w: 600,
-      },
-      this.camera
-    );
-
-    this.yScrollBar = new VerticalScrollbar(
-      {
-        h: 540,
-      },
-      this.camera
-    );
-
-    this.canvasRenderer = new CanvasRenderer([
-      this.header,
-      this.body,
-      this.xScrollBar,
-      this.yScrollBar,
-    ]);
-
-    this.header.attach(this.verticalWrapper);
-    this.body.attach(this.verticalWrapper);
-    this.xScrollBar.attach(this.verticalWrapper);
-    this.yScrollBar.attach(this.horizontalWrapper);
+    this.initialize();
   }
+
+  private initialize(): void {
+    this.tableWorker.init({
+      body: this.body.transferOffscreen(),
+      config: JSON.stringify(this.tableConfig),
+    });
+  }
+}
+
+export function createTable<C extends TableColumns>(
+  root: HTMLDivElement,
+  opts: TableOptions<C>,
+): Table<C> {
+  return new Table(root, opts);
 }

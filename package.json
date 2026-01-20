@@ -5,9 +5,16 @@
   "description": "fast, observable-driven, canvas tables",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts",
-    "dev": "tsup src/index.ts --watch --format esm --dts",
+    "build": "tsup --format esm --dts",
+    "dev": "tsup --watch --format esm --dts",
     "serve": "serve . -l 3000",
     "dev:all": "concurrently \"npm run dev\" \"npm run serve\""
   },

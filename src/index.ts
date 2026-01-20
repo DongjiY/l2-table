@@ -1,8 +1,13 @@
-export { Table } from "./table/table";
-export { TableData } from "./table/table-data";
+export { createTable } from "./table/table";
+export type { Table } from "./table/table";
 export type {
   TableConfig,
-  TableColumn,
+  TableColumns,
+  TableOptions,
+  TableColumnData,
   TableRow,
-  SourceData,
-} from "./table/table-config";
+  TableRowData,
+  TableSourceObservable,
+  TableSourceData,
+} from "./types/table-config";
+export { StringTableData } from "./utils/string-table-data";
