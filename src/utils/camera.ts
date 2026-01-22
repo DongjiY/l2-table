@@ -1,5 +1,5 @@
-import { Dimensions } from "../utils/dimensions";
-import { Point } from "../utils/point";
+import { Dimensions } from "./dimensions";
+import { Point } from "./point";
 
 type CameraChangeCallback = ({
   dx,

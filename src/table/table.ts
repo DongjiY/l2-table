@@ -1,39 +1,87 @@
 import { TableColumns, TableConfig, TableOptions } from "../types/table-config";
+import { Camera } from "../utils/camera";
+import { Dimensions } from "../utils/dimensions";
+import { Renderer } from "../utils/renderer";
 import { TableBody } from "./components/table-body";
-import { TableWorker } from "./table-worker";
+import { TableHeader } from "./components/table-header";
+
 export class Table<C extends TableColumns> {
+  private verticalWrapper: HTMLDivElement;
+  private horizontalWrapper: HTMLDivElement;
+
   private tableConfig: TableConfig<C>;
   private resizeObserver: ResizeObserver;
-  private tableWorker: TableWorker;
-  private body: TableBody;
+  private camera: Camera;
+  private renderer: Renderer;
+  private body: TableBody<C>;
+  private header: TableHeader<C>;
 
   constructor(
     private root: HTMLDivElement,
-    opts: TableOptions<C>,
+    private readonly opts: TableOptions<C>,
   ) {
-    this.tableConfig = opts.config;
+    this.tableConfig = this.opts.config;
 
-    this.tableWorker = new TableWorker();
-    this.body = new TableBody(this.tableWorker);
+    const { width: TOTAL_WIDTH, height: TOTAL_HEIGHT } =
+      this.root.getBoundingClientRect();
 
-    this.root.appendChild(this.body.getElement());
+    this.horizontalWrapper = document.createElement("div");
+    this.horizontalWrapper.style.display = "flex";
+    this.horizontalWrapper.style.width = "100%";
+    this.horizontalWrapper.style.height = "100%";
+    this.root.appendChild(this.horizontalWrapper);
+
+    this.verticalWrapper = document.createElement("div");
+    this.verticalWrapper.style.display = "flex";
+    this.verticalWrapper.style.flexDirection = "column";
+    this.horizontalWrapper.style.width = "100%";
+    this.horizontalWrapper.style.height = "100%";
+    this.horizontalWrapper.appendChild(this.verticalWrapper);
+
+    this.camera = new Camera({
+      viewportWidth: TOTAL_WIDTH,
+      viewportHeight: TOTAL_HEIGHT,
+    });
+
+    this.body = new TableBody(
+      this.camera,
+      this.tableConfig,
+      this.opts.source,
+      new Dimensions(
+        TOTAL_WIDTH,
+        TOTAL_HEIGHT - this.opts.config.style.header.row.height,
+      ),
+    );
+    this.header = new TableHeader(
+      this.camera,
+      new Dimensions(TOTAL_WIDTH, this.opts.config.style.header.row.height),
+      this.tableConfig,
+    );
+
+    this.verticalWrapper.appendChild(this.header.getElement());
+    this.verticalWrapper.appendChild(this.body.getElement());
 
     this.resizeObserver = new ResizeObserver(() => {
-      const dimensions = this.root.getBoundingClientRect();
-      console.log("resizing", dimensions.width, dimensions.height);
-      this.body.onResize(dimensions.width, dimensions.height);
+      const { width, height } = this.root.getBoundingClientRect();
+      this.camera.updateViewportDimensions({
+        w: width,
+        h: height,
+      });
+      this.body.resize(
+        width,
+        height - this.opts.config.style.header.row.height,
+        window.devicePixelRatio,
+      );
+      this.header.resize(
+        width,
+        this.opts.config.style.header.row.height,
+        window.devicePixelRatio,
+      );
     });
 
     this.resizeObserver.observe(this.root);
 
-    this.initialize();
-  }
-
-  private initialize(): void {
-    this.tableWorker.init({
-      body: this.body.transferOffscreen(),
-      config: JSON.stringify(this.tableConfig),
-    });
+    this.renderer = new Renderer([this.body, this.header]);
   }
 }
 

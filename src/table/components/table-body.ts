@@ -1,36 +1,96 @@
-import { TableWorker } from "../table-worker";
-import { TransferrableCanvas } from "../transferrable-canvas";
+import {
+  TableColumns,
+  TableConfig,
+  TableSourceData,
+} from "../../types/table-config";
+import { CellCollection } from "../../utils/cell-collection";
+import { Dimensions } from "../../utils/dimensions";
+import { Point } from "../../utils/point";
+import { Camera } from "../../utils/camera";
+import { DrawCanvas } from "../../utils/draw-canvas";
+import { TableCell } from "./table-cell";
+import { filter, map, Observable } from "rxjs";
 
-export class TableBody extends TransferrableCanvas {
-  constructor(private readonly worker: TableWorker) {
-    super();
+export class TableBody<C extends TableColumns> extends DrawCanvas {
+  private cells: CellCollection;
+
+  constructor(
+    private readonly camera: Camera,
+    private readonly config: TableConfig<C>,
+    private readonly source: Observable<TableSourceData<C>>,
+    dimensions: Dimensions,
+  ) {
+    super(dimensions);
+
+    this.cells = new CellCollection();
+
+    this.initCells();
 
     this.getElement().addEventListener(
       "wheel",
       (e: WheelEvent) => {
-        e.stopImmediatePropagation();
-        e.stopPropagation();
         e.preventDefault();
-        this.worker.send({
-          type: "SCROLL",
-          data: {
-            dx: e.deltaX,
-            dy: e.deltaY,
-          },
+        this.camera.updateFocus({
+          dx: e.deltaX,
+          dy: e.deltaY,
         });
       },
       { passive: false },
     );
+
+    this.camera.onCameraChange(() => this.requestRedraw());
+
+    this.requestRedraw();
   }
 
-  public onResize(w: number, h: number): void {
-    this.worker.send({
-      type: "RESIZE",
-      data: {
-        w,
-        h,
-        dpr: window.devicePixelRatio,
-      },
+  private getFilteredObservable(
+    rowId: string,
+    columnId: string,
+  ): Observable<any> {
+    return this.source.pipe(
+      filter((v) => v.columnId === columnId && v.rowId === rowId),
+      map((v) => v.data),
+    );
+  }
+
+  private initCells(): void {
+    const requestRedraw = this.requestRedraw.bind(this);
+    let x = 0;
+    let y = 0;
+    for (const row of this.config.rows) {
+      x = 0;
+      for (const [columnId, cellData] of Object.entries(row.cells)) {
+        const cell = new TableCell(
+          row.rowId,
+          columnId,
+          new Point(x, y),
+          cellData.cellData,
+          this.config.style.body.cell.text,
+          this.config.columns[columnId],
+          this.config.style.body.row.height,
+          this.getFilteredObservable(row.rowId, columnId),
+          requestRedraw,
+        );
+        this.cells.addCell(cell);
+        x += cell.w;
+      }
+      y += this.config.style.body.row.height;
+    }
+    this.camera.updateWorldDimensions({
+      w: x,
+      h: y + this.config.style.header.row.height,
     });
+  }
+
+  private drawCells(ctx: CanvasRenderingContext2D): void {
+    for (const cell of this.cells.allCells()) {
+      cell.draw(ctx);
+    }
+  }
+
+  public draw(ctx: CanvasRenderingContext2D): void {
+    ctx.translate(-this.camera.x, -this.camera.y);
+
+    this.drawCells(ctx);
   }
 }

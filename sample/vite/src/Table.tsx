@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createTable, type Table } from "l2-table";
 import { config, type ColsType } from "./tableConfig";
-import { NEVER } from "rxjs";
+import { numberSource } from "./numberSource";
 
 export function NumberTable(): ReactNode {
   const [isLarge, setIsLarge] = useState<boolean>(true);
@@ -13,7 +13,7 @@ export function NumberTable(): ReactNode {
     if (tableContainerRef.current && !table.current) {
       table.current = createTable(tableContainerRef.current, {
         config,
-        source: NEVER,
+        source: numberSource(config),
       });
     }
   }, []);
@@ -33,14 +33,14 @@ export function NumberTable(): ReactNode {
         }}
       ></div>
 
-      <button
+      {/* <button
         style={{
           width: "100%",
         }}
         onClick={() => setIsLarge(!isLarge)}
       >
         Resize
-      </button>
+      </button> */}
     </div>
   );
 }

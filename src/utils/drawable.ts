@@ -1,3 +1,3 @@
 export interface Drawable {
-  draw(ctx: OffscreenCanvasRenderingContext2D): void;
+  draw(ctx: CanvasRenderingContext2D): void;
 }

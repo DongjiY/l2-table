@@ -20,7 +20,12 @@ export abstract class TableData<TUnderlyingData> {
   abstract toString(value: TUnderlyingData): string;
 
   public getDisplayableContent(): string {
-    if (this.value === undefined) return this.placeholder;
-    return this.toString(this.value);
+    try {
+      if (this.value === undefined) return this.placeholder;
+      return this.toString(this.value);
+    } catch (err) {
+      console.error(err);
+      return this.placeholder;
+    }
   }
 }

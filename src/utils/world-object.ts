@@ -8,5 +8,5 @@ export abstract class WorldObject implements Drawable {
     if (point) this.point = point;
   }
 
-  public abstract draw(ctx: OffscreenCanvasRenderingContext2D): void;
+  public abstract draw(ctx: CanvasRenderingContext2D): void;
 }

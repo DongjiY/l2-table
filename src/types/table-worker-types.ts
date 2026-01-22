@@ -1,35 +1,42 @@
+import { TableCellFontStyling } from "./table-cell-types";
+
 type TableWorkerEventBase<TType extends string, TData> = {
   type: TType;
   data: TData;
 };
 
-export type TableWorkerEvent =
-  | TableWorkerScrollEvent
-  | TableWorkerInitEvent
-  | TableWorkerResizeEvent;
+export type TableWorkerEvent = TableCellSizeEvent;
 
-type TableWorkerScrollEvent = TableWorkerEventBase<
-  "SCROLL",
+type TableCellSizeEvent = TableWorkerEventBase<
+  "CELL_SIZE",
   {
-    dx: number;
-    dy: number;
+    content: string;
+    styling: TableCellFontStyling;
   }
 >;
 
-export type TableWorkerInitEvent = TableWorkerEventBase<"INIT", InitEventData>;
+// type TableWorkerScrollEvent = TableWorkerEventBase<
+//   "SCROLL",
+//   {
+//     dx: number;
+//     dy: number;
+//   }
+// >;
 
-export type InitEventData = {
-  body: OffscreenCanvas;
-  config: string; // this is TableConfig stringified
-};
+// export type TableWorkerInitEvent = TableWorkerEventBase<"INIT", InitEventData>;
 
-export type TableWorkerResizeEvent = TableWorkerEventBase<
-  "RESIZE",
-  ResizeEventData
->;
+// export type InitEventData = {
+//   body: OffscreenCanvas;
+//   config: string; // this is TableConfig stringified
+// };
 
-export type ResizeEventData = {
-  w: number;
-  h: number;
-  dpr: number;
-};
+// export type TableWorkerResizeEvent = TableWorkerEventBase<
+//   "RESIZE",
+//   ResizeEventData
+// >;
+
+// export type ResizeEventData = {
+//   w: number;
+//   h: number;
+//   dpr: number;
+// };

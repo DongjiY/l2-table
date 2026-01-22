@@ -1,22 +1,25 @@
 import { Observable, ReplaySubject } from "rxjs";
-import { Closeable } from "../utils/closeable";
-import { Dimensions } from "../utils/dimensions";
-import { Drawable } from "../utils/drawable";
+import { Closeable } from "./closeable";
+import { Drawable } from "./drawable";
+import { Canvas } from "./canvas";
+import { Dimensions } from "./dimensions";
 
-export abstract class WorkerCanvas implements Closeable, Drawable {
-  private canvas: OffscreenCanvas;
-  private ctx: OffscreenCanvasRenderingContext2D;
+export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
+  private ctx: CanvasRenderingContext2D;
   private drawQueue$: ReplaySubject<void>;
 
-  constructor(offscreenCanvas: OffscreenCanvas) {
-    this.canvas = offscreenCanvas;
+  constructor(dimensions: Dimensions) {
+    super(dimensions);
+
     this.ctx = this.canvas.getContext("2d")!;
     this.drawQueue$ = new ReplaySubject(1);
   }
 
-  protected resize(dimensions: Dimensions, dpr: number = 1): void {
-    this.canvas.width = Math.round(dimensions.w * dpr);
-    this.canvas.height = Math.round(dimensions.h * dpr);
+  public resize(w: number, h: number, dpr: number = 1): void {
+    console.log("resize", w, h, dpr);
+    this.canvas.width = Math.round(w * dpr);
+    this.canvas.height = Math.round(h * dpr);
+    this.resizeCanvas(w, h);
 
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.requestRedraw();
@@ -30,7 +33,7 @@ export abstract class WorkerCanvas implements Closeable, Drawable {
     this.drawQueue$.next();
   }
 
-  public abstract draw(ctx: OffscreenCanvasRenderingContext2D): void;
+  public abstract draw(ctx: CanvasRenderingContext2D): void;
 
   public _drawImpl(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

@@ -1,4 +1,4 @@
-import { TableCell } from "../table-cell";
+import { TableCell } from "../table/components/table-cell";
 
 export class CellCollection {
   private rowCollection: Map<string, Set<TableCell>>;
