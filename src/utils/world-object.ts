@@ -1,3 +1,5 @@
+import { BoundingBox } from "./bounding-box";
+import { Dimensions } from "./dimensions";
 import { Drawable } from "./drawable";
 import { Point } from "./point";
 
@@ -9,4 +11,6 @@ export abstract class WorldObject implements Drawable {
   }
 
   public abstract draw(ctx: CanvasRenderingContext2D): void;
+
+  public abstract getBoundingBox(): BoundingBox;
 }

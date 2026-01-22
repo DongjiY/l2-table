@@ -10,9 +10,11 @@ import { Camera } from "../../utils/camera";
 import { DrawCanvas } from "../../utils/draw-canvas";
 import { TableCell } from "./table-cell";
 import { filter, map, Observable } from "rxjs";
+import { HORIZONTAL_SCROLLBAR_HEIGHT } from "./horizontal-scrollbar";
+import { VERTICAL_SCROLLBAR_WIDTH } from "./vertical-scrollbar";
 
 export class TableBody<C extends TableColumns> extends DrawCanvas {
-  private cells: CellCollection;
+  private cells: CellCollection<C>;
 
   constructor(
     private readonly camera: Camera,
@@ -77,13 +79,14 @@ export class TableBody<C extends TableColumns> extends DrawCanvas {
       y += this.config.style.body.row.height;
     }
     this.camera.updateWorldDimensions({
-      w: x,
-      h: y + this.config.style.header.row.height,
+      w: x + VERTICAL_SCROLLBAR_WIDTH,
+      h: y + this.config.style.header.row.height + HORIZONTAL_SCROLLBAR_HEIGHT,
     });
   }
 
   private drawCells(ctx: CanvasRenderingContext2D): void {
     for (const cell of this.cells.allCells()) {
+      // TODO - should only iterate over visible cells
       cell.draw(ctx);
     }
   }

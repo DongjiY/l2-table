@@ -63,6 +63,22 @@ export class Camera {
     return this.focus.y;
   }
 
+  public get viewportWidth(): number {
+    return this.viewportDimensions.w;
+  }
+
+  public get viewportHeight(): number {
+    return this.viewportDimensions.h;
+  }
+
+  public get worldWidth(): number {
+    return this.worldDimensions.w;
+  }
+
+  public get worldHeight(): number {
+    return this.worldDimensions.h;
+  }
+
   public updateWorldDimensions({ w, h }: { w?: number; h?: number }): void {
     if (w) this.worldDimensions.w = w;
     if (h) this.worldDimensions.h = h;

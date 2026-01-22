@@ -9,6 +9,7 @@ import { Dimensions } from "../../utils/dimensions";
 import { Point } from "../../utils/point";
 import { WorldObject } from "../../utils/world-object";
 import { TableData } from "./table-data";
+import { BoundingBox } from "../../utils/bounding-box";
 
 export class TableCell<C extends TableColumns> extends WorldObject {
   private data: TableData<unknown>;
@@ -40,6 +41,13 @@ export class TableCell<C extends TableColumns> extends WorldObject {
 
   public get h(): number {
     return this.dimensions.h;
+  }
+
+  public getBoundingBox(): BoundingBox {
+    return {
+      p: this.point,
+      d: this.dimensions,
+    };
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {

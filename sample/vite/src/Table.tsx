@@ -33,14 +33,14 @@ export function NumberTable(): ReactNode {
         }}
       ></div>
 
-      {/* <button
+      <button
         style={{
           width: "100%",
         }}
         onClick={() => setIsLarge(!isLarge)}
       >
         Resize
-      </button> */}
+      </button>
     </div>
   );
 }

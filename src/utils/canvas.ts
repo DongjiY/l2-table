@@ -10,6 +10,14 @@ export class Canvas {
     this.applyCanvasSize();
   }
 
+  public get w(): number {
+    return this.dimensions.w;
+  }
+
+  public get h(): number {
+    return this.dimensions.h;
+  }
+
   protected resizeCanvas(w: number, h: number): void {
     this.dimensions.w = w;
     this.dimensions.h = h;
