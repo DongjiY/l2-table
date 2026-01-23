@@ -13,6 +13,8 @@ type CameraChangeCallback = ({
   y: number;
 }) => void;
 
+type CameraResizeCallback = VoidFunction;
+
 type CameraOptions = {
   x?: number;
   y?: number;
@@ -23,7 +25,8 @@ type CameraOptions = {
 };
 
 export class Camera {
-  private cameraChangeCallbacks: Set<CameraChangeCallback> = new Set();
+  private cameraFocusChangeCallbacks: Set<CameraChangeCallback> = new Set();
+  private cameraResizeCallbacks: Set<CameraResizeCallback> = new Set();
   private focus: Point;
   private viewportDimensions: Dimensions;
   private worldDimensions: Dimensions;
@@ -80,19 +83,24 @@ export class Camera {
   }
 
   public updateWorldDimensions({ w, h }: { w?: number; h?: number }): void {
-    if (w) this.worldDimensions.w = w;
-    if (h) this.worldDimensions.h = h;
+    if (w !== undefined) this.worldDimensions.w = w;
+    if (h !== undefined) this.worldDimensions.h = h;
   }
 
   public updateViewportDimensions({ w, h }: { w?: number; h?: number }): void {
-    if (w) this.viewportDimensions.w = w;
-    if (h) this.viewportDimensions.h = h;
+    if (w !== undefined) this.viewportDimensions.w = w;
+    if (h !== undefined) this.viewportDimensions.h = h;
+    this.focus.x = this.clampX(this.focus.x);
+    this.focus.y = this.clampY(this.focus.y);
+    this.cameraResizeCallbacks.forEach((cb) => {
+      cb();
+    });
   }
 
   public updateFocus({ dx = 0, dy = 0 }: { dx?: number; dy?: number }): void {
     this.focus.x = this.clampX(this.focus.x + dx);
     this.focus.y = this.clampY(this.focus.y + dy);
-    this.cameraChangeCallbacks.forEach((cb) => {
+    this.cameraFocusChangeCallbacks.forEach((cb) => {
       cb({
         x: this.x,
         y: this.y,
@@ -102,7 +110,11 @@ export class Camera {
     });
   }
 
-  public onCameraChange(fn: CameraChangeCallback): void {
-    this.cameraChangeCallbacks.add(fn);
+  public onCameraResize(fn: CameraResizeCallback): void {
+    this.cameraResizeCallbacks.add(fn);
+  }
+
+  public onCameraFocusChange(fn: CameraChangeCallback): void {
+    this.cameraFocusChangeCallbacks.add(fn);
   }
 }

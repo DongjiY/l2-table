@@ -1,5 +1,5 @@
 import { Observable } from "rxjs";
-import { TableData } from "../table/components/table-data";
+import { TableData } from "../utils/table-data";
 import { TableCellFontStyling } from "./table-cell-types";
 
 export type TableOptions<C extends TableColumns> = {

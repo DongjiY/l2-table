@@ -8,7 +8,7 @@ import {
 import { Dimensions } from "../../utils/dimensions";
 import { Point } from "../../utils/point";
 import { WorldObject } from "../../utils/world-object";
-import { TableData } from "./table-data";
+import { TableData } from "../../utils/table-data";
 import { BoundingBox } from "../../utils/bounding-box";
 
 export class TableCell<C extends TableColumns> extends WorldObject {

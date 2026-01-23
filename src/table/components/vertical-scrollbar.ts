@@ -11,9 +11,8 @@ export class VerticalScrollbar extends DrawCanvas {
   ) {
     super(dimensions);
 
-    this.camera.onCameraChange(() => {
-      this.requestRedraw();
-    });
+    this.camera.onCameraFocusChange(() => this.requestRedraw());
+    this.camera.onCameraResize(() => this.requestRedraw());
 
     this.requestRedraw();
   }

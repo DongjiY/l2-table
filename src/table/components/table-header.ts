@@ -9,7 +9,7 @@ import { StringTableData } from "../../utils/string-table-data";
 import { TableCell } from "./table-cell";
 
 export class TableHeader<C extends TableColumns> extends DrawCanvas {
-  private cells: CellCollection;
+  private cells: CellCollection<C>;
 
   constructor(
     private readonly camera: Camera,
@@ -33,7 +33,8 @@ export class TableHeader<C extends TableColumns> extends DrawCanvas {
         passive: false,
       },
     );
-    this.camera.onCameraChange(() => this.requestRedraw());
+    this.camera.onCameraFocusChange(() => this.requestRedraw());
+    this.camera.onCameraResize(() => this.requestRedraw());
 
     this.requestRedraw();
   }

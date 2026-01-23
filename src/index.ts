@@ -11,4 +11,4 @@ export type {
   TableSourceData,
 } from "./types/table-config";
 export { StringTableData } from "./utils/string-table-data";
-export { TableData } from "./table/components/table-data";
+export { TableData } from "./utils/table-data";

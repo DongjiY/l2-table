@@ -16,7 +16,6 @@ export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
   }
 
   public resize(w: number, h: number, dpr: number = 1): void {
-    console.log("resize", w, h, dpr);
     this.canvas.width = Math.round(w * dpr);
     this.canvas.height = Math.round(h * dpr);
     this.resizeCanvas(w, h);

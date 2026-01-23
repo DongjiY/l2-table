@@ -134,7 +134,7 @@ export const config: TableConfig<ColsType> = {
       },
       cell: {
         text: {
-          font: "24px mono",
+          font: "24px monospace",
           alignment: "middle",
           color: "blue",
         },
@@ -146,7 +146,7 @@ export const config: TableConfig<ColsType> = {
       },
       cell: {
         text: {
-          font: "24px mono",
+          font: "24px 'Playfair Display'",
           alignment: "middle",
           color: "red",
         },

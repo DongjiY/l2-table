@@ -40,7 +40,8 @@ export class TableBody<C extends TableColumns> extends DrawCanvas {
       { passive: false },
     );
 
-    this.camera.onCameraChange(() => this.requestRedraw());
+    this.camera.onCameraFocusChange(() => this.requestRedraw());
+    this.camera.onCameraResize(() => this.requestRedraw());
 
     this.requestRedraw();
   }

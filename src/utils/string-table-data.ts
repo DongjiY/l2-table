@@ -1,4 +1,4 @@
-import { TableData } from "../table/components/table-data";
+import { TableData } from "./table-data";
 
 export class StringTableData extends TableData<string> {
   constructor(defaultValue?: string) {
