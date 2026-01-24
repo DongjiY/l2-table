@@ -1,6 +1,6 @@
 import {
-  TableColumns,
   TableConfig,
+  TableRow,
   TableSourceData,
 } from "../../types/table-config";
 import { CellCollection } from "../../utils/cell-collection";
@@ -12,19 +12,28 @@ import { TableCell } from "./table-cell";
 import { filter, map, Observable } from "rxjs";
 import { HORIZONTAL_SCROLLBAR_HEIGHT } from "./horizontal-scrollbar";
 import { VERTICAL_SCROLLBAR_WIDTH } from "./vertical-scrollbar";
+import { ColumnSizeMap } from "../../utils/column-size-map";
+import {
+  boundaryBinarySearchLeftOrTop,
+  boundaryBinarySearchRightOrBottom,
+  calculateTopAndBottomRowBounds,
+} from "../../utils/boundary-search";
+import { Axis } from "../../utils/axis";
 
-export class TableBody<C extends TableColumns> extends DrawCanvas {
-  private cells: CellCollection<C>;
+export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
+  private cells: CellCollection<TDataRow>;
+  private columnSizes: ColumnSizeMap;
 
   constructor(
     private readonly camera: Camera,
-    private readonly config: TableConfig<C>,
-    private readonly source: Observable<TableSourceData<C>>,
+    private readonly config: TableConfig<TDataRow>,
+    private readonly source: Observable<TableSourceData>,
     dimensions: Dimensions,
   ) {
     super(dimensions);
 
     this.cells = new CellCollection();
+    this.columnSizes = new ColumnSizeMap();
 
     this.initCells();
 
@@ -46,6 +55,64 @@ export class TableBody<C extends TableColumns> extends DrawCanvas {
     this.requestRedraw();
   }
 
+  private getVirtualBounds(
+    bufferX: number = 1,
+    bufferY: number = 1,
+  ): {
+    leftColumnIndex: number;
+    rightColumnIndex: number;
+    topRowIndex: number;
+    bottomRowIndex: number;
+  } {
+    const columnBoundingBoxes = this.columnSizes.getBoundingBoxes();
+    const viewportBoundingBox = this.camera.boundingBox;
+
+    const leftBound = boundaryBinarySearchLeftOrTop(
+      columnBoundingBoxes,
+      viewportBoundingBox,
+      Axis.X,
+    );
+
+    const rightBound = boundaryBinarySearchRightOrBottom(
+      columnBoundingBoxes,
+      viewportBoundingBox,
+      Axis.X,
+    );
+
+    const { topIndex: topBound, bottomIndex: bottomBound } =
+      calculateTopAndBottomRowBounds(
+        this.config.style.body.row.height,
+        this.config.rows.length,
+        this.camera.y,
+        this.camera.viewportHeight,
+      );
+
+    const leftColumnIndex = Math.max(
+      0,
+      (leftBound?.meta.columnIndex ?? 0) - bufferX,
+    );
+
+    const rightColumnIndex = Math.min(
+      columnBoundingBoxes.length - 1,
+      (rightBound?.meta.columnIndex ?? 0) + bufferX,
+    );
+
+    const topRowIndex = Math.max(0, topBound - bufferY);
+
+    const bottomRowIndex = Math.min(
+      this.config.rows.length - 1,
+      bottomBound + bufferY,
+    );
+
+    console.log(leftColumnIndex, rightColumnIndex, topRowIndex, bottomRowIndex);
+    return {
+      leftColumnIndex,
+      rightColumnIndex,
+      topRowIndex,
+      bottomRowIndex,
+    };
+  }
+
   private getFilteredObservable(
     rowId: string,
     columnId: string,
@@ -61,20 +128,28 @@ export class TableBody<C extends TableColumns> extends DrawCanvas {
     let x = 0;
     let y = 0;
     for (const row of this.config.rows) {
+      const rowId = row.rowId;
       x = 0;
-      for (const [columnId, cellData] of Object.entries(row.cells)) {
+      for (const column of this.config.columns) {
+        const columnId = column.columnId;
         const cell = new TableCell(
-          row.rowId,
+          rowId,
           columnId,
           new Point(x, y),
-          cellData.cellData,
           this.config.style.body.cell.text,
-          this.config.columns[columnId],
+          column,
+          () => {
+            const cellData = column.cellData();
+            const initialValue = column.placeholderAccessorFn(row);
+            cellData.setValue(initialValue);
+            return cellData;
+          },
           this.config.style.body.row.height,
           this.getFilteredObservable(row.rowId, columnId),
           requestRedraw,
         );
         this.cells.addCell(cell);
+        this.columnSizes.updateColumnSize(columnId, cell.w);
         x += cell.w;
       }
       y += this.config.style.body.row.height;
@@ -86,7 +161,7 @@ export class TableBody<C extends TableColumns> extends DrawCanvas {
   }
 
   private drawCells(ctx: CanvasRenderingContext2D): void {
-    for (const cell of this.cells.allCells()) {
+    for (const cell of this.cells.visibleCells(this.getVirtualBounds())) {
       // TODO - should only iterate over visible cells
       cell.draw(ctx);
     }

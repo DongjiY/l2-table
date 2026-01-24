@@ -7,6 +7,10 @@ export abstract class TableData<TUnderlyingData> {
     if (placeholder) this.placeholder = placeholder;
   }
 
+  public setPlaceholder(placeholder: string): void {
+    this.placeholder = placeholder;
+  }
+
   public setValue(value: TUnderlyingData): void {
     this.value = value;
   }

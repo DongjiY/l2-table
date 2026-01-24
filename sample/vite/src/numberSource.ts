@@ -1,14 +1,17 @@
 import { interval, map, Observable } from "rxjs";
-import type { TableColumns, TableConfig, TableSourceData } from "../../../dist";
+import type { TableConfig, TableRow, TableSourceData } from "../../../dist";
 
-export function numberSource<C extends TableColumns>(
-  tableConfig: TableConfig<C>,
-): Observable<TableSourceData<C>> {
-  const cells: Array<{ rowId: string; columnId: keyof C }> = [];
+export function numberSource<TDataRow extends TableRow>(
+  tableConfig: TableConfig<TDataRow>,
+): Observable<TableSourceData> {
+  const cells: Array<{ rowId: string; columnId: string }> = [];
 
   tableConfig.rows.forEach((row) => {
-    (Object.keys(row.cells) as Array<keyof C>).forEach((colId) => {
-      cells.push({ rowId: row.rowId, columnId: colId });
+    tableConfig.columns.forEach((column) => {
+      cells.push({
+        rowId: row.rowId,
+        columnId: column.columnId,
+      });
     });
   });
 

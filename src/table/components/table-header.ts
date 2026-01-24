@@ -1,20 +1,20 @@
-import { EMPTY } from "rxjs";
-import { TableColumns, TableConfig } from "../../types/table-config";
+import { NEVER } from "rxjs";
+import { TableConfig, TableRow } from "../../types/table-config";
 import { Camera } from "../../utils/camera";
 import { CellCollection } from "../../utils/cell-collection";
 import { Dimensions } from "../../utils/dimensions";
 import { DrawCanvas } from "../../utils/draw-canvas";
 import { Point } from "../../utils/point";
-import { StringTableData } from "../../utils/string-table-data";
 import { TableCell } from "./table-cell";
+import { StringTableData } from "../../utils/string-table-data";
 
-export class TableHeader<C extends TableColumns> extends DrawCanvas {
-  private cells: CellCollection<C>;
+export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
+  private cells: CellCollection<TDataRow>;
 
   constructor(
     private readonly camera: Camera,
     dimensions: Dimensions,
-    private readonly config: TableConfig<C>,
+    private readonly config: TableConfig<TDataRow>,
   ) {
     super(dimensions);
 
@@ -43,16 +43,16 @@ export class TableHeader<C extends TableColumns> extends DrawCanvas {
     const requestRedraw = this.requestRedraw.bind(this);
     let x = 0;
     const y = 0;
-    for (const columnId of Object.keys(this.config.columns)) {
+    for (const column of this.config.columns) {
       const cell = new TableCell(
         "HEADER_ROW",
-        columnId,
+        column.columnId,
         new Point(x, y),
-        () => new StringTableData(this.config.columns[columnId].name),
         this.config.style.header.cell.text,
-        this.config.columns[columnId],
+        column,
+        () => new StringTableData(column.name),
         this.config.style.header.row.height,
-        EMPTY,
+        NEVER,
         requestRedraw,
       );
       this.cells.addCell(cell);

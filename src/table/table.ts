@@ -1,4 +1,4 @@
-import { TableColumns, TableConfig, TableOptions } from "../types/table-config";
+import { TableConfig, TableOptions, TableRow } from "../types/table-config";
 import { Camera } from "../utils/camera";
 import { Dimensions } from "../utils/dimensions";
 import { Renderer } from "../utils/renderer";
@@ -13,23 +13,23 @@ import {
   VerticalScrollbar,
 } from "./components/vertical-scrollbar";
 
-export class Table<C extends TableColumns> {
+export class Table<TDataRow extends TableRow> {
   private verticalWrapper: HTMLDivElement;
   private horizontalWrapper: HTMLDivElement;
 
-  private tableConfig: TableConfig<C>;
+  private tableConfig: TableConfig<TDataRow>;
   private resizeObserver: ResizeObserver;
   private camera: Camera;
   private renderer: Renderer;
 
-  private body: TableBody<C>;
-  private header: TableHeader<C>;
+  private body: TableBody<TDataRow>;
+  private header: TableHeader<TDataRow>;
   private scrollXBar: HorizontalScrollbar;
   private scrollYBar: VerticalScrollbar;
 
   constructor(
     private root: HTMLDivElement,
-    private readonly opts: TableOptions<C>,
+    private readonly opts: TableOptions<TDataRow>,
   ) {
     this.tableConfig = this.opts.config;
 
@@ -130,9 +130,9 @@ export class Table<C extends TableColumns> {
   }
 }
 
-export function createTable<C extends TableColumns>(
+export function createTable<TDataRow extends TableRow>(
   root: HTMLDivElement,
-  opts: TableOptions<C>,
-): Table<C> {
+  opts: TableOptions<TDataRow>,
+): Table<TDataRow> {
   return new Table(root, opts);
 }

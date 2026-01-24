@@ -1,3 +1,4 @@
+import { BoundingBox } from "./bounding-box";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";
 
@@ -80,6 +81,10 @@ export class Camera {
 
   public get worldHeight(): number {
     return this.worldDimensions.h;
+  }
+
+  public get boundingBox(): BoundingBox {
+    return new BoundingBox(this.focus, this.viewportDimensions);
   }
 
   public updateWorldDimensions({ w, h }: { w?: number; h?: number }): void {

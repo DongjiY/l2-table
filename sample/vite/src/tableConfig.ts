@@ -1,131 +1,183 @@
-import {
-  type TableColumns,
-  type TableConfig,
-  type TableRow,
-} from "../../../dist";
+import type { TableRow, TableColumnDef, TableConfig } from "../../../dist";
 import { NumberTableData } from "./numberTableData";
 
-const cols = {
-  avg: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "average",
-    hidden: false,
-  },
-  med: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "median",
-    hidden: false,
-  },
-  min: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "minimum",
-    hidden: false,
-  },
-  max: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "maximum",
-    hidden: false,
-  },
-  p50: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "p50",
-    hidden: false,
-  },
-  p75: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "p75",
-    hidden: false,
-  },
-  p90: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "p90",
-    hidden: false,
-  },
-  p95: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "p95",
-    hidden: false,
-  },
-  p99: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "p99",
-    hidden: false,
-  },
-  poop: {
-    autoResize: false,
-    minWidth: 0,
-    maxWidth: 140,
-    name: "poop",
-    hidden: false,
-  },
+export type StatsRow = TableRow & {
+  placeholders: {
+    avg: number;
+    med: number;
+    min: number;
+    max: number;
+    p50: number;
+    p75: number;
+    p90: number;
+    p95: number;
+    p99: number;
+    poop: number;
+    "2": number;
+    "1": number;
+  };
 };
 
-export type ColsType = typeof cols;
+/**
+ * Column definitions (ordered, explicit)
+ */
+const columns: Array<TableColumnDef<StatsRow, number>> = [
+  {
+    columnId: "avg",
+    name: "average",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.avg,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "med",
+    name: "median",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.med,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "min",
+    name: "minimum",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.min,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "max",
+    name: "maximum",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.max,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "p50",
+    name: "p50",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.p50,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "p75",
+    name: "p75",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.p75,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "p90",
+    name: "p90",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.p90,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "p95",
+    name: "p95",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.p95,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "p99",
+    name: "p99",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.p99,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "poop",
+    name: "poop",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.poop,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "2",
+    name: "two",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders["2"],
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "1",
+    name: "one",
+    hidden: false,
+    minWidth: 0,
+    maxWidth: 140,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders["1"],
+    cellData: () => new NumberTableData(),
+  },
+];
 
-const cells = {
-  avg: {
-    cellData: () => new NumberTableData(),
-  },
-  med: {
-    cellData: () => new NumberTableData(),
-  },
-  min: {
-    cellData: () => new NumberTableData(),
-  },
-  max: {
-    cellData: () => new NumberTableData(),
-  },
-  p50: {
-    cellData: () => new NumberTableData(),
-  },
-  p75: {
-    cellData: () => new NumberTableData(),
-  },
-  p90: {
-    cellData: () => new NumberTableData(),
-  },
-  p95: {
-    cellData: () => new NumberTableData(),
-  },
-  p99: {
-    cellData: () => new NumberTableData(),
-  },
-  poop: {
-    cellData: () => new NumberTableData(),
-  },
-} satisfies TableRow<ColsType>["cells"];
+/**
+ * Row generator
+ */
+function generateRows(rowCount = 1): StatsRow[] {
+  const res: StatsRow[] = [];
 
-function generateRows(rowCount: number = 1): Array<TableRow<ColsType>> {
-  const res = [];
   for (let i = 0; i < rowCount; i++) {
     res.push({
       rowId: `${i}`,
-      cells,
+      placeholders: {
+        avg: 0,
+        med: 0,
+        min: 0,
+        max: 0,
+        p50: 0,
+        p75: 0,
+        p90: 0,
+        p95: 0,
+        p99: 0,
+        poop: 0,
+        "2": 0,
+        "1": 0,
+      },
     });
   }
+
   return res;
 }
 
-export const config: TableConfig<ColsType> = {
-  columns: cols,
+/**
+ * Final table config
+ */
+export const config: TableConfig<StatsRow> = {
+  columns,
   rows: generateRows(200),
   style: {
     body: {

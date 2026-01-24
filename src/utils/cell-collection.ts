@@ -1,36 +1,51 @@
 import { TableCell } from "../table/components/table-cell";
-import { TableColumns } from "../types/table-config";
+import { Table } from "../table/table";
+import { TableRow } from "../types/table-config";
 
-export class CellCollection<C extends TableColumns> {
-  private rowCollection: Map<string, Set<TableCell<C>>>;
-  private columnCollection: Map<string, Set<TableCell<C>>>;
+export class CellCollection<TDataRow extends TableRow> {
+  private rowCollection: Map<string, Array<TableCell<TDataRow>>>;
+  private columnCollection: Map<string, Array<TableCell<TDataRow>>>;
 
   constructor() {
     this.columnCollection = new Map();
     this.rowCollection = new Map();
   }
 
-  public addCell(cell: TableCell<C>): void {
+  public addCell(cell: TableCell<TDataRow>): void {
     if (!this.rowCollection.has(cell.rowId))
-      this.rowCollection.set(cell.rowId, new Set());
-    this.rowCollection.get(cell.rowId)?.add(cell);
+      this.rowCollection.set(cell.rowId, []);
+    this.rowCollection.get(cell.rowId)?.push(cell);
 
     if (!this.columnCollection.has(cell.columnId))
-      this.columnCollection.set(cell.columnId, new Set());
-    this.columnCollection.get(cell.columnId)?.add(cell);
+      this.columnCollection.set(cell.columnId, []);
+    this.columnCollection.get(cell.columnId)?.push(cell);
   }
 
-  public removeCell(cell: TableCell<C>): void {
-    this.rowCollection.get(cell.rowId)?.delete(cell);
-    if (this.rowCollection.get(cell.rowId)?.size === 0)
-      this.rowCollection.delete(cell.rowId);
+  public removeCell(cell: TableCell<TDataRow>): void {
+    const row = this.rowCollection.get(cell.rowId);
+    if (row) {
+      const idx = row.indexOf(cell);
+      if (idx !== -1) {
+        row.splice(idx, 1);
+        if (row.length === 0) {
+          this.rowCollection.delete(cell.rowId);
+        }
+      }
+    }
 
-    this.columnCollection.get(cell.columnId)?.delete(cell);
-    if (this.columnCollection.get(cell.columnId)?.size === 0)
-      this.columnCollection.delete(cell.columnId);
+    const col = this.columnCollection.get(cell.columnId);
+    if (col) {
+      const idx = col.indexOf(cell);
+      if (idx !== -1) {
+        col.splice(idx, 1);
+        if (col.length === 0) {
+          this.columnCollection.delete(cell.columnId);
+        }
+      }
+    }
   }
 
-  public *allCells(): IterableIterator<TableCell<C>> {
+  public *allCells(): IterableIterator<TableCell<TDataRow>> {
     for (const cells of this.rowCollection.values()) {
       for (const cell of cells) {
         yield cell;
@@ -38,11 +53,26 @@ export class CellCollection<C extends TableColumns> {
     }
   }
 
-  public getAllCellsInRow(rowId: string): Array<TableCell<C>> {
-    return Array.from(this.rowCollection.get(rowId) ?? []);
+  public *visibleCells(bounds: {
+    leftColumnIndex: number;
+    rightColumnIndex: number;
+    topRowIndex: number;
+    bottomRowIndex: number;
+  }): IterableIterator<TableCell<TDataRow>> {
+    const rows = Array.from(this.rowCollection.values());
+    for (let i = bounds.topRowIndex; i < bounds.bottomRowIndex; i++) {
+      const row = rows[i];
+      for (let j = bounds.leftColumnIndex; j < bounds.rightColumnIndex; j++) {
+        yield row[j];
+      }
+    }
   }
 
-  public getAllCellsInColumn(columnId: string): Array<TableCell<C>> {
-    return Array.from(this.columnCollection.get(columnId) ?? []);
+  public getAllCellsInRow(rowId: string): Array<TableCell<TDataRow>> {
+    return this.rowCollection.get(rowId) ?? [];
+  }
+
+  public getAllCellsInColumn(columnId: string): Array<TableCell<TDataRow>> {
+    return this.columnCollection.get(columnId) ?? [];
   }
 }

@@ -2,11 +2,9 @@ export { createTable } from "./table/table";
 export type { Table } from "./table/table";
 export type {
   TableConfig,
-  TableColumns,
+  TableColumnDef,
   TableOptions,
-  TableColumnData,
   TableRow,
-  TableRowData,
   TableSourceObservable,
   TableSourceData,
 } from "./types/table-config";

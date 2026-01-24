@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createTable, type Table } from "l2-table";
-import { config, type ColsType } from "./tableConfig";
 import { numberSource } from "./numberSource";
+import { EMPTY } from "rxjs";
+import { config, type StatsRow } from "./tableConfig";
 
 export function NumberTable(): ReactNode {
   const [isLarge, setIsLarge] = useState<boolean>(true);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const table = useRef<Table<ColsType> | null>(null);
+  const table = useRef<Table<StatsRow> | null>(null);
 
   useEffect(() => {
     if (tableContainerRef.current && !table.current) {

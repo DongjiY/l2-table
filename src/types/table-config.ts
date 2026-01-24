@@ -2,14 +2,14 @@ import { Observable } from "rxjs";
 import { TableData } from "../utils/table-data";
 import { TableCellFontStyling } from "./table-cell-types";
 
-export type TableOptions<C extends TableColumns> = {
-  config: TableConfig<C>;
-  source: TableSourceObservable<C>;
+export type TableOptions<TDataRow extends TableRow> = {
+  config: TableConfig<TDataRow>;
+  source: TableSourceObservable;
 };
 
-export type TableConfig<C extends TableColumns> = {
-  columns: C;
-  rows: Array<TableRow<C>>;
+export type TableConfig<TDataRow extends TableRow> = {
+  columns: Array<TableColumnDef<TDataRow>>;
+  rows: Array<TDataRow>;
   style: TableStyles;
 };
 
@@ -32,35 +32,26 @@ export type TableStyles = {
   };
 };
 
-export type TableColumnData<T> = {
+export type TableColumnDef<TDataRow extends TableRow, TValue = unknown> = {
+  columnId: string;
   name: string;
   hidden: boolean;
   minWidth: number;
   maxWidth: number;
   autoResize: boolean;
+  placeholderAccessorFn: (row: TDataRow) => TValue;
+  cellData: () => TableData<TValue>;
 };
 
-export type TableColumns = {
-  [columnId: string]: TableColumnData<any>;
-};
-
-export type TableRow<C extends TableColumns> = {
+export type TableRow = {
   rowId: string;
-  cells: {
-    [K in keyof C]: TableRowData<C, K>;
-  };
+  placeholders: Record<string, unknown>;
 };
 
-export type TableRowData<C extends TableColumns, K extends keyof C> = {
-  cellData: () => TableData<C[K] extends TableColumnData<infer T> ? T : never>;
-};
+export type TableSourceObservable = Observable<TableSourceData>;
 
-export type TableSourceObservable<C extends TableColumns> = Observable<
-  TableSourceData<C>
->;
-
-export type TableSourceData<C extends TableColumns> = {
-  columnId: keyof C;
+export type TableSourceData = {
+  columnId: string;
   rowId: string;
   data: unknown;
 };
