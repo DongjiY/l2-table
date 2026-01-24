@@ -5,11 +5,19 @@
   "description": "fast, observable-driven, canvas tables",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts",
-    "dev": "tsup src/index.ts --watch --format esm --dts",
+    "build": "tsup --format esm --dts",
+    "dev": "tsup --watch --format esm --dts",
     "serve": "serve . -l 3000",
-    "dev:all": "concurrently \"npm run dev\" \"npm run serve\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run serve\"",
+    "test": "jest"
   },
   "author": "Dongji Y",
   "license": "ISC",
@@ -18,8 +26,12 @@
     "/dist"
   ],
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "concurrently": "^9.2.1",
+    "jest": "^30.2.0",
     "serve": "^14.2.5",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },

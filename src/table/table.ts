@@ -1,89 +1,138 @@
-import { Observable } from "rxjs";
-import { Camera } from "../canvas/camera";
-import { DrawCanvas } from "../canvas/draw-canvas";
-import { RowData, SourceData, TableConfig } from "./table-config";
-import { TableBody } from "./body";
-import { TableHeader } from "./header";
-import { CanvasRenderer } from "../canvas/canvas-renderer";
-import { HorizontalScrollbar } from "../scroll/horizontal-scrollbar";
-import { VerticalScrollbar } from "../scroll/vertical-scrollbar";
+import { TableConfig, TableOptions, TableRow } from "../types/table-config";
+import { Camera } from "../utils/camera";
+import { Dimensions } from "../utils/dimensions";
+import { Renderer } from "../utils/renderer";
+import {
+  HORIZONTAL_SCROLLBAR_HEIGHT,
+  HorizontalScrollbar,
+} from "./components/horizontal-scrollbar";
+import { TableBody } from "./components/table-body";
+import { TableHeader } from "./components/table-header";
+import {
+  VERTICAL_SCROLLBAR_WIDTH,
+  VerticalScrollbar,
+} from "./components/vertical-scrollbar";
 
-export class Table<TRow extends RowData> {
-  private container: HTMLDivElement;
+export class Table<TDataRow extends TableRow> {
   private verticalWrapper: HTMLDivElement;
   private horizontalWrapper: HTMLDivElement;
 
-  private header: TableHeader<TRow>;
-  private body: TableBody<TRow>;
-  private xScrollBar: HorizontalScrollbar;
-  private yScrollBar: VerticalScrollbar;
-  private canvasRenderer: CanvasRenderer;
-  private readonly camera: Camera;
+  private tableConfig: TableConfig<TDataRow>;
+  private resizeObserver: ResizeObserver;
+  private camera: Camera;
+  private renderer: Renderer;
+
+  private body: TableBody<TDataRow>;
+  private header: TableHeader<TDataRow>;
+  private scrollXBar: HorizontalScrollbar;
+  private scrollYBar: VerticalScrollbar;
 
   constructor(
-    container: HTMLDivElement,
-    source: Observable<SourceData<TRow>>,
-    tableConfig: TableConfig<TRow>
+    private root: HTMLDivElement,
+    private readonly opts: TableOptions<TDataRow>,
   ) {
-    this.container = container;
+    this.tableConfig = this.opts.config;
+
+    const { width: TOTAL_WIDTH, height: TOTAL_HEIGHT } =
+      this.root.getBoundingClientRect();
 
     this.horizontalWrapper = document.createElement("div");
     this.horizontalWrapper.style.display = "flex";
-    this.container.appendChild(this.horizontalWrapper);
+    this.horizontalWrapper.style.width = "100%";
+    this.horizontalWrapper.style.height = "100%";
+    this.root.appendChild(this.horizontalWrapper);
 
     this.verticalWrapper = document.createElement("div");
     this.verticalWrapper.style.display = "flex";
     this.verticalWrapper.style.flexDirection = "column";
+    this.horizontalWrapper.style.width = "100%";
+    this.horizontalWrapper.style.height = "100%";
     this.horizontalWrapper.appendChild(this.verticalWrapper);
 
     this.camera = new Camera({
-      viewportHeight: 500,
-      viewportWidth: 600,
+      viewportWidth: TOTAL_WIDTH,
+      viewportHeight: TOTAL_HEIGHT,
     });
 
-    this.header = new TableHeader(
-      tableConfig,
-      {
-        w: 600,
-        h: 40,
-      },
-      this.camera
-    );
-
     this.body = new TableBody(
-      tableConfig,
-      {
-        w: 600,
-        h: 500,
-      },
-      source,
-      this.camera
+      this.camera,
+      this.tableConfig,
+      this.opts.source,
+      new Dimensions(
+        TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
+        TOTAL_HEIGHT -
+          this.opts.config.style.header.row.height -
+          HORIZONTAL_SCROLLBAR_HEIGHT,
+      ),
     );
-
-    this.xScrollBar = new HorizontalScrollbar(
-      {
-        w: 600,
-      },
-      this.camera
+    this.header = new TableHeader(
+      this.camera,
+      new Dimensions(
+        TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
+        this.opts.config.style.header.row.height,
+      ),
+      this.tableConfig,
     );
-
-    this.yScrollBar = new VerticalScrollbar(
-      {
-        h: 540,
-      },
-      this.camera
+    this.scrollXBar = new HorizontalScrollbar(
+      this.camera,
+      new Dimensions(
+        TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
+        HORIZONTAL_SCROLLBAR_HEIGHT,
+      ),
     );
+    this.scrollYBar = new VerticalScrollbar(
+      this.camera,
+      new Dimensions(VERTICAL_SCROLLBAR_WIDTH, TOTAL_HEIGHT),
+    );
+    this.verticalWrapper.appendChild(this.header.getElement());
+    this.verticalWrapper.appendChild(this.body.getElement());
+    this.verticalWrapper.appendChild(this.scrollXBar.getElement());
+    this.horizontalWrapper.appendChild(this.scrollYBar.getElement());
 
-    this.canvasRenderer = new CanvasRenderer([
-      this.header,
+    this.resizeObserver = new ResizeObserver(() => {
+      const { width, height } = this.root.getBoundingClientRect();
+      this.camera.updateViewportDimensions({
+        w: width,
+        h: height,
+      });
+      this.body.resize(
+        width - VERTICAL_SCROLLBAR_WIDTH,
+        height -
+          this.opts.config.style.header.row.height -
+          HORIZONTAL_SCROLLBAR_HEIGHT,
+        window.devicePixelRatio,
+      );
+      this.header.resize(
+        width - VERTICAL_SCROLLBAR_WIDTH,
+        this.opts.config.style.header.row.height,
+        window.devicePixelRatio,
+      );
+      this.scrollXBar.resize(
+        width - VERTICAL_SCROLLBAR_WIDTH,
+        HORIZONTAL_SCROLLBAR_HEIGHT,
+        window.devicePixelRatio,
+      );
+      this.scrollYBar.resize(
+        VERTICAL_SCROLLBAR_WIDTH,
+        height,
+        window.devicePixelRatio,
+      );
+    });
+
+    this.resizeObserver.observe(this.root);
+
+    this.renderer = new Renderer([
       this.body,
-      this.xScrollBar,
-      this.yScrollBar,
+      this.header,
+      this.scrollXBar,
+      this.scrollYBar,
     ]);
-
-    this.header.attach(this.verticalWrapper);
-    this.body.attach(this.verticalWrapper);
-    this.xScrollBar.attach(this.verticalWrapper);
-    this.yScrollBar.attach(this.horizontalWrapper);
   }
+}
+
+export function createTable<TDataRow extends TableRow>(
+  root: HTMLDivElement,
+  opts: TableOptions<TDataRow>,
+): Table<TDataRow> {
+  return new Table(root, opts);
 }
