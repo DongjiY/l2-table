@@ -161,7 +161,6 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
 
   private drawCells(ctx: CanvasRenderingContext2D): void {
     for (const cell of this.cells.visibleCells(this.getVirtualBounds())) {
-      // TODO - should only iterate over visible cells
       cell.draw(ctx);
     }
   }
