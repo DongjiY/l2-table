@@ -60,9 +60,9 @@ export class CellCollection<TDataRow extends TableRow> {
     bottomRowIndex: number;
   }): IterableIterator<TableCell<TDataRow>> {
     const rows = Array.from(this.rowCollection.values());
-    for (let i = bounds.topRowIndex; i < bounds.bottomRowIndex; i++) {
+    for (let i = bounds.topRowIndex; i <= bounds.bottomRowIndex; i++) {
       const row = rows[i];
-      for (let j = bounds.leftColumnIndex; j < bounds.rightColumnIndex; j++) {
+      for (let j = bounds.leftColumnIndex; j <= bounds.rightColumnIndex; j++) {
         yield row[j];
       }
     }

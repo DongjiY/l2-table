@@ -104,7 +104,6 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
       bottomBound + bufferY,
     );
 
-    console.log(leftColumnIndex, rightColumnIndex, topRowIndex, bottomRowIndex);
     return {
       leftColumnIndex,
       rightColumnIndex,
