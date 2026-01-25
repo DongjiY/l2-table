@@ -5,15 +5,17 @@ type TableWorkerEventBase<TType extends string, TData> = {
   data: TData;
 };
 
-export type TableWorkerEvent = TableCellSizeEvent;
+export type TableWorkerEvent = InitEvent | CellSizeEvent;
 
-type TableCellSizeEvent = TableWorkerEventBase<
+type CellSizeEvent = TableWorkerEventBase<
   "CELL_SIZE",
   {
     content: string;
     styling: TableCellFontStyling;
   }
 >;
+
+type InitEvent = TableWorkerEventBase<"INIT", { w: number; h: number }>;
 
 // type TableWorkerScrollEvent = TableWorkerEventBase<
 //   "SCROLL",

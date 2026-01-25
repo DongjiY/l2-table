@@ -1,5 +1,6 @@
 import { TableConfig, TableOptions, TableRow } from "../types/table-config";
 import { Camera } from "../utils/camera";
+import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
 import { Renderer } from "../utils/renderer";
 import {
@@ -27,6 +28,8 @@ export class Table<TDataRow extends TableRow> {
   private scrollXBar: HorizontalScrollbar;
   private scrollYBar: VerticalScrollbar;
 
+  private columnSizes: ColumnSizeMap;
+
   constructor(
     private root: HTMLDivElement,
     private readonly opts: TableOptions<TDataRow>,
@@ -49,6 +52,8 @@ export class Table<TDataRow extends TableRow> {
     this.horizontalWrapper.style.height = "100%";
     this.horizontalWrapper.appendChild(this.verticalWrapper);
 
+    this.columnSizes = new ColumnSizeMap();
+
     this.camera = new Camera({
       viewportWidth: TOTAL_WIDTH,
       viewportHeight: TOTAL_HEIGHT,
@@ -58,6 +63,7 @@ export class Table<TDataRow extends TableRow> {
       this.camera,
       this.tableConfig,
       this.opts.source,
+      this.columnSizes,
       new Dimensions(
         TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
         TOTAL_HEIGHT -
@@ -67,6 +73,7 @@ export class Table<TDataRow extends TableRow> {
     );
     this.header = new TableHeader(
       this.camera,
+      this.columnSizes,
       new Dimensions(
         TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
         this.opts.config.style.header.row.height,

@@ -1,4 +1,4 @@
-import { NEVER } from "rxjs";
+import { EMPTY, NEVER } from "rxjs";
 import { TableConfig, TableRow } from "../../types/table-config";
 import { Camera } from "../../utils/camera";
 import { CellCollection } from "../../utils/cell-collection";
@@ -7,12 +7,14 @@ import { DrawCanvas } from "../../utils/draw-canvas";
 import { Point } from "../../utils/point";
 import { TableCell } from "./table-cell";
 import { StringTableData } from "../../utils/string-table-data";
+import { ColumnSizeMap } from "../../utils/column-size-map";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cells: CellCollection<TDataRow>;
 
   constructor(
     private readonly camera: Camera,
+    private readonly columnSizes: ColumnSizeMap,
     dimensions: Dimensions,
     private readonly config: TableConfig<TDataRow>,
   ) {
@@ -52,8 +54,9 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         column,
         () => new StringTableData(column.name),
         this.config.style.header.row.height,
-        NEVER,
+        EMPTY,
         requestRedraw,
+        this.columnSizes.getColumnWidthObservable(column.columnId),
       );
       this.cells.addCell(cell);
       x += cell.w;
