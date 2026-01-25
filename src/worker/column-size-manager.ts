@@ -11,8 +11,10 @@ export class ColumnSizeManager {
   public computeColumnSize(
     content: string,
     styling: TableCellFontStyling,
-  ): number {
-    if (this.canvas === undefined) return -1;
-    return 0;
+  ): {
+    width: number;
+    overflown: boolean;
+  } {
+    throw new Error("Method not implemented");
   }
 }

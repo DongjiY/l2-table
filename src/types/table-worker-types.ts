@@ -1,44 +1,33 @@
 import { TableCellFontStyling } from "./table-cell-types";
 
-type TableWorkerEventBase<TType extends string, TData> = {
-  type: TType;
-  data: TData;
-};
+export interface WorkerEvents {
+  INIT: {
+    request: { w: number; h: number; columnMaxWidths: Record<string, number> };
+    response: { ack: true };
+  };
+  CELL_SIZE: {
+    request: {
+      content: string;
+      styling: TableCellFontStyling;
+    };
+    response: {
+      overflown: boolean;
+      width: number;
+    };
+  };
+}
 
-export type TableWorkerEvent = InitEvent | CellSizeEvent;
+export type WorkerRequest = {
+  [K in keyof WorkerEvents]: {
+    type: K;
+    payload: WorkerEvents[K]["request"];
+  };
+}[keyof WorkerEvents];
 
-type CellSizeEvent = TableWorkerEventBase<
-  "CELL_SIZE",
-  {
-    content: string;
-    styling: TableCellFontStyling;
-  }
->;
-
-type InitEvent = TableWorkerEventBase<"INIT", { w: number; h: number }>;
-
-// type TableWorkerScrollEvent = TableWorkerEventBase<
-//   "SCROLL",
-//   {
-//     dx: number;
-//     dy: number;
-//   }
-// >;
-
-// export type TableWorkerInitEvent = TableWorkerEventBase<"INIT", InitEventData>;
-
-// export type InitEventData = {
-//   body: OffscreenCanvas;
-//   config: string; // this is TableConfig stringified
-// };
-
-// export type TableWorkerResizeEvent = TableWorkerEventBase<
-//   "RESIZE",
-//   ResizeEventData
-// >;
-
-// export type ResizeEventData = {
-//   w: number;
-//   h: number;
-//   dpr: number;
-// };
+export type WorkerResponse = {
+  [K in keyof WorkerEvents]: {
+    type: K;
+    payload: WorkerEvents[K]["response"];
+    error?: unknown;
+  };
+}[keyof WorkerEvents];

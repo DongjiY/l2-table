@@ -50,7 +50,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         "HEADER_ROW",
         column.columnId,
         new Point(x, y),
-        this.config.style.header.cell.text,
+        this.config.style.header.cell,
         column,
         () => new StringTableData(column.name),
         this.config.style.header.row.height,
