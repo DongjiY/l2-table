@@ -1,6 +1,6 @@
 import { Observable } from "rxjs";
 import { TableData } from "../utils/table-data";
-import { TableCellFontStyling } from "./table-cell-types";
+import { TableCellStyles } from "./table-cell-types";
 
 export type TableOptions<TDataRow extends TableRow> = {
   config: TableConfig<TDataRow>;
@@ -15,17 +15,13 @@ export type TableConfig<TDataRow extends TableRow> = {
 
 export type TableStyles = {
   body: {
-    cell: {
-      text: TableCellFontStyling;
-    };
+    cell: TableCellStyles;
     row: {
       height: number;
     };
   };
   header: {
-    cell: {
-      text: TableCellFontStyling;
-    };
+    cell: TableCellStyles;
     row: {
       height: number;
     };

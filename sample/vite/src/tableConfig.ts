@@ -190,6 +190,12 @@ export const config: TableConfig<StatsRow> = {
           alignment: "middle",
           color: "blue",
         },
+        padding: {
+          top: 0,
+          left: 6,
+          right: 6,
+          bottom: 0,
+        },
       },
     },
     header: {
@@ -201,6 +207,12 @@ export const config: TableConfig<StatsRow> = {
           font: "24px 'Playfair Display'",
           alignment: "middle",
           color: "red",
+        },
+        padding: {
+          top: 0,
+          left: 6,
+          right: 6,
+          bottom: 0,
         },
       },
     },

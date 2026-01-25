@@ -3,3 +3,15 @@ export type TableCellFontStyling = {
   font: string;
   color: string;
 };
+
+export type TableCellStyles = {
+  text: TableCellFontStyling;
+  padding: Padding;
+};
+
+type Padding = {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};

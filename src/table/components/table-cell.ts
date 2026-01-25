@@ -1,5 +1,5 @@
 import { filter, Observable, Subscription } from "rxjs";
-import { TableCellFontStyling } from "../../types/table-cell-types";
+import { TableCellStyles } from "../../types/table-cell-types";
 import {
   TableColumnDef,
   TableRow,
@@ -26,7 +26,7 @@ export class TableCell<TDataRow extends TableRow>
     public readonly rowId: string,
     public readonly columnId: string,
     point: Point,
-    private readonly textStyle: TableCellFontStyling,
+    private readonly style: TableCellStyles,
     private readonly columnConfig: Omit<
       TableColumnDef<TDataRow>,
       "cellData" | "placeholderAccessorFn"
@@ -73,38 +73,55 @@ export class TableCell<TDataRow extends TableRow>
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
 
-    ctx.font = this.textStyle.font;
-    ctx.fillStyle = this.textStyle.color;
+    ctx.font = this.style.text.font;
+    ctx.fillStyle = this.style.text.color;
     ctx.textBaseline = "middle";
 
     ctx.beginPath();
-    ctx.rect(this.point.x, this.point.y, this.dimensions.w, this.dimensions.h);
+    const innerWidth =
+      this.dimensions.w - this.style.padding.left - this.style.padding.right;
+    const innerHeight =
+      this.dimensions.h - this.style.padding.top - this.style.padding.bottom;
+    ctx.rect(
+      this.point.x + this.style.padding.left,
+      this.point.y + this.style.padding.top,
+      innerWidth,
+      innerHeight,
+    );
     ctx.clip();
 
-    let canvasAlign: CanvasTextAlign = "left";
-    let x = this.point.x;
+    const { x, textAlign } = this.getAlignment(innerWidth);
 
-    switch (this.textStyle.alignment) {
-      case "left":
-        canvasAlign = "left";
-        x = this.point.x;
-        break;
-      case "middle":
-        canvasAlign = "center";
-        x = this.point.x + this.dimensions.w / 2;
-        break;
-      case "right":
-        canvasAlign = "right";
-        x = this.point.x + this.dimensions.w;
-        break;
-    }
+    ctx.textAlign = textAlign;
 
-    ctx.textAlign = canvasAlign;
-
-    const y = this.point.y + this.dimensions.h / 2;
+    const y = this.point.y + this.style.padding.top + innerHeight / 2;
 
     ctx.fillText(this.data.getDisplayableContent(), x, y);
 
     ctx.restore();
+  }
+
+  private getAlignment(innerWidth: number): {
+    x: number;
+    textAlign: CanvasTextAlign;
+  } {
+    switch (this.style.text.alignment) {
+      case "middle":
+        return {
+          x: this.point.x + this.style.padding.left + innerWidth / 2,
+          textAlign: "center",
+        };
+      case "right":
+        return {
+          x: this.point.x + this.dimensions.w - this.style.padding.right,
+          textAlign: "right",
+        };
+      case "left":
+      default:
+        return {
+          x: this.point.x + this.style.padding.left,
+          textAlign: "left",
+        };
+    }
   }
 }

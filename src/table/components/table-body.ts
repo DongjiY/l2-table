@@ -139,7 +139,7 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
           rowId,
           columnId,
           new Point(x, y),
-          this.config.style.body.cell.text,
+          this.config.style.body.cell,
           column,
           () => {
             const cellData = column.cellData();
