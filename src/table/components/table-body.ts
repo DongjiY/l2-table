@@ -19,19 +19,23 @@ import {
   calculateTopAndBottomRowBounds,
 } from "../../utils/boundary-search";
 import { Axis } from "../../utils/axis";
+import { TableWorker } from "../table-worker";
 
 export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
   private cells: CellCollection<TDataRow>;
-  private columnSizes: ColumnSizeMap;
+  private previousVisibleCells: Set<TableCell<TDataRow>> = new Set();
+  private columnSizeManager: TableWorker;
 
   constructor(
     private readonly camera: Camera,
     private readonly config: TableConfig<TDataRow>,
     private readonly source: Observable<TableSourceData>,
+    private readonly columnSizes: ColumnSizeMap,
     dimensions: Dimensions,
   ) {
     super(dimensions);
 
+    this.columnSizeManager = new TableWorker();
     this.cells = new CellCollection();
     this.columnSizes = new ColumnSizeMap();
 
@@ -146,6 +150,7 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
           this.config.style.body.row.height,
           this.getFilteredObservable(row.rowId, columnId),
           requestRedraw,
+          this.columnSizes.getColumnWidthObservable(columnId),
         );
         this.cells.addCell(cell);
         this.columnSizes.updateColumnSize(columnId, cell.w);
@@ -160,9 +165,17 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
   }
 
   private drawCells(ctx: CanvasRenderingContext2D): void {
+    const currentVisibleCells: Set<TableCell<TDataRow>> = new Set();
     for (const cell of this.cells.visibleCells(this.getVirtualBounds())) {
+      currentVisibleCells.add(cell);
+      this.previousVisibleCells.delete(cell);
+      cell.setIsVisible(true);
       cell.draw(ctx);
     }
+    for (const cell of this.previousVisibleCells) {
+      cell.setIsVisible(false);
+    }
+    this.previousVisibleCells = currentVisibleCells;
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {

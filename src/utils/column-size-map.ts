@@ -1,11 +1,20 @@
+import { filter, map, Observable, startWith, Subject } from "rxjs";
 import { AnnotatedBoundingBox } from "./annotated-bounding-box";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";
 
 type BoundingBoxMetadata = { columnId: string; columnIndex: number };
+
 export class ColumnSizeMap {
-  private columnSizes: Map<string, number> = new Map();
-  private boundingBoxes: Array<AnnotatedBoundingBox<BoundingBoxMetadata>> = [];
+  private columnSizeUpdates$: Subject<{ columnId: string; value: number }>;
+  private columnSizes: Map<string, number>;
+  private boundingBoxes: Array<AnnotatedBoundingBox<BoundingBoxMetadata>>;
+
+  constructor() {
+    this.columnSizeUpdates$ = new Subject();
+    this.columnSizes = new Map();
+    this.boundingBoxes = [];
+  }
 
   /**
    * This MUST be called in the order that the columns are in
@@ -14,8 +23,20 @@ export class ColumnSizeMap {
    */
   public updateColumnSize(columnId: string, size: number): void {
     const currentColumnSize = this.columnSizes.get(columnId);
-    this.columnSizes.set(columnId, Math.max(size, currentColumnSize ?? 0));
+    const newSize = Math.max(size, currentColumnSize ?? 0);
+    this.columnSizes.set(columnId, newSize);
+    this.columnSizeUpdates$.next({ columnId, value: newSize });
     this.recomputeBoundingBoxes();
+  }
+
+  public getColumnWidthObservable(
+    columnId: string,
+  ): Observable<number | undefined> {
+    return this.columnSizeUpdates$.pipe(
+      filter((v) => v.columnId === columnId),
+      map((v) => v.value),
+      startWith(this.columnSizes.get(columnId)),
+    );
   }
 
   public getBoundingBoxes(): Array<AnnotatedBoundingBox<BoundingBoxMetadata>> {

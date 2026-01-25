@@ -1,4 +1,4 @@
-import { Observable } from "rxjs";
+import { filter, Observable, Subscription } from "rxjs";
 import { TableCellFontStyling } from "../../types/table-cell-types";
 import {
   TableColumnDef,
@@ -10,10 +10,17 @@ import { Point } from "../../utils/point";
 import { WorldObject } from "../../utils/world-object";
 import { TableData } from "../../utils/table-data";
 import { BoundingBox } from "../../utils/bounding-box";
+import { Closeable } from "../../utils/closeable";
 
-export class TableCell<TDataRow extends TableRow> extends WorldObject {
+export class TableCell<TDataRow extends TableRow>
+  extends WorldObject
+  implements Closeable
+{
   private data: TableData<unknown>;
   private dimensions: Dimensions;
+  private sourceSubscription: Subscription;
+  private columnWidthSubscription: Subscription;
+  private isVisible: boolean = false;
 
   constructor(
     public readonly rowId: string,
@@ -28,14 +35,27 @@ export class TableCell<TDataRow extends TableRow> extends WorldObject {
     height: number,
     private readonly dataSource$: Observable<TableSourceData>,
     requestRedraw: VoidFunction,
+    columnWidth$: Observable<number | undefined>,
   ) {
     super(point);
     this.dimensions = new Dimensions(this.columnConfig.maxWidth, height); // TODO - maxW should change to be dynamically computed
     this.data = cellDataFactory();
-    this.dataSource$.subscribe((v) => {
+    this.sourceSubscription = this.dataSource$.subscribe((v) => {
       this.data.setValue(v);
-      requestRedraw();
+      if (this.isVisible) requestRedraw();
     });
+    this.columnWidthSubscription = columnWidth$
+      .pipe(filter((v) => v !== undefined))
+      .subscribe((w) => (this.dimensions.w = w));
+  }
+
+  public setIsVisible(isVisible: boolean): void {
+    this.isVisible = isVisible;
+  }
+
+  public close(): void {
+    this.sourceSubscription.unsubscribe();
+    this.columnWidthSubscription.unsubscribe();
   }
 
   public get w(): number {
@@ -56,6 +76,10 @@ export class TableCell<TDataRow extends TableRow> extends WorldObject {
     ctx.font = this.textStyle.font;
     ctx.fillStyle = this.textStyle.color;
     ctx.textBaseline = "middle";
+
+    ctx.beginPath();
+    ctx.rect(this.point.x, this.point.y, this.dimensions.w, this.dimensions.h);
+    ctx.clip();
 
     let canvasAlign: CanvasTextAlign = "left";
     let x = this.point.x;

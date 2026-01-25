@@ -5,7 +5,7 @@ export class TableWorker {
 
   constructor() {
     this.worker = new Worker(
-      new URL("./table/worker-entrypoint.js", import.meta.url), // this is relative to dist
+      new URL("./worker/entrypoint.js", import.meta.url), // this is relative to dist
       {
         type: "module",
       },
