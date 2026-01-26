@@ -1,4 +1,11 @@
-import { filter, map, Observable, startWith, Subject } from "rxjs";
+import {
+  filter,
+  map,
+  Observable,
+  ReplaySubject,
+  startWith,
+  Subject,
+} from "rxjs";
 import { AnnotatedBoundingBox } from "./annotated-bounding-box";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";
@@ -7,13 +14,18 @@ import { TableColumnDef, TableRow } from "../types/table-config";
 type BoundingBoxMetadata = { columnId: string; columnIndex: number };
 
 export class ColumnSizeMap<TDataRow extends TableRow> {
+  private totalColumnSizeUpdates$: Subject<number>;
+  private totalColumnSize: number = 0;
+
   private columnSizeUpdates$: Subject<{ columnId: string; value: number }>;
   private columnSizes: Map<string, number>;
+
   private columnXPos: Map<string, number>;
   private minColumnSize: number = Infinity;
   private boundingBoxes: Array<AnnotatedBoundingBox<BoundingBoxMetadata>>;
 
   constructor(cols: Array<TableColumnDef<TDataRow, unknown>>) {
+    this.totalColumnSizeUpdates$ = new ReplaySubject(1);
     this.columnSizeUpdates$ = new Subject();
     this.columnSizes = new Map();
     this.columnXPos = new Map();
@@ -22,7 +34,9 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
     // seed the initial widths
     for (const col of cols) {
       this.updateColumnSize(col.columnId, col.maxWidth);
+      this.totalColumnSize += col.maxWidth;
     }
+    this.totalColumnSizeUpdates$.next(this.totalColumnSize);
   }
 
   /**
@@ -37,8 +51,19 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
     this.recomputeBoundingBoxesAndXPos();
   }
 
+  public updateTotalColumnSize(columnId: string, size: number): void {
+    const currColumnSize = this.columnSizes.get(columnId) ?? 0;
+    const delta = size - currColumnSize;
+    this.totalColumnSize += delta;
+    this.totalColumnSizeUpdates$.next(this.totalColumnSize);
+  }
+
   public updateColumnXPos(columnId: string, xPos: number): void {
     this.columnXPos.set(columnId, xPos);
+  }
+
+  public getTotalColumnSizeObservable(): Observable<number> {
+    return this.totalColumnSizeUpdates$;
   }
 
   public getColumnWidthObservable(
@@ -61,6 +86,14 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
 
   public getColumnXPos(columnId: string): number | undefined {
     return this.columnXPos.get(columnId);
+  }
+
+  public getTotalColumnWidth(): number {
+    let sum = 0;
+    for (const width of this.columnSizes.values()) {
+      sum += width;
+    }
+    return sum;
   }
 
   public getBoundingBoxes(): Array<AnnotatedBoundingBox<BoundingBoxMetadata>> {

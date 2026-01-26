@@ -178,7 +178,7 @@ function generateRows(rowCount = 1): StatsRow[] {
  */
 export const config: TableConfig<StatsRow> = {
   columns,
-  rows: generateRows(1000),
+  rows: generateRows(200),
   style: {
     body: {
       row: {
