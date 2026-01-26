@@ -28,7 +28,7 @@ export class Table<TDataRow extends TableRow> {
   private scrollXBar: HorizontalScrollbar;
   private scrollYBar: VerticalScrollbar;
 
-  private columnSizes: ColumnSizeMap;
+  private columnSizes: ColumnSizeMap<TDataRow>;
 
   constructor(
     private root: HTMLDivElement,
@@ -52,7 +52,8 @@ export class Table<TDataRow extends TableRow> {
     this.horizontalWrapper.style.height = "100%";
     this.horizontalWrapper.appendChild(this.verticalWrapper);
 
-    this.columnSizes = new ColumnSizeMap();
+    this.columnSizes = new ColumnSizeMap(this.opts.config.columns);
+    this.columnSizes.print();
 
     this.camera = new Camera({
       viewportWidth: TOTAL_WIDTH,

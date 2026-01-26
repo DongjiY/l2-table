@@ -11,51 +11,34 @@ import { WorldObject } from "../../utils/world-object";
 import { TableData } from "../../utils/table-data";
 import { BoundingBox } from "../../utils/bounding-box";
 import { Closeable } from "../../utils/closeable";
+import { StringTableData } from "../../utils/string-table-data";
 
-export class TableCell<TDataRow extends TableRow>
-  extends WorldObject
-  implements Closeable
-{
-  private data: TableData<unknown>;
-  private dimensions: Dimensions;
-  private sourceSubscription: Subscription;
-  private columnWidthSubscription: Subscription;
-  private isVisible: boolean = false;
+export class TableCell extends WorldObject {
+  private data: TableData<unknown> | null = null;
+  private dimensions: Dimensions = new Dimensions();
 
-  constructor(
-    public readonly rowId: string,
-    public readonly columnId: string,
-    point: Point,
-    private readonly style: TableCellStyles,
-    private readonly columnConfig: Omit<
-      TableColumnDef<TDataRow>,
-      "cellData" | "placeholderAccessorFn"
-    >,
-    cellDataFactory: () => TableData<unknown>,
-    height: number,
-    private readonly dataSource$: Observable<TableSourceData>,
-    requestRedraw: VoidFunction,
-    columnWidth$: Observable<number | undefined>,
-  ) {
-    super(point);
-    this.dimensions = new Dimensions(this.columnConfig.maxWidth, height); // TODO - maxW should change to be dynamically computed
-    this.data = cellDataFactory();
-    this.sourceSubscription = this.dataSource$.subscribe((v) => {
-      this.data.setValue(v);
-      if (this.isVisible) requestRedraw();
-    });
-    this.columnWidthSubscription = columnWidth$
-      .pipe(filter((v) => v !== undefined))
-      .subscribe((w) => (this.dimensions.w = w));
+  constructor(private readonly style: TableCellStyles) {
+    super();
   }
 
-  public setIsVisible(isVisible: boolean): void {
-    this.isVisible = isVisible;
-  }
-
-  public close(): void {
-    this.sourceSubscription.unsubscribe();
-    this.columnWidthSubscription.unsubscribe();
+  public bind({
+    x,
+    y,
+    data,
+    width,
+    height,
+  }: {
+    x: number;
+    y: number;
+    data: TableData<unknown>;
+    width: number;
+    height: number;
+  }): void {
+    this.point.x = x;
+    this.point.y = y;
+    this.dimensions.w = width;
+    this.dimensions.h = height;
+    this.data = data;
   }
 
   public get w(): number {
@@ -96,7 +79,7 @@ export class TableCell<TDataRow extends TableRow>
 
     const y = this.point.y + this.style.padding.top + innerHeight / 2;
 
-    ctx.fillText(this.data.getDisplayableContent(), x, y);
+    ctx.fillText(this.data?.getDisplayableContent() ?? "NA", x, y);
 
     ctx.restore();
   }
