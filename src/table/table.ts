@@ -53,7 +53,6 @@ export class Table<TDataRow extends TableRow> {
     this.horizontalWrapper.appendChild(this.verticalWrapper);
 
     this.columnSizes = new ColumnSizeMap(this.opts.config.columns);
-    this.columnSizes.print();
 
     this.camera = new Camera({
       viewportWidth: TOTAL_WIDTH,

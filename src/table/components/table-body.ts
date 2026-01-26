@@ -1,4 +1,5 @@
 import {
+  TableColumnDef,
   TableConfig,
   TableRow,
   TableSourceData,
@@ -16,16 +17,16 @@ import {
 } from "../../utils/boundary-search";
 import { Axis } from "../../utils/axis";
 import { CellPool } from "../../utils/cell-pool";
-import { StringTableData } from "../../utils/string-table-data";
 import { Closeable } from "../../utils/closeable";
 import { CellDataStore } from "../../utils/cell-data-store";
+import { TableData } from "../../utils/table-data";
 
 export class TableBody<TDataRow extends TableRow>
   extends DrawCanvas
   implements Closeable
 {
   private cellPool: CellPool;
-  private cellDataStore: CellDataStore;
+  private cellDataStore: CellDataStore<TDataRow>;
   private sourceSubscription: Subscription;
 
   constructor(
@@ -50,13 +51,15 @@ export class TableBody<TDataRow extends TableRow>
       },
     });
 
-    this.cellDataStore = new CellDataStore();
+    this.cellDataStore = new CellDataStore(this.config.columns);
     this.sourceSubscription = this.source.subscribe((v) => {
-      const cellData = this.cellDataStore.tryGetCellData(v.rowId, v.columnId);
+      const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
       if (cellData !== undefined) {
         cellData.setValue(v.data);
-        this.requestRedraw();
+      } else {
+        console.log("could not set data for", v.columnId, v.rowId);
       }
+      this.requestRedraw();
     });
 
     this.getElement().addEventListener(
@@ -156,12 +159,7 @@ export class TableBody<TDataRow extends TableRow>
           data: this.cellDataStore.getCellData(
             row.rowId,
             column.columnId,
-            () => {
-              const cellData = column.cellData();
-              const initialValue = column.placeholderAccessorFn(row);
-              cellData.setValue(initialValue);
-              return cellData;
-            },
+            tableDataFactoryWithPlaceholder(column, row),
           ),
         });
         cell.draw(ctx);
@@ -174,4 +172,16 @@ export class TableBody<TDataRow extends TableRow>
 
     this.drawCells(ctx);
   }
+}
+
+function tableDataFactoryWithPlaceholder<TDataRow extends TableRow>(
+  column: TableColumnDef<TDataRow>,
+  row: TDataRow,
+): () => TableData<unknown> {
+  return () => {
+    const cellData = column.cellData();
+    const initialValue = column.placeholderAccessorFn(row);
+    cellData.setValue(initialValue);
+    return cellData;
+  };
 }

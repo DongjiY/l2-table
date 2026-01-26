@@ -17,12 +17,12 @@ export function numberSource<TDataRow extends TableRow>(
 
   let index = 0;
 
-  return interval(500).pipe(
+  return interval(5).pipe(
     map(() => {
       const cell = cells[index];
       index = (index + 1) % cells.length;
 
-      const value = Number((Math.random() * 100000000).toFixed(2));
+      const value = Number((Math.random() * 1000).toFixed(2));
 
       return {
         rowId: cell.rowId,

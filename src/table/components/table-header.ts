@@ -46,32 +46,6 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.requestRedraw();
   }
 
-  // private initCells(): void {
-  //   const requestRedraw = this.requestRedraw.bind(this);
-  //   let x = 0;
-  //   const y = 0;
-  //   for (const column of this.config.columns) {
-  //     const cell = new TableCell(
-  //       "HEADER_ROW",
-  //       column.columnId,
-  //       requestRedraw,
-  //       this.config.style.header.cell,
-  //       column,
-  //       EMPTY,
-  //     );
-  //     cell.bind({
-  //       rowId: "HEADER_ROW",
-  //       columnId: column.columnId,
-  //       cellDataFactory: () => new StringTableData(column.name),
-  //       x,
-  //       y,
-  //       height: this.config.style.header.row.height,
-  //     });
-  //     this.cells.addCell(cell);
-  //     x += cell.w;
-  //   }
-  // }
-
   private drawCells(ctx: CanvasRenderingContext2D): void {
     this.cellPool.beginFrame();
 

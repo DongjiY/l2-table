@@ -1,4 +1,5 @@
 import {
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -47,6 +48,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
   public updateColumnSize(columnId: string, size: number): void {
     this.columnSizes.set(columnId, size);
     this.minColumnSize = Math.min(size, this.minColumnSize);
+    this.updateTotalColumnSize(columnId, size);
     this.columnSizeUpdates$.next({ columnId, value: size });
     this.recomputeBoundingBoxesAndXPos();
   }
@@ -63,7 +65,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
   }
 
   public getTotalColumnSizeObservable(): Observable<number> {
-    return this.totalColumnSizeUpdates$;
+    return this.totalColumnSizeUpdates$.pipe(distinctUntilChanged());
   }
 
   public getColumnWidthObservable(
@@ -119,9 +121,5 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
       i++;
       x += columnWidth;
     }
-  }
-
-  public print(): void {
-    console.log(this.columnXPos, this.columnSizes);
   }
 }

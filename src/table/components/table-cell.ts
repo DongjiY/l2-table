@@ -1,17 +1,8 @@
-import { filter, Observable, Subscription } from "rxjs";
 import { TableCellStyles } from "../../types/table-cell-types";
-import {
-  TableColumnDef,
-  TableRow,
-  TableSourceData,
-} from "../../types/table-config";
 import { Dimensions } from "../../utils/dimensions";
-import { Point } from "../../utils/point";
 import { WorldObject } from "../../utils/world-object";
 import { TableData } from "../../utils/table-data";
 import { BoundingBox } from "../../utils/bounding-box";
-import { Closeable } from "../../utils/closeable";
-import { StringTableData } from "../../utils/string-table-data";
 
 export class TableCell extends WorldObject {
   private data: TableData<unknown> | null = null;
