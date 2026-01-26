@@ -53,12 +53,9 @@ export class TableBody<TDataRow extends TableRow>
 
     this.cellDataStore = new CellDataStore(this.config.columns);
     this.sourceSubscription = this.source.subscribe((v) => {
+      console.log(v);
       const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
-      if (cellData !== undefined) {
-        cellData.setValue(v.data);
-      } else {
-        console.log("could not set data for", v.columnId, v.rowId);
-      }
+      cellData.setValue(v.data);
       this.requestRedraw();
     });
 
