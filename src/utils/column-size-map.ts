@@ -1,19 +1,43 @@
-import { filter, map, Observable, startWith, Subject } from "rxjs";
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  ReplaySubject,
+  startWith,
+  Subject,
+} from "rxjs";
 import { AnnotatedBoundingBox } from "./annotated-bounding-box";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";
+import { TableColumnDef, TableRow } from "../types/table-config";
 
 type BoundingBoxMetadata = { columnId: string; columnIndex: number };
 
-export class ColumnSizeMap {
+export class ColumnSizeMap<TDataRow extends TableRow> {
+  private totalColumnSizeUpdates$: Subject<number>;
+  private totalColumnSize: number = 0;
+
   private columnSizeUpdates$: Subject<{ columnId: string; value: number }>;
   private columnSizes: Map<string, number>;
+
+  private columnXPos: Map<string, number>;
+  private minColumnSize: number = Infinity;
   private boundingBoxes: Array<AnnotatedBoundingBox<BoundingBoxMetadata>>;
 
-  constructor() {
+  constructor(cols: Array<TableColumnDef<TDataRow, unknown>>) {
+    this.totalColumnSizeUpdates$ = new ReplaySubject(1);
     this.columnSizeUpdates$ = new Subject();
     this.columnSizes = new Map();
+    this.columnXPos = new Map();
     this.boundingBoxes = [];
+
+    // seed the initial widths
+    for (const col of cols) {
+      this.updateColumnSize(col.columnId, col.maxWidth);
+      this.totalColumnSize += col.maxWidth;
+    }
+    this.totalColumnSizeUpdates$.next(this.totalColumnSize);
   }
 
   /**
@@ -22,11 +46,26 @@ export class ColumnSizeMap {
    * @param size
    */
   public updateColumnSize(columnId: string, size: number): void {
-    const currentColumnSize = this.columnSizes.get(columnId);
-    const newSize = Math.max(size, currentColumnSize ?? 0);
-    this.columnSizes.set(columnId, newSize);
-    this.columnSizeUpdates$.next({ columnId, value: newSize });
-    this.recomputeBoundingBoxes();
+    this.columnSizes.set(columnId, size);
+    this.minColumnSize = Math.min(size, this.minColumnSize);
+    this.updateTotalColumnSize(columnId, size);
+    this.columnSizeUpdates$.next({ columnId, value: size });
+    this.recomputeBoundingBoxesAndXPos();
+  }
+
+  public updateTotalColumnSize(columnId: string, size: number): void {
+    const currColumnSize = this.columnSizes.get(columnId) ?? 0;
+    const delta = size - currColumnSize;
+    this.totalColumnSize += delta;
+    this.totalColumnSizeUpdates$.next(this.totalColumnSize);
+  }
+
+  public updateColumnXPos(columnId: string, xPos: number): void {
+    this.columnXPos.set(columnId, xPos);
+  }
+
+  public getTotalColumnSizeObservable(): Observable<number> {
+    return this.totalColumnSizeUpdates$.pipe(distinctUntilChanged());
   }
 
   public getColumnWidthObservable(
@@ -39,11 +78,31 @@ export class ColumnSizeMap {
     );
   }
 
+  public getMinColumnWidth(): number {
+    return this.minColumnSize;
+  }
+
+  public getColumnWidth(columnId: string): number | undefined {
+    return this.columnSizes.get(columnId);
+  }
+
+  public getColumnXPos(columnId: string): number | undefined {
+    return this.columnXPos.get(columnId);
+  }
+
+  public getTotalColumnWidth(): number {
+    let sum = 0;
+    for (const width of this.columnSizes.values()) {
+      sum += width;
+    }
+    return sum;
+  }
+
   public getBoundingBoxes(): Array<AnnotatedBoundingBox<BoundingBoxMetadata>> {
     return this.boundingBoxes;
   }
 
-  private recomputeBoundingBoxes(): void {
+  private recomputeBoundingBoxesAndXPos(): void {
     this.boundingBoxes = [];
     let x = 0;
     let i = 0;
@@ -58,6 +117,7 @@ export class ColumnSizeMap {
           },
         ),
       );
+      this.updateColumnXPos(columnId, x);
       i++;
       x += columnWidth;
     }

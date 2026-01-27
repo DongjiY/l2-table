@@ -28,7 +28,7 @@ export class Table<TDataRow extends TableRow> {
   private scrollXBar: HorizontalScrollbar;
   private scrollYBar: VerticalScrollbar;
 
-  private columnSizes: ColumnSizeMap;
+  private columnSizes: ColumnSizeMap<TDataRow>;
 
   constructor(
     private root: HTMLDivElement,
@@ -52,11 +52,22 @@ export class Table<TDataRow extends TableRow> {
     this.horizontalWrapper.style.height = "100%";
     this.horizontalWrapper.appendChild(this.verticalWrapper);
 
-    this.columnSizes = new ColumnSizeMap();
+    this.columnSizes = new ColumnSizeMap(this.opts.config.columns);
 
     this.camera = new Camera({
       viewportWidth: TOTAL_WIDTH,
       viewportHeight: TOTAL_HEIGHT,
+    });
+
+    this.columnSizes.getTotalColumnSizeObservable().subscribe((w) => {
+      this.camera.updateWorldDimensions({
+        w: w + VERTICAL_SCROLLBAR_WIDTH,
+        h:
+          this.opts.config.rows.length *
+            this.opts.config.style.body.row.height +
+          this.opts.config.style.header.row.height +
+          HORIZONTAL_SCROLLBAR_HEIGHT,
+      });
     });
 
     this.body = new TableBody(

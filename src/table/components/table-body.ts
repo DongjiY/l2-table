@@ -1,17 +1,14 @@
 import {
+  TableColumnDef,
   TableConfig,
   TableRow,
   TableSourceData,
 } from "../../types/table-config";
-import { CellCollection } from "../../utils/cell-collection";
 import { Dimensions } from "../../utils/dimensions";
-import { Point } from "../../utils/point";
 import { Camera } from "../../utils/camera";
 import { DrawCanvas } from "../../utils/draw-canvas";
 import { TableCell } from "./table-cell";
-import { filter, map, Observable } from "rxjs";
-import { HORIZONTAL_SCROLLBAR_HEIGHT } from "./horizontal-scrollbar";
-import { VERTICAL_SCROLLBAR_WIDTH } from "./vertical-scrollbar";
+import { Observable, Subscription } from "rxjs";
 import { ColumnSizeMap } from "../../utils/column-size-map";
 import {
   boundaryBinarySearchLeftOrTop,
@@ -19,27 +16,47 @@ import {
   calculateTopAndBottomRowBounds,
 } from "../../utils/boundary-search";
 import { Axis } from "../../utils/axis";
-import { TableWorker } from "../table-worker";
+import { CellPool } from "../../utils/cell-pool";
+import { Closeable } from "../../utils/closeable";
+import { CellDataStore } from "../../utils/cell-data-store";
+import { TableData } from "../../utils/table-data";
 
-export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
-  private cells: CellCollection<TDataRow>;
-  private previousVisibleCells: Set<TableCell<TDataRow>> = new Set();
-  private columnSizeManager: TableWorker;
+export class TableBody<TDataRow extends TableRow>
+  extends DrawCanvas
+  implements Closeable
+{
+  private cellPool: CellPool;
+  private cellDataStore: CellDataStore<TDataRow>;
+  private sourceSubscription: Subscription;
 
   constructor(
     private readonly camera: Camera,
     private readonly config: TableConfig<TDataRow>,
     private readonly source: Observable<TableSourceData>,
-    private readonly columnSizes: ColumnSizeMap,
+    private readonly columnSizes: ColumnSizeMap<TDataRow>,
     dimensions: Dimensions,
   ) {
     super(dimensions);
 
-    this.columnSizeManager = new TableWorker();
-    this.cells = new CellCollection();
-    this.columnSizes = new ColumnSizeMap();
+    this.cellPool = new CellPool();
+    this.cellPool.initFromViewport({
+      viewportHeight: this.camera.viewportHeight,
+      viewportWidth: this.camera.viewportWidth,
+      bufferX: 4,
+      bufferY: 4,
+      rowHeight: this.config.style.body.row.height,
+      minColumnWidth: this.columnSizes.getMinColumnWidth(),
+      cellFactory: () => {
+        return new TableCell(this.config.style.body.cell);
+      },
+    });
 
-    this.initCells();
+    this.cellDataStore = new CellDataStore(this.config.columns);
+    this.sourceSubscription = this.source.subscribe((v) => {
+      const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
+      cellData.setValue(v.data);
+      this.requestRedraw();
+    });
 
     this.getElement().addEventListener(
       "wheel",
@@ -57,6 +74,10 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
     this.camera.onCameraResize(() => this.requestRedraw());
 
     this.requestRedraw();
+  }
+
+  public close(): void {
+    this.sourceSubscription.unsubscribe();
   }
 
   private getVirtualBounds(
@@ -116,66 +137,30 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
     };
   }
 
-  private getFilteredObservable(
-    rowId: string,
-    columnId: string,
-  ): Observable<any> {
-    return this.source.pipe(
-      filter((v) => v.columnId === columnId && v.rowId === rowId),
-      map((v) => v.data),
-    );
-  }
-
-  private initCells(): void {
-    const requestRedraw = this.requestRedraw.bind(this);
-    let x = 0;
-    let y = 0;
-    for (const row of this.config.rows) {
-      const rowId = row.rowId;
-      x = 0;
-      for (const column of this.config.columns) {
-        const columnId = column.columnId;
-        const cell = new TableCell(
-          rowId,
-          columnId,
-          new Point(x, y),
-          this.config.style.body.cell,
-          column,
-          () => {
-            const cellData = column.cellData();
-            const initialValue = column.placeholderAccessorFn(row);
-            cellData.setValue(initialValue);
-            return cellData;
-          },
-          this.config.style.body.row.height,
-          this.getFilteredObservable(row.rowId, columnId),
-          requestRedraw,
-          this.columnSizes.getColumnWidthObservable(columnId),
-        );
-        this.cells.addCell(cell);
-        this.columnSizes.updateColumnSize(columnId, cell.w);
-        x += cell.w;
-      }
-      y += this.config.style.body.row.height;
-    }
-    this.camera.updateWorldDimensions({
-      w: x + VERTICAL_SCROLLBAR_WIDTH,
-      h: y + this.config.style.header.row.height + HORIZONTAL_SCROLLBAR_HEIGHT,
-    });
-  }
-
   private drawCells(ctx: CanvasRenderingContext2D): void {
-    const currentVisibleCells: Set<TableCell<TDataRow>> = new Set();
-    for (const cell of this.cells.visibleCells(this.getVirtualBounds())) {
-      currentVisibleCells.add(cell);
-      this.previousVisibleCells.delete(cell);
-      cell.setIsVisible(true);
-      cell.draw(ctx);
+    this.cellPool.beginFrame();
+
+    const { leftColumnIndex, rightColumnIndex, topRowIndex, bottomRowIndex } =
+      this.getVirtualBounds();
+    for (let r = topRowIndex; r <= bottomRowIndex; r++) {
+      const row = this.config.rows[r];
+      for (let c = leftColumnIndex; c <= rightColumnIndex; c++) {
+        const cell = this.cellPool.next();
+        const column = this.config.columns[c];
+        cell.bind({
+          x: this.columnSizes.getColumnXPos(column.columnId) ?? 0,
+          y: r * this.config.style.body.row.height,
+          width: this.columnSizes.getColumnWidth(column.columnId) ?? 0,
+          height: this.config.style.body.row.height,
+          data: this.cellDataStore.getCellData(
+            row.rowId,
+            column.columnId,
+            tableDataFactoryWithPlaceholder(column, row),
+          ),
+        });
+        cell.draw(ctx);
+      }
     }
-    for (const cell of this.previousVisibleCells) {
-      cell.setIsVisible(false);
-    }
-    this.previousVisibleCells = currentVisibleCells;
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
@@ -183,4 +168,16 @@ export class TableBody<TDataRow extends TableRow> extends DrawCanvas {
 
     this.drawCells(ctx);
   }
+}
+
+function tableDataFactoryWithPlaceholder<TDataRow extends TableRow>(
+  column: TableColumnDef<TDataRow>,
+  row: TDataRow,
+): () => TableData<unknown> {
+  return () => {
+    const cellData = column.cellData();
+    const initialValue = column.placeholderAccessorFn(row);
+    cellData.setValue(initialValue);
+    return cellData;
+  };
 }
