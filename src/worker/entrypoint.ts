@@ -7,13 +7,18 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
   const source = e.data;
   switch (source.type) {
     case "INIT":
-      columnSizeManager.init(source.payload.w, source.payload.h);
+      columnSizeManager.init(
+        source.payload.w,
+        source.payload.h,
+        source.payload.columnConstraints,
+        source.payload.cellStyling,
+      );
       replyMessage({ type: "INIT", payload: { ack: true } });
       break;
     case "CELL_SIZE":
       const res = columnSizeManager.computeColumnSize(
+        source.payload.columnId,
         source.payload.content,
-        source.payload.styling,
       );
       replyMessage({
         type: "CELL_SIZE",

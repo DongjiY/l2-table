@@ -70,11 +70,13 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
 
   public getColumnWidthObservable(
     columnId: string,
-  ): Observable<number | undefined> {
+  ): Observable<{ columnId: string; width: number }> {
     return this.columnSizeUpdates$.pipe(
       filter((v) => v.columnId === columnId),
       map((v) => v.value),
-      startWith(this.columnSizes.get(columnId)),
+      startWith(this.columnSizes.get(columnId) ?? 0),
+      distinctUntilChanged(),
+      map((v) => ({ columnId, width: v })),
     );
   }
 
