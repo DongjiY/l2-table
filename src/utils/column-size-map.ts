@@ -34,8 +34,9 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
 
     // seed the initial widths
     for (const col of cols) {
-      this.updateColumnSize(col.columnId, col.maxWidth);
-      this.totalColumnSize += col.maxWidth;
+      const maxWidth = col.maxWidth ?? 1;
+      this.updateColumnSize(col.columnId, maxWidth);
+      this.totalColumnSize += maxWidth;
     }
     this.totalColumnSizeUpdates$.next(this.totalColumnSize);
   }

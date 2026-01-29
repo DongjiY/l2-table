@@ -83,6 +83,7 @@ export class Table<TDataRow extends TableRow> {
     });
 
     this.columnSizes.getTotalColumnSizeObservable().subscribe((w) => {
+      console.log(w);
       this.camera.updateWorldDimensions({
         w: w + VERTICAL_SCROLLBAR_WIDTH,
         h:
@@ -177,9 +178,9 @@ export class Table<TDataRow extends TableRow> {
     const res: ColumnConstraints = {};
     for (const column of columns) {
       res[column.columnId] = {
-        maxWidth: column.maxWidth,
-        minWidth: column.minWidth,
-      }; // TODO - should max width be optional?
+        maxWidth: column.maxWidth ?? Number.MAX_SAFE_INTEGER,
+        minWidth: column.minWidth ?? 0,
+      };
     }
     return res;
   }
