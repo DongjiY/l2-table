@@ -15,13 +15,13 @@ export type TableConfig<TDataRow extends TableRow> = {
 
 export type TableStyles = {
   body: {
-    cell: TableCellStyles;
+    cell?: TableCellStyles;
     row: {
       height: number;
     };
   };
   header: {
-    cell: TableCellStyles;
+    cell?: TableCellStyles;
     row: {
       height: number;
     };

@@ -191,10 +191,8 @@ export const config: TableConfig<StatsRow> = {
           color: "blue",
         },
         padding: {
-          top: 0,
           left: 6,
           right: 6,
-          bottom: 0,
         },
       },
     },
@@ -209,10 +207,8 @@ export const config: TableConfig<StatsRow> = {
           color: "red",
         },
         padding: {
-          top: 0,
           left: 6,
           right: 6,
-          bottom: 0,
         },
       },
     },

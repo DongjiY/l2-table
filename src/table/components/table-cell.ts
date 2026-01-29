@@ -3,12 +3,18 @@ import { Dimensions } from "../../utils/dimensions";
 import { WorldObject } from "../../utils/world-object";
 import { TableData } from "../../utils/table-data";
 import { BoundingBox } from "../../utils/bounding-box";
+import {
+  DEFAULT_FONT_STRING,
+  DEFAULT_TEXT_COLOR,
+  DEFAULT_TEXT_ALIGN,
+} from "../../utils/cell-style-defaults";
+import { getPadding } from "../../utils/padding-utils";
 
 export class TableCell extends WorldObject {
   private data: TableData<unknown> | null = null;
   private dimensions: Dimensions = new Dimensions();
 
-  constructor(private readonly style: TableCellStyles) {
+  constructor(private readonly style: TableCellStyles | undefined) {
     super();
   }
 
@@ -47,18 +53,23 @@ export class TableCell extends WorldObject {
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
 
-    ctx.font = this.style.text.font;
-    ctx.fillStyle = this.style.text.color;
+    ctx.font = this.style?.text?.font ?? DEFAULT_FONT_STRING;
+    ctx.fillStyle = this.style?.text?.color ?? DEFAULT_TEXT_COLOR;
     ctx.textBaseline = "middle";
 
+    const {
+      left: leftPadding,
+      right: rightPadding,
+      top: topPadding,
+      bottom: bottomPadding,
+    } = getPadding(this.style?.padding);
+
     ctx.beginPath();
-    const innerWidth =
-      this.dimensions.w - this.style.padding.left - this.style.padding.right;
-    const innerHeight =
-      this.dimensions.h - this.style.padding.top - this.style.padding.bottom;
+    const innerWidth = this.dimensions.w - leftPadding - rightPadding;
+    const innerHeight = this.dimensions.h - topPadding - bottomPadding;
     ctx.rect(
-      this.point.x + this.style.padding.left,
-      this.point.y + this.style.padding.top,
+      this.point.x + leftPadding,
+      this.point.y + topPadding,
       innerWidth,
       innerHeight,
     );
@@ -68,7 +79,7 @@ export class TableCell extends WorldObject {
 
     ctx.textAlign = textAlign;
 
-    const y = this.point.y + this.style.padding.top + innerHeight / 2;
+    const y = this.point.y + topPadding + innerHeight / 2;
 
     ctx.fillText(this.data?.getDisplayableContent() ?? "NA", x, y);
 
@@ -79,21 +90,25 @@ export class TableCell extends WorldObject {
     x: number;
     textAlign: CanvasTextAlign;
   } {
-    switch (this.style.text.alignment) {
+    const alignment = this.style?.text?.alignment ?? DEFAULT_TEXT_ALIGN;
+    const { left: leftPadding, right: rightPadding } = getPadding(
+      this.style?.padding,
+    );
+    switch (alignment) {
       case "middle":
         return {
-          x: this.point.x + this.style.padding.left + innerWidth / 2,
+          x: this.point.x + leftPadding + innerWidth / 2,
           textAlign: "center",
         };
       case "right":
         return {
-          x: this.point.x + this.dimensions.w - this.style.padding.right,
+          x: this.point.x + this.dimensions.w - rightPadding,
           textAlign: "right",
         };
       case "left":
       default:
         return {
-          x: this.point.x + this.style.padding.left,
+          x: this.point.x + leftPadding,
           textAlign: "left",
         };
     }

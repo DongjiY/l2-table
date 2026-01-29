@@ -1,16 +1,23 @@
-import { TableCellFontStyling } from "./table-cell-types";
+import { ColumnConstraints } from "./column-constraints";
+import { TableCellStyles } from "./table-cell-types";
 
 export interface WorkerEvents {
   INIT: {
-    request: { w: number; h: number; columnMaxWidths: Record<string, number> };
+    request: {
+      w: number;
+      h: number;
+      columnConstraints: ColumnConstraints;
+      cellStyling: TableCellStyles | undefined;
+    };
     response: { ack: true };
   };
   CELL_SIZE: {
     request: {
+      columnId: string;
       content: string;
-      styling: TableCellFontStyling;
     };
     response: {
+      columnId: string;
       overflown: boolean;
       width: number;
     };

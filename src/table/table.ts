@@ -1,4 +1,10 @@
-import { TableConfig, TableOptions, TableRow } from "../types/table-config";
+import { ColumnConstraints } from "../types/column-constraints";
+import {
+  TableColumnDef,
+  TableConfig,
+  TableOptions,
+  TableRow,
+} from "../types/table-config";
 import { Camera } from "../utils/camera";
 import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
@@ -13,6 +19,7 @@ import {
   VERTICAL_SCROLLBAR_WIDTH,
   VerticalScrollbar,
 } from "./components/vertical-scrollbar";
+import { TableWorker } from "./table-worker";
 
 export class Table<TDataRow extends TableRow> {
   private verticalWrapper: HTMLDivElement;
@@ -29,6 +36,7 @@ export class Table<TDataRow extends TableRow> {
   private scrollYBar: VerticalScrollbar;
 
   private columnSizes: ColumnSizeMap<TDataRow>;
+  private tableWorker: TableWorker;
 
   constructor(
     private root: HTMLDivElement,
@@ -36,8 +44,20 @@ export class Table<TDataRow extends TableRow> {
   ) {
     this.tableConfig = this.opts.config;
 
+    this.tableWorker = new TableWorker();
+
     const { width: TOTAL_WIDTH, height: TOTAL_HEIGHT } =
       this.root.getBoundingClientRect();
+
+    this.tableWorker.send({
+      type: "INIT",
+      payload: {
+        w: TOTAL_WIDTH,
+        h: TOTAL_HEIGHT,
+        columnConstraints: this.getColumnConstraints(this.opts.config.columns),
+        cellStyling: this.opts.config.style.body.cell,
+      },
+    });
 
     this.horizontalWrapper = document.createElement("div");
     this.horizontalWrapper.style.display = "flex";
@@ -53,6 +73,9 @@ export class Table<TDataRow extends TableRow> {
     this.horizontalWrapper.appendChild(this.verticalWrapper);
 
     this.columnSizes = new ColumnSizeMap(this.opts.config.columns);
+    this.tableWorker.on("CELL_SIZE", ({ columnId, width }) => {
+      this.columnSizes.updateColumnSize(columnId, width);
+    });
 
     this.camera = new Camera({
       viewportWidth: TOTAL_WIDTH,
@@ -75,6 +98,7 @@ export class Table<TDataRow extends TableRow> {
       this.tableConfig,
       this.opts.source,
       this.columnSizes,
+      this.tableWorker,
       new Dimensions(
         TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
         TOTAL_HEIGHT -
@@ -145,6 +169,19 @@ export class Table<TDataRow extends TableRow> {
       this.scrollXBar,
       this.scrollYBar,
     ]);
+  }
+
+  private getColumnConstraints(
+    columns: Array<TableColumnDef<TDataRow>>,
+  ): ColumnConstraints {
+    const res: ColumnConstraints = {};
+    for (const column of columns) {
+      res[column.columnId] = {
+        maxWidth: column.maxWidth,
+        minWidth: column.minWidth,
+      }; // TODO - should max width be optional?
+    }
+    return res;
   }
 }
 

@@ -8,7 +8,7 @@ import { Dimensions } from "../../utils/dimensions";
 import { Camera } from "../../utils/camera";
 import { DrawCanvas } from "../../utils/draw-canvas";
 import { TableCell } from "./table-cell";
-import { Observable, Subscription } from "rxjs";
+import { merge, Observable, Subscription } from "rxjs";
 import { ColumnSizeMap } from "../../utils/column-size-map";
 import {
   boundaryBinarySearchLeftOrTop,
@@ -20,6 +20,7 @@ import { CellPool } from "../../utils/cell-pool";
 import { Closeable } from "../../utils/closeable";
 import { CellDataStore } from "../../utils/cell-data-store";
 import { TableData } from "../../utils/table-data";
+import { TableWorker } from "../table-worker";
 
 export class TableBody<TDataRow extends TableRow>
   extends DrawCanvas
@@ -28,12 +29,14 @@ export class TableBody<TDataRow extends TableRow>
   private cellPool: CellPool;
   private cellDataStore: CellDataStore<TDataRow>;
   private sourceSubscription: Subscription;
+  private columnResizeSubscription: Subscription;
 
   constructor(
     private readonly camera: Camera,
     private readonly config: TableConfig<TDataRow>,
     private readonly source: Observable<TableSourceData>,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
+    private readonly tableWorker: TableWorker,
     dimensions: Dimensions,
   ) {
     super(dimensions);
@@ -55,6 +58,18 @@ export class TableBody<TDataRow extends TableRow>
     this.sourceSubscription = this.source.subscribe((v) => {
       const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
       cellData.setValue(v.data);
+      this.tableWorker.send({
+        type: "CELL_SIZE",
+        payload: {
+          columnId: v.columnId,
+          content: cellData.getDisplayableContent(),
+        },
+      });
+      this.requestRedraw();
+    });
+    this.columnResizeSubscription = this.getColumnResizeObservables(
+      this.config.columns,
+    ).subscribe(() => {
       this.requestRedraw();
     });
 
@@ -76,8 +91,18 @@ export class TableBody<TDataRow extends TableRow>
     this.requestRedraw();
   }
 
+  private getColumnResizeObservables(
+    columns: Array<TableColumnDef<TDataRow>>,
+  ): Observable<{ columnId: string; width: number }> {
+    const obs = columns.map((col) =>
+      this.columnSizes.getColumnWidthObservable(col.columnId),
+    );
+    return merge(...obs);
+  }
+
   public close(): void {
     this.sourceSubscription.unsubscribe();
+    this.columnResizeSubscription.unsubscribe();
   }
 
   private getVirtualBounds(
