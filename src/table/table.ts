@@ -83,7 +83,6 @@ export class Table<TDataRow extends TableRow> {
     });
 
     this.columnSizes.getTotalColumnSizeObservable().subscribe((w) => {
-      console.log(w);
       this.camera.updateWorldDimensions({
         w: w + VERTICAL_SCROLLBAR_WIDTH,
         h:
