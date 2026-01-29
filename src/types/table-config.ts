@@ -32,8 +32,8 @@ export type TableColumnDef<TDataRow extends TableRow, TValue = unknown> = {
   columnId: string;
   name: string;
   hidden: boolean;
-  minWidth: number;
-  maxWidth: number;
+  minWidth?: number;
+  maxWidth?: number;
   autoResize: boolean;
   placeholderAccessorFn: (row: TDataRow) => TValue;
   cellData: () => TableData<TValue>;
