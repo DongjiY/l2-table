@@ -1,5 +1,4 @@
 import { BoundingBox } from "./bounding-box";
-import { Dimensions } from "./dimensions";
 import { Drawable } from "./drawable";
 import { Point } from "./point";
 
