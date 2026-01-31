@@ -2,19 +2,9 @@ import { BoundingBox } from "./bounding-box";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";
 
-type CameraChangeCallback = ({
-  dx,
-  dy,
-  x,
-  y,
-}: {
-  dx: number;
-  dy: number;
-  x: number;
-  y: number;
-}) => void;
+type CameraChangeCallback = (c: Camera) => void;
 
-type CameraResizeCallback = VoidFunction;
+type CameraResizeCallback = (c: Camera) => void;
 
 type CameraOptions = {
   x?: number;
@@ -98,7 +88,7 @@ export class Camera {
     this.focus.x = this.clampX(this.focus.x);
     this.focus.y = this.clampY(this.focus.y);
     this.cameraResizeCallbacks.forEach((cb) => {
-      cb();
+      cb(this);
     });
   }
 
@@ -106,12 +96,7 @@ export class Camera {
     this.focus.x = this.clampX(this.focus.x + dx);
     this.focus.y = this.clampY(this.focus.y + dy);
     this.cameraFocusChangeCallbacks.forEach((cb) => {
-      cb({
-        x: this.x,
-        y: this.y,
-        dx,
-        dy,
-      });
+      cb(this);
     });
   }
 

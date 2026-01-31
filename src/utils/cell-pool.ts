@@ -58,4 +58,10 @@ export class CellPool {
       this.addCell(cellFactory());
     }
   }
+
+  public *allCells(): IterableIterator<TableCell> {
+    for (const cell of this.cells) {
+      yield cell;
+    }
+  }
 }

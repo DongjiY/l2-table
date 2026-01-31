@@ -8,6 +8,11 @@ export class BoundingBox {
     private dimensions: Dimensions,
   ) {}
 
+  public update(point: Point, dimensions: Dimensions) {
+    this.point = point;
+    this.dimensions = dimensions;
+  }
+
   public compare(bb: BoundingBox, axis: Axis): -1 | 0 | 1 {
     switch (axis) {
       case Axis.X:
@@ -46,6 +51,15 @@ export class BoundingBox {
       this.point.x >= bb.point.x + bb.dimensions.w ||
       this.point.y + this.dimensions.h <= bb.point.y ||
       this.point.y >= bb.point.y + bb.dimensions.h
+    );
+  }
+
+  public intersects(p: Point): boolean {
+    return (
+      p.x >= this.point.x &&
+      p.x <= this.point.x + this.dimensions.w &&
+      p.y >= this.point.y &&
+      p.y <= this.point.y + this.dimensions.h
     );
   }
 }

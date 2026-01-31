@@ -23,6 +23,8 @@ import {
 import { TableWorker } from "./table-worker";
 
 export class Table<TDataRow extends TableRow> {
+  private rootDimensions: Dimensions = new Dimensions();
+
   private verticalWrapper: HTMLDivElement;
   private horizontalWrapper: HTMLDivElement;
 
@@ -48,15 +50,17 @@ export class Table<TDataRow extends TableRow> {
     this.tableConfig = this.opts.config;
 
     this.tableWorker = new TableWorker();
+    this.mouse = new Mouse(root);
 
-    const { width: TOTAL_WIDTH, height: TOTAL_HEIGHT } =
-      this.root.getBoundingClientRect();
+    const { width, height } = this.root.getBoundingClientRect();
+    this.rootDimensions.w = width;
+    this.rootDimensions.h = height;
 
     this.tableWorker.send({
       type: "INIT",
       payload: {
-        w: TOTAL_WIDTH,
-        h: TOTAL_HEIGHT,
+        w: this.rootDimensions.w,
+        h: this.rootDimensions.h,
         columnConstraints: this.getColumnConstraints(this.opts.config.columns),
         cellStyling: this.opts.config.style.body.cell,
       },
@@ -81,10 +85,9 @@ export class Table<TDataRow extends TableRow> {
     });
 
     this.camera = new Camera({
-      viewportWidth: TOTAL_WIDTH,
-      viewportHeight: TOTAL_HEIGHT,
+      viewportWidth: this.rootDimensions.w,
+      viewportHeight: this.rootDimensions.h,
     });
-    this.mouse = new Mouse(root, this.camera);
 
     this.columnSizes.getTotalColumnSizeObservable().subscribe((w) => {
       this.camera.updateWorldDimensions({
@@ -104,8 +107,8 @@ export class Table<TDataRow extends TableRow> {
       this.columnSizes,
       this.tableWorker,
       new Dimensions(
-        TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
-        TOTAL_HEIGHT -
+        this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
+        this.rootDimensions.h -
           this.opts.config.style.header.row.height -
           HORIZONTAL_SCROLLBAR_HEIGHT,
       ),
@@ -114,21 +117,25 @@ export class Table<TDataRow extends TableRow> {
       this.camera,
       this.columnSizes,
       new Dimensions(
-        TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
+        this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.opts.config.style.header.row.height,
       ),
       this.tableConfig,
     );
     this.scrollXBar = new HorizontalScrollbar(
       this.camera,
+      this.mouse,
+      this.rootDimensions,
       new Dimensions(
-        TOTAL_WIDTH - VERTICAL_SCROLLBAR_WIDTH,
+        this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         HORIZONTAL_SCROLLBAR_HEIGHT,
       ),
     );
     this.scrollYBar = new VerticalScrollbar(
       this.camera,
-      new Dimensions(VERTICAL_SCROLLBAR_WIDTH, TOTAL_HEIGHT),
+      this.mouse,
+      this.rootDimensions,
+      new Dimensions(VERTICAL_SCROLLBAR_WIDTH, this.rootDimensions.h),
     );
     this.verticalWrapper.appendChild(this.header.getElement());
     this.verticalWrapper.appendChild(this.body.getElement());
@@ -137,10 +144,8 @@ export class Table<TDataRow extends TableRow> {
 
     this.resizeObserver = new ResizeObserver(() => {
       const { width, height } = this.root.getBoundingClientRect();
-      this.camera.updateViewportDimensions({
-        w: width,
-        h: height,
-      });
+      this.rootDimensions.w = width;
+      this.rootDimensions.h = height;
       this.body.resize(
         width - VERTICAL_SCROLLBAR_WIDTH,
         height -
@@ -163,6 +168,10 @@ export class Table<TDataRow extends TableRow> {
         height,
         window.devicePixelRatio,
       );
+      this.camera.updateViewportDimensions({
+        w: width,
+        h: height,
+      });
     });
 
     this.resizeObserver.observe(this.root);
