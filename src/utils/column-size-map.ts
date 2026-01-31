@@ -36,9 +36,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
     for (const col of cols) {
       const maxWidth = col.maxWidth ?? 1;
       this.updateColumnSize(col.columnId, maxWidth);
-      this.totalColumnSize += maxWidth;
     }
-    this.totalColumnSizeUpdates$.next(this.totalColumnSize);
   }
 
   /**
@@ -47,16 +45,15 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
    * @param size
    */
   public updateColumnSize(columnId: string, size: number): void {
+    const currColumnSize = this.columnSizes.get(columnId) ?? 0;
     this.columnSizes.set(columnId, size);
     this.minColumnSize = Math.min(size, this.minColumnSize);
-    this.updateTotalColumnSize(columnId, size);
+    this.updateTotalColumnSize(size - currColumnSize);
     this.columnSizeUpdates$.next({ columnId, value: size });
     this.recomputeBoundingBoxesAndXPos();
   }
 
-  public updateTotalColumnSize(columnId: string, size: number): void {
-    const currColumnSize = this.columnSizes.get(columnId) ?? 0;
-    const delta = size - currColumnSize;
+  public updateTotalColumnSize(delta: number): void {
     this.totalColumnSize += delta;
     this.totalColumnSizeUpdates$.next(this.totalColumnSize);
   }

@@ -8,6 +8,7 @@ import {
 import { Camera } from "../utils/camera";
 import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
+import { Mouse } from "../utils/mouse";
 import { Renderer } from "../utils/renderer";
 import {
   HORIZONTAL_SCROLLBAR_HEIGHT,
@@ -29,6 +30,8 @@ export class Table<TDataRow extends TableRow> {
   private resizeObserver: ResizeObserver;
   private camera: Camera;
   private renderer: Renderer;
+
+  private mouse: Mouse;
 
   private body: TableBody<TDataRow>;
   private header: TableHeader<TDataRow>;
@@ -81,6 +84,7 @@ export class Table<TDataRow extends TableRow> {
       viewportWidth: TOTAL_WIDTH,
       viewportHeight: TOTAL_HEIGHT,
     });
+    this.mouse = new Mouse(root, this.camera);
 
     this.columnSizes.getTotalColumnSizeObservable().subscribe((w) => {
       this.camera.updateWorldDimensions({
