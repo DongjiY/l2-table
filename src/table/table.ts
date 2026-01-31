@@ -12,13 +12,13 @@ import { Renderer } from "../utils/renderer";
 import {
   HORIZONTAL_SCROLLBAR_HEIGHT,
   HorizontalScrollbar,
-} from "./components/scroll/horizontal-scrollbar";
+} from "./components/horizontal-scrollbar";
 import { TableBody } from "./components/table-body";
 import { TableHeader } from "./components/table-header";
 import {
   VERTICAL_SCROLLBAR_WIDTH,
   VerticalScrollbar,
-} from "./components/scroll/vertical-scrollbar";
+} from "./components/vertical-scrollbar";
 import { TableWorker } from "./table-worker";
 
 export class Table<TDataRow extends TableRow> {

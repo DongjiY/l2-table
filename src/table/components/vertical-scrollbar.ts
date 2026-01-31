@@ -1,8 +1,8 @@
-import { BoundingBox } from "../../../utils/bounding-box";
-import { Camera } from "../../../utils/camera";
-import { Dimensions } from "../../../utils/dimensions";
-import { DrawCanvas } from "../../../utils/draw-canvas";
-import { WorldObject } from "../../../utils/world-object";
+import { BoundingBox } from "../../utils/bounding-box";
+import { Camera } from "../../utils/camera";
+import { Dimensions } from "../../utils/dimensions";
+import { DrawCanvas } from "../../utils/draw-canvas";
+import { WorldObject } from "../../utils/world-object";
 
 export const VERTICAL_SCROLLBAR_WIDTH = 6;
 
