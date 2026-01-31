@@ -13,6 +13,7 @@ import { getPadding } from "../../utils/padding-utils";
 export class TableCell extends WorldObject {
   private data: TableData<unknown> | null = null;
   private dimensions: Dimensions = new Dimensions();
+  private _tempBoundingBox: BoundingBox | undefined;
 
   constructor(private readonly style: TableCellStyles | undefined) {
     super();
@@ -47,6 +48,11 @@ export class TableCell extends WorldObject {
   }
 
   public getBoundingBox(): BoundingBox {
+    // if (!this._tempBoundingBox) {
+    // this._tempBoundingBox = new BoundingBox(this.point, this.dimensions);
+    // }
+    // this._tempBoundingBox.update(this.point, this.dimensions);
+    // return this._tempBoundingBox;
     return new BoundingBox(this.point, this.dimensions);
   }
 

@@ -48,6 +48,7 @@ export class Table<TDataRow extends TableRow> {
     this.tableConfig = this.opts.config;
 
     this.tableWorker = new TableWorker();
+    this.mouse = new Mouse(root);
 
     const { width: TOTAL_WIDTH, height: TOTAL_HEIGHT } =
       this.root.getBoundingClientRect();
@@ -84,7 +85,6 @@ export class Table<TDataRow extends TableRow> {
       viewportWidth: TOTAL_WIDTH,
       viewportHeight: TOTAL_HEIGHT,
     });
-    this.mouse = new Mouse(root, this.camera);
 
     this.columnSizes.getTotalColumnSizeObservable().subscribe((w) => {
       this.camera.updateWorldDimensions({

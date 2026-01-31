@@ -8,6 +8,7 @@ import { TableCell } from "./table-cell";
 import { StringTableData } from "../../utils/string-table-data";
 import { ColumnSizeMap } from "../../utils/column-size-map";
 import { CellPool } from "../../utils/cell-pool";
+import { Mouse } from "../../utils/mouse";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool;
