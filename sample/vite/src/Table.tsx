@@ -5,7 +5,8 @@ import { EMPTY } from "rxjs";
 import { config, type StatsRow } from "./tableConfig";
 
 export function NumberTable(): ReactNode {
-  const [isLarge, setIsLarge] = useState<boolean>(true);
+  const [isLargeW, setIsLargeW] = useState<boolean>(true);
+  const [isLargeH, setIsLargeH] = useState<boolean>(true);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const table = useRef<Table<StatsRow> | null>(null);
@@ -29,19 +30,34 @@ export function NumberTable(): ReactNode {
       <div
         ref={tableContainerRef}
         style={{
-          width: isLarge ? 600 : 300,
-          height: 600,
+          width: isLargeW ? 600 : 300,
+          height: isLargeH ? 600 : 400,
         }}
       ></div>
 
-      <button
+      <div
         style={{
           width: "100%",
+          display: "flex",
         }}
-        onClick={() => setIsLarge(!isLarge)}
       >
-        Resize
-      </button>
+        <button
+          style={{
+            flex: 1,
+          }}
+          onClick={() => setIsLargeW(!isLargeW)}
+        >
+          Resize X
+        </button>
+        <button
+          style={{
+            flex: 1,
+          }}
+          onClick={() => setIsLargeH(!isLargeH)}
+        >
+          Resize Y
+        </button>
+      </div>
     </div>
   );
 }
