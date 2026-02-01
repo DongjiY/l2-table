@@ -34,7 +34,6 @@ export class TableBody<TDataRow extends TableRow>
   private cellIndex: CellIndex;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
-  private _tempPoint = new Point();
   private hoveredRowId: string | undefined;
 
   constructor(
@@ -99,7 +98,7 @@ export class TableBody<TDataRow extends TableRow>
 
     this.mouse.onMouseMove(
       this.mouseMove,
-      new Point(0, -1 * this.config.style.header.row.height), // TODO - need to handle when a resize occurs
+      new Point(0, -1 * this.config.style.header.row.height),
     );
     this.mouse.onMouseLost(() => (this.hoveredRowId = undefined));
 
