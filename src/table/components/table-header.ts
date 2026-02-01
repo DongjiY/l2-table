@@ -1,14 +1,11 @@
-import { EMPTY, NEVER } from "rxjs";
 import { TableConfig, TableRow } from "../../types/table-config";
 import { Camera } from "../../utils/camera";
 import { Dimensions } from "../../utils/dimensions";
 import { DrawCanvas } from "../../utils/draw-canvas";
-import { Point } from "../../utils/point";
 import { TableCell } from "./table-cell";
 import { StringTableData } from "../../utils/string-table-data";
 import { ColumnSizeMap } from "../../utils/column-size-map";
 import { CellPool } from "../../utils/cell-pool";
-import { Mouse } from "../../utils/mouse";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool;
@@ -16,8 +13,8 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   constructor(
     private readonly camera: Camera,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
-    dimensions: Dimensions,
     private readonly config: TableConfig<TDataRow>,
+    dimensions: Dimensions,
   ) {
     super(dimensions);
 

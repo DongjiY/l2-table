@@ -116,11 +116,11 @@ export class Table<TDataRow extends TableRow> {
     this.header = new TableHeader(
       this.camera,
       this.columnSizes,
+      this.tableConfig,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.opts.config.style.header.row.height,
       ),
-      this.tableConfig,
     );
     this.scrollXBar = new HorizontalScrollbar(
       this.camera,
