@@ -10,6 +10,7 @@ export const VERTICAL_SCROLLBAR_WIDTH = 6;
 
 export class VerticalScrollbar extends DrawCanvas {
   private thumb: VerticalThumb;
+  private dragStart: Point | undefined;
 
   constructor(
     private readonly camera: Camera,
@@ -35,16 +36,48 @@ export class VerticalScrollbar extends DrawCanvas {
       this.thumb.updateY(viewportHeight, worldHeight, y, this.h);
       this.requestRedraw();
     });
-    this.mouse.onMouseMove(
-      this.mouseMove,
-      new Point(-1 * (this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH), 0),
-    );
+
     this.mouse.onMouseLost(() => this.thumb.setIsHovered(false));
+    this.initMouseCallbacks();
 
     this.requestRedraw();
   }
 
-  mouseMove = (point: Point) => {
+  private initMouseCallbacks(): void {
+    this.mouse.onMouseMove(
+      this.mouseMove,
+      generateTransposePoint(this.rootDimensions.w),
+    );
+    this.mouse.onMouseDown(
+      this.mouseDown,
+      generateTransposePoint(this.rootDimensions.w),
+    );
+    this.mouse.onMouseUp(this.mouseUp);
+  }
+
+  mouseDown = (point: Point): void => {
+    if (this.thumb.getBoundingBox().intersects(point)) {
+      this.dragStart = Point.copy(point);
+      this.thumb.setIsActive(true);
+    }
+  };
+
+  mouseUp = (): void => {
+    this.dragStart = undefined;
+    this.thumb.setIsActive(false);
+  };
+
+  mouseMove = (point: Point): void => {
+    if (this.dragStart) {
+      const trackDeltaY = point.y - this.dragStart.y;
+      const contentRange = this.camera.worldHeight - this.camera.viewportHeight;
+      const thumbRange = this.h - this.thumb.h;
+      const contentDelta = (trackDeltaY / thumbRange) * contentRange;
+      this.camera.updateFocus({
+        dy: contentDelta,
+      });
+      this.dragStart.y = point.y;
+    }
     if (
       this.thumb.setIsHovered(this.thumb.getBoundingBox().intersects(point))
     ) {
@@ -54,11 +87,10 @@ export class VerticalScrollbar extends DrawCanvas {
 
   public resize(w: number, h: number, dpr?: number): void {
     this.mouse.removeMouseMoveListener(this.mouseMove);
+    this.mouse.removeMouseDownListener(this.mouseDown);
+    this.mouse.removeMouseUpListener(this.mouseUp);
     super.resize(w, h, dpr);
-    this.mouse.onMouseMove(
-      this.mouseMove,
-      new Point(-1 * (this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH), 0),
-    );
+    this.initMouseCallbacks();
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
@@ -68,10 +100,15 @@ export class VerticalScrollbar extends DrawCanvas {
   }
 }
 
+function generateTransposePoint(rootWidth: number): Point {
+  return new Point(-1 * (rootWidth - VERTICAL_SCROLLBAR_WIDTH), 0);
+}
+
 class VerticalThumb extends WorldObject {
   private dimensions: Dimensions;
-  private isHovered: boolean = false;
   private boundingBox: BoundingBox;
+  private isActive: boolean = false;
+  private isHovered: boolean = false;
 
   constructor(
     viewportHeight: number,
@@ -85,6 +122,10 @@ class VerticalThumb extends WorldObject {
       this.computeHeight(viewportHeight, worldHeight, parentHeight),
     );
     this.boundingBox = new BoundingBox(this.point, this.dimensions);
+  }
+
+  public get h(): number {
+    return this.dimensions.h;
   }
 
   private computeHeight(
@@ -132,8 +173,12 @@ class VerticalThumb extends WorldObject {
     return this.isHovered !== prevIsHovered;
   }
 
+  public setIsActive(isActive: boolean): void {
+    this.isActive = isActive;
+  }
+
   public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = this.isHovered ? "#6b7280" : "#9ca3af";
+    ctx.fillStyle = this.isHovered || this.isActive ? "#6b7280" : "#9ca3af";
     ctx.fillRect(0, this.point.y, this.dimensions.w, this.dimensions.h);
   }
 
