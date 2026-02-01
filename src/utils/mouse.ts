@@ -2,14 +2,18 @@ import { Point } from "./point";
 
 type MouseMoveCallbackFn = (p: Point) => void;
 
+type MouseLostCallbackFn = VoidFunction;
+
 export class Mouse {
   private readonly onMouseMoveCallbacks: Map<MouseMoveCallbackFn, Point> =
     new Map();
+  private readonly onMouseLostCallbacks: Set<MouseLostCallbackFn> = new Set();
   private point: Point = new Point();
   private _tempPoint: Point = new Point();
 
   constructor(private readonly container: HTMLElement) {
     container.addEventListener("mousemove", this.handleMouseMove.bind(this));
+    container.addEventListener("mouseleave", this.handleMouseLeave.bind(this));
   }
 
   /**
@@ -26,6 +30,18 @@ export class Mouse {
 
   public removeMouseMoveListener(fn: MouseMoveCallbackFn): void {
     this.onMouseMoveCallbacks.delete(fn);
+  }
+
+  public onMouseLost(fn: MouseLostCallbackFn): void {
+    this.onMouseLostCallbacks.add(fn);
+  }
+
+  public removeMouseLostListener(fn: MouseLostCallbackFn): void {
+    this.onMouseLostCallbacks.delete(fn);
+  }
+
+  private handleMouseLeave(): void {
+    this.onMouseLostCallbacks.forEach((cb) => cb());
   }
 
   private handleMouseMove(e: MouseEvent): void {
