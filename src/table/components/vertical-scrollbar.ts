@@ -107,8 +107,6 @@ function generateTransposePoint(rootWidth: number): Point {
 class VerticalThumb extends WorldObject {
   private dimensions: Dimensions;
   private boundingBox: BoundingBox;
-  private isActive: boolean = false;
-  private isHovered: boolean = false;
 
   constructor(
     viewportHeight: number,
@@ -168,17 +166,18 @@ class VerticalThumb extends WorldObject {
    * @returns True if the value changed, and False if no change
    */
   public setIsHovered(isHovered: boolean): boolean {
-    const prevIsHovered = this.isHovered;
-    this.isHovered = isHovered;
-    return this.isHovered !== prevIsHovered;
+    const prevIsHovered = this.state.isHovered;
+    this.state.isHovered = isHovered;
+    return this.state.isHovered !== prevIsHovered;
   }
 
   public setIsActive(isActive: boolean): void {
-    this.isActive = isActive;
+    this.state.isActive = isActive;
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = this.isHovered || this.isActive ? "#6b7280" : "#9ca3af";
+    ctx.fillStyle =
+      this.state.isHovered || this.state.isActive ? "#6b7280" : "#9ca3af";
     ctx.fillRect(0, this.point.y, this.dimensions.w, this.dimensions.h);
   }
 

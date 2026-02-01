@@ -106,6 +106,7 @@ export class Table<TDataRow extends TableRow> {
       this.opts.source,
       this.columnSizes,
       this.tableWorker,
+      this.mouse,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.rootDimensions.h -

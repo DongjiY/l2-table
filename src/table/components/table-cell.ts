@@ -25,18 +25,21 @@ export class TableCell extends WorldObject {
     data,
     width,
     height,
+    isHovered,
   }: {
     x: number;
     y: number;
     data: TableData<unknown>;
     width: number;
     height: number;
+    isHovered: boolean;
   }): void {
     this.point.x = x;
     this.point.y = y;
     this.dimensions.w = width;
     this.dimensions.h = height;
     this.data = data;
+    this.state.isHovered = isHovered;
   }
 
   public get w(): number {
@@ -57,6 +60,16 @@ export class TableCell extends WorldObject {
 
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
+
+    if (this.state.isHovered) {
+      ctx.fillStyle = "red";
+      ctx.fillRect(
+        this.point.x,
+        this.point.y,
+        this.dimensions.w,
+        this.dimensions.h,
+      );
+    }
 
     ctx.font = this.style?.text?.font ?? DEFAULT_FONT_STRING;
     ctx.fillStyle = this.style?.text?.color ?? DEFAULT_TEXT_COLOR;
