@@ -21,6 +21,9 @@ import { Closeable } from "../../utils/closeable";
 import { CellDataStore } from "../../utils/cell-data-store";
 import { TableData } from "../../utils/table-data";
 import { TableWorker } from "../table-worker";
+import { CellIndex } from "../../utils/cell-index";
+import { Point } from "../../utils/point";
+import { Mouse } from "../../utils/mouse";
 
 export class TableBody<TDataRow extends TableRow>
   extends DrawCanvas
@@ -28,8 +31,11 @@ export class TableBody<TDataRow extends TableRow>
 {
   private cellPool: CellPool;
   private cellDataStore: CellDataStore<TDataRow>;
+  private cellIndex: CellIndex;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
+  private _tempPoint = new Point();
+  private hoveredRowId: string | undefined;
 
   constructor(
     private readonly camera: Camera,
@@ -37,6 +43,7 @@ export class TableBody<TDataRow extends TableRow>
     private readonly source: Observable<TableSourceData>,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
     private readonly tableWorker: TableWorker,
+    private readonly mouse: Mouse,
     dimensions: Dimensions,
   ) {
     super(dimensions);
@@ -53,6 +60,8 @@ export class TableBody<TDataRow extends TableRow>
         return new TableCell(this.config.style.body.cell);
       },
     });
+
+    this.cellIndex = new CellIndex();
 
     this.cellDataStore = new CellDataStore(this.config.columns);
     this.sourceSubscription = this.source.subscribe((v) => {
@@ -88,8 +97,28 @@ export class TableBody<TDataRow extends TableRow>
     this.camera.onCameraFocusChange(() => this.requestRedraw());
     this.camera.onCameraResize(() => this.requestRedraw());
 
+    this.mouse.onMouseMove(
+      this.mouseMove,
+      new Point(0, -1 * this.config.style.header.row.height), // TODO - need to handle when a resize occurs
+    );
+
     this.requestRedraw();
   }
+
+  mouseMove = (point: Point): void => {
+    const worldY = point.y + this.camera.y;
+    const rowHeight = this.config.style.body.row.height;
+    const rowIndex = Math.floor(worldY / rowHeight);
+    let nextHoveredRowId: string | undefined;
+    if (rowIndex >= 0 && rowIndex < this.config.rows.length) {
+      nextHoveredRowId = this.config.rows[rowIndex].rowId;
+    }
+    if (nextHoveredRowId === this.hoveredRowId) {
+      return;
+    }
+    this.hoveredRowId = nextHoveredRowId;
+    this.requestRedraw();
+  };
 
   private getColumnResizeObservables(
     columns: Array<TableColumnDef<TDataRow>>,
@@ -177,6 +206,7 @@ export class TableBody<TDataRow extends TableRow>
           y: r * this.config.style.body.row.height,
           width: this.columnSizes.getColumnWidth(column.columnId) ?? 0,
           height: this.config.style.body.row.height,
+          isHovered: row.rowId === this.hoveredRowId,
           data: this.cellDataStore.getCellData(
             row.rowId,
             column.columnId,
@@ -184,6 +214,7 @@ export class TableBody<TDataRow extends TableRow>
           ),
         });
         cell.draw(ctx);
+        this.cellIndex.register(column.columnId, row.rowId, cell);
       }
     }
   }
