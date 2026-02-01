@@ -48,12 +48,11 @@ export class TableCell extends WorldObject {
   }
 
   public getBoundingBox(): BoundingBox {
-    // if (!this._tempBoundingBox) {
-    // this._tempBoundingBox = new BoundingBox(this.point, this.dimensions);
-    // }
-    // this._tempBoundingBox.update(this.point, this.dimensions);
-    // return this._tempBoundingBox;
-    return new BoundingBox(this.point, this.dimensions);
+    if (!this._tempBoundingBox) {
+      this._tempBoundingBox = new BoundingBox(this.point, this.dimensions);
+    }
+    this._tempBoundingBox.update(this.point, this.dimensions);
+    return this._tempBoundingBox;
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
