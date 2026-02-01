@@ -35,11 +35,11 @@ export class VerticalScrollbar extends DrawCanvas {
       this.thumb.updateY(viewportHeight, worldHeight, y, this.h);
       this.requestRedraw();
     });
-
     this.mouse.onMouseMove(
       this.mouseMove,
       new Point(-1 * (this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH), 0),
     );
+    this.mouse.onMouseLost(() => this.thumb.setIsHovered(false));
 
     this.requestRedraw();
   }
