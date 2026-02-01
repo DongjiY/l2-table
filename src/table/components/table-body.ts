@@ -101,6 +101,7 @@ export class TableBody<TDataRow extends TableRow>
       this.mouseMove,
       new Point(0, -1 * this.config.style.header.row.height), // TODO - need to handle when a resize occurs
     );
+    this.mouse.onMouseLost(() => (this.hoveredRowId = undefined));
 
     this.requestRedraw();
   }
