@@ -25,21 +25,18 @@ export class TableCell extends WorldObject {
     data,
     width,
     height,
-    isHovered,
   }: {
     x: number;
     y: number;
     data: TableData<unknown>;
     width: number;
     height: number;
-    isHovered: boolean;
   }): void {
     this.point.x = x;
     this.point.y = y;
     this.dimensions.w = width;
     this.dimensions.h = height;
     this.data = data;
-    this.state.isHovered = isHovered;
   }
 
   public get w(): number {

@@ -29,7 +29,7 @@ export class Canvas {
     this.canvas.style.height = `${this.dimensions.h}px`;
   }
 
-  public getElement(): HTMLCanvasElement {
+  public getElement(): HTMLElement {
     return this.canvas;
   }
 }

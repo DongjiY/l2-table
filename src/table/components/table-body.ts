@@ -24,11 +24,13 @@ import { TableWorker } from "../table-worker";
 import { CellIndex } from "../../utils/cell-index";
 import { Point } from "../../utils/point";
 import { Mouse } from "../../utils/mouse";
+import { TableBodyOverlay } from "../table-body-overlay";
 
 export class TableBody<TDataRow extends TableRow>
   extends DrawCanvas
   implements Closeable
 {
+  private canvasWrapperDiv: HTMLDivElement;
   private cellPool: CellPool;
   private cellDataStore: CellDataStore<TDataRow>;
   private cellIndex: CellIndex;
@@ -36,6 +38,7 @@ export class TableBody<TDataRow extends TableRow>
   private columnResizeSubscription: Subscription;
   private hoveredRowId: string | undefined;
   private _prevMousePoint: Point = new Point();
+  private overlay: TableBodyOverlay;
 
   constructor(
     private readonly camera: Camera,
@@ -47,6 +50,15 @@ export class TableBody<TDataRow extends TableRow>
     dimensions: Dimensions,
   ) {
     super(dimensions);
+
+    this.canvasWrapperDiv = document.createElement("div");
+    this.canvasWrapperDiv.appendChild(super.getElement());
+    this.canvasWrapperDiv.style.overflow = "hidden";
+    this.canvasWrapperDiv.style.position = "relative";
+    this.overlay = new TableBodyOverlay(
+      this.canvasWrapperDiv,
+      this.config.style.body.row.height,
+    );
 
     this.cellPool = new CellPool();
     this.cellPool.initFromViewport({
@@ -104,9 +116,13 @@ export class TableBody<TDataRow extends TableRow>
       this.mouseMove,
       new Point(0, -1 * this.config.style.header.row.height),
     );
-    this.mouse.onMouseLost(() => (this.hoveredRowId = undefined));
+    this.mouse.onMouseLost(() => this.overlay.hide());
 
     this.requestRedraw();
+  }
+
+  public getElement(): HTMLElement {
+    return this.canvasWrapperDiv;
   }
 
   mouseMove = (point: Point): void => {
@@ -117,12 +133,11 @@ export class TableBody<TDataRow extends TableRow>
     let nextHoveredRowId: string | undefined;
     if (rowIndex >= 0 && rowIndex < this.config.rows.length) {
       nextHoveredRowId = this.config.rows[rowIndex].rowId;
+      const rowTopY = rowIndex * rowHeight - this.camera.y;
+      this.overlay.drawAtPoint(rowTopY);
     }
-    if (nextHoveredRowId === this.hoveredRowId) {
-      return;
-    }
+    if (nextHoveredRowId === this.hoveredRowId) return;
     this.hoveredRowId = nextHoveredRowId;
-    this.requestRedraw();
   };
 
   private getColumnResizeObservables(
@@ -211,7 +226,6 @@ export class TableBody<TDataRow extends TableRow>
           y: r * this.config.style.body.row.height,
           width: this.columnSizes.getColumnWidth(column.columnId) ?? 0,
           height: this.config.style.body.row.height,
-          isHovered: row.rowId === this.hoveredRowId,
           data: this.cellDataStore.getCellData(
             row.rowId,
             column.columnId,
