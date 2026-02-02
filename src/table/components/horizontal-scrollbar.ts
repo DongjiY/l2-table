@@ -57,7 +57,7 @@ export class HorizontalScrollbar extends DrawCanvas {
 
   mouseDown = (point: Point): void => {
     if (this.thumb.getBoundingBox().intersects(point)) {
-      this.dragStart = Point.copy(point);
+      this.dragStart = Point.clone(point);
       this.thumb.setIsActive(true);
     }
   };
