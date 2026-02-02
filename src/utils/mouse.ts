@@ -3,6 +3,11 @@ import { Point } from "./point";
 type MouseCallbackFn = (p: Point) => void;
 
 export class Mouse {
+  private isDragging: boolean = false;
+  private readonly boundHandleMouseMove = this.handleMouseMove.bind(this);
+  private readonly boundHandleMouseDown = this.handleMouseDown.bind(this);
+  private readonly boundHandleMouseUp = this.handleMouseUp.bind(this);
+
   private readonly onMouseMoveCallbacks: Map<MouseCallbackFn, Point> =
     new Map();
   private readonly onMouseLostCallbacks: Set<VoidFunction> = new Set();
@@ -13,10 +18,10 @@ export class Mouse {
   private _tempPoint: Point = new Point();
 
   constructor(private readonly container: HTMLElement) {
-    container.addEventListener("mousemove", this.handleMouseMove.bind(this));
+    container.addEventListener("mousemove", this.boundHandleMouseMove);
     container.addEventListener("mouseleave", this.handleMouseLeave.bind(this));
-    container.addEventListener("mousedown", this.handleMouseDown.bind(this));
-    container.addEventListener("mouseup", this.handleMouseUp.bind(this));
+    container.addEventListener("mousedown", this.boundHandleMouseDown);
+    container.addEventListener("mouseup", this.boundHandleMouseUp);
   }
 
   /**
@@ -43,10 +48,6 @@ export class Mouse {
     this.onMouseLostCallbacks.delete(fn);
   }
 
-  private handleMouseLeave(): void {
-    this.onMouseLostCallbacks.forEach((cb) => cb());
-  }
-
   public onMouseDown(
     fn: MouseCallbackFn,
     transposition: Point = new Point(0, 0),
@@ -55,7 +56,7 @@ export class Mouse {
   }
 
   public removeMouseDownListener(fn: MouseCallbackFn): void {
-    this.onMouseMoveCallbacks.delete(fn);
+    this.onMouseDownCallbacks.delete(fn);
   }
 
   public onMouseUp(
@@ -83,6 +84,10 @@ export class Mouse {
   }
 
   private handleMouseUp(e: MouseEvent): void {
+    this.isDragging = false;
+    window.removeEventListener("mousemove", this.boundHandleMouseMove);
+    window.removeEventListener("mouseup", this.boundHandleMouseUp);
+    this.container.addEventListener("mousemove", this.boundHandleMouseMove);
     this.updatePointFromMouseEvent(e);
     this.onMouseUpCallbacks.forEach((transpose, cb) => {
       const p = this.updateTempPointFromMouseEvent(transpose);
@@ -90,7 +95,17 @@ export class Mouse {
     });
   }
 
+  private handleMouseLeave(): void {
+    if (!this.isDragging) {
+      this.onMouseLostCallbacks.forEach((cb) => cb());
+    }
+  }
+
   private handleMouseDown(e: MouseEvent): void {
+    this.isDragging = true;
+    this.container.removeEventListener("mousemove", this.boundHandleMouseMove);
+    window.addEventListener("mousemove", this.boundHandleMouseMove);
+    window.addEventListener("mouseup", this.boundHandleMouseUp);
     this.updatePointFromMouseEvent(e);
     this.onMouseDownCallbacks.forEach((transpose, cb) => {
       const p = this.updateTempPointFromMouseEvent(transpose);
