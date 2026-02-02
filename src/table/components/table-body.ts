@@ -35,6 +35,7 @@ export class TableBody<TDataRow extends TableRow>
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
   private hoveredRowId: string | undefined;
+  private _prevMousePoint: Point = new Point();
 
   constructor(
     private readonly camera: Camera,
@@ -93,7 +94,10 @@ export class TableBody<TDataRow extends TableRow>
       { passive: false },
     );
 
-    this.camera.onCameraFocusChange(() => this.requestRedraw());
+    this.camera.onCameraFocusChange(() => {
+      this.mouseMove(this._prevMousePoint);
+      this.requestRedraw();
+    });
     this.camera.onCameraResize(() => this.requestRedraw());
 
     this.mouse.onMouseMove(
@@ -106,6 +110,7 @@ export class TableBody<TDataRow extends TableRow>
   }
 
   mouseMove = (point: Point): void => {
+    this._prevMousePoint.copy(point);
     const worldY = point.y + this.camera.y;
     const rowHeight = this.config.style.body.row.height;
     const rowIndex = Math.floor(worldY / rowHeight);

@@ -8,7 +8,12 @@ export class Point {
     return new Point(this.x + other.x, this.y + other.y);
   }
 
-  public static copy(other: Point): Point {
+  public copy(other: Point): void {
+    this.x = other.x;
+    this.y = other.y;
+  }
+
+  public static clone(other: Point): Point {
     return new Point(other.x, other.y);
   }
 }
