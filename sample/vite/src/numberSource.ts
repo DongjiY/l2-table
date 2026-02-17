@@ -7,12 +7,14 @@ export function numberSource<TDataRow extends TableRow>(
   const cells: Array<{ rowId: string; columnId: string }> = [];
 
   tableConfig.rows.forEach((row) => {
-    tableConfig.columns.forEach((column) => {
-      cells.push({
-        rowId: row.rowId,
-        columnId: column.columnId,
+    tableConfig.columns
+      .filter((column) => column.columnId !== "index")
+      .forEach((column) => {
+        cells.push({
+          rowId: row.rowId,
+          columnId: column.columnId,
+        });
       });
-    });
   });
 
   const batchSize = Math.min(500, cells.length);

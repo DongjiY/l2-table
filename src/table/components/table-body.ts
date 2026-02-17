@@ -25,6 +25,7 @@ import { CellIndex } from "../../utils/cell-index";
 import { Point } from "../../utils/point";
 import { Mouse } from "../../utils/mouse";
 import { TableBodyOverlay } from "../table-body-overlay";
+import { SortedRowModel } from "../../utils/sorted-row-model";
 
 export class TableBody<TDataRow extends TableRow>
   extends DrawCanvas
@@ -47,6 +48,7 @@ export class TableBody<TDataRow extends TableRow>
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
     private readonly tableWorker: TableWorker,
     private readonly mouse: Mouse,
+    private readonly sortedRowModel: SortedRowModel<TDataRow>,
     dimensions: Dimensions,
   ) {
     super(dimensions);
@@ -85,6 +87,12 @@ export class TableBody<TDataRow extends TableRow>
           columnId: v.columnId,
           content: cellData.getDisplayableContent(),
         },
+      });
+      this.sortedRowModel.resort({
+        value: v.data,
+        columnId: v.columnId,
+        rowId: v.rowId,
+        compare: cellData.compare,
       });
       this.requestRedraw();
     });
@@ -131,8 +139,8 @@ export class TableBody<TDataRow extends TableRow>
     const rowHeight = this.config.style.body.row.height;
     const rowIndex = Math.floor(worldY / rowHeight);
     let nextHoveredRowId: string | undefined;
-    if (rowIndex >= 0 && rowIndex < this.config.rows.length) {
-      nextHoveredRowId = this.config.rows[rowIndex].rowId;
+    if (rowIndex >= 0 && rowIndex < this.sortedRowModel.length) {
+      nextHoveredRowId = this.sortedRowModel.getRow(rowIndex).rowId;
       const rowTopY = rowIndex * rowHeight - this.camera.y;
       this.overlay.drawAtPoint(rowTopY);
     }
@@ -181,7 +189,7 @@ export class TableBody<TDataRow extends TableRow>
     const { topIndex: topBound, bottomIndex: bottomBound } =
       calculateTopAndBottomRowBounds(
         this.config.style.body.row.height,
-        this.config.rows.length,
+        this.sortedRowModel.length,
         this.camera.y,
         this.camera.viewportHeight,
       );
@@ -199,7 +207,7 @@ export class TableBody<TDataRow extends TableRow>
     const topRowIndex = Math.max(0, topBound - bufferY);
 
     const bottomRowIndex = Math.min(
-      this.config.rows.length - 1,
+      this.sortedRowModel.length - 1,
       bottomBound + bufferY,
     );
 
@@ -217,7 +225,7 @@ export class TableBody<TDataRow extends TableRow>
     const { leftColumnIndex, rightColumnIndex, topRowIndex, bottomRowIndex } =
       this.getVirtualBounds();
     for (let r = topRowIndex; r <= bottomRowIndex; r++) {
-      const row = this.config.rows[r];
+      const row = this.sortedRowModel.getRow(r);
       for (let c = leftColumnIndex; c <= rightColumnIndex; c++) {
         const cell = this.cellPool.next();
         const column = this.config.columns[c];
