@@ -41,23 +41,41 @@ export class CellIndex {
     this.columnCollection.get(columnId)?.add(cell);
   }
 
-  public getCellsForColumn(cell: TableCell): Array<TableCell> {
+  public getCellsForColumn(
+    cell: TableCell,
+  ): Array<{ cell: TableCell; rowId?: string; columnId?: string }> {
     const cellData = this.cellMap.get(cell);
     if (!cellData) return [];
     return this.getCellsForColumnById(cellData.columnId);
   }
 
-  public getCellsForColumnById(columnId: string): Array<TableCell> {
-    return Array.from(this.columnCollection.get(columnId) ?? []);
+  public getCellsForColumnById(
+    columnId: string,
+  ): Array<{ cell: TableCell; rowId?: string; columnId?: string }> {
+    return Array.from(this.columnCollection.get(columnId) ?? []).map(
+      (cell) => ({
+        cell,
+        rowId: this.cellMap.get(cell)?.rowId,
+        columnId,
+      }),
+    );
   }
 
-  public getCellsForRow(cell: TableCell): Array<TableCell> {
+  public getCellsForRow(
+    cell: TableCell,
+  ): Array<{ cell: TableCell; rowId?: string; columnId?: string }> {
     const cellData = this.cellMap.get(cell);
     if (!cellData) return [];
     return this.getCellsForRowById(cellData.rowId);
   }
 
-  public getCellsForRowById(rowId: string): Array<TableCell> {
-    return Array.from(this.rowCollection.get(rowId) ?? []);
+  public getCellsForRowById(
+    rowId: string,
+  ): Array<{ cell: TableCell; rowId?: string; columnId?: string }> {
+    return Array.from(this.rowCollection.get(rowId) ?? []).map((cell) => ({
+      cell,
+      rowId,
+      columnId: this.cellMap.get(cell)?.columnId,
+    }));
   }
 }

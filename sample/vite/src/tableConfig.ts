@@ -3,6 +3,7 @@ import { NumberTableData } from "./numberTableData";
 
 export type StatsRow = TableRow & {
   placeholders: {
+    index: number;
     avg: number;
     med: number;
     min: number;
@@ -22,6 +23,16 @@ export type StatsRow = TableRow & {
  * Column definitions (ordered, explicit)
  */
 const columns: Array<TableColumnDef<StatsRow, number>> = [
+  {
+    columnId: "index",
+    name: "index",
+    hidden: false,
+    // minWidth: 0,
+    // maxWidth: 170,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.index,
+    cellData: () => new NumberTableData(),
+  },
   {
     columnId: "avg",
     name: "average",
@@ -154,6 +165,7 @@ function generateRows(rowCount = 1): StatsRow[] {
     res.push({
       rowId: `${i}`,
       placeholders: {
+        index: i,
         avg: 0,
         med: 1,
         min: 2,

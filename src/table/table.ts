@@ -10,6 +10,7 @@ import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
 import { Mouse } from "../utils/mouse";
 import { Renderer } from "../utils/renderer";
+import { SortedRowModel } from "../utils/sorted-row-model";
 import {
   HORIZONTAL_SCROLLBAR_HEIGHT,
   HorizontalScrollbar,
@@ -43,6 +44,8 @@ export class Table<TDataRow extends TableRow> {
   private columnSizes: ColumnSizeMap<TDataRow>;
   private tableWorker: TableWorker;
 
+  private sortedRowModel: SortedRowModel<TDataRow>;
+
   constructor(
     private root: HTMLDivElement,
     private readonly opts: TableOptions<TDataRow>,
@@ -51,6 +54,7 @@ export class Table<TDataRow extends TableRow> {
 
     this.tableWorker = new TableWorker();
     this.mouse = new Mouse(root);
+    this.sortedRowModel = new SortedRowModel(this.tableConfig.rows);
 
     const { width, height } = this.root.getBoundingClientRect();
     this.rootDimensions.w = width;
@@ -107,6 +111,7 @@ export class Table<TDataRow extends TableRow> {
       this.columnSizes,
       this.tableWorker,
       this.mouse,
+      this.sortedRowModel,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.rootDimensions.h -
@@ -118,6 +123,9 @@ export class Table<TDataRow extends TableRow> {
       this.camera,
       this.columnSizes,
       this.tableConfig,
+      this.tableWorker,
+      this.mouse,
+      this.sortedRowModel,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.opts.config.style.header.row.height,
