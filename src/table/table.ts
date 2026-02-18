@@ -6,6 +6,7 @@ import {
   TableRow,
 } from "../types/table-config";
 import { Camera } from "../utils/camera";
+import { CellDataStore } from "../utils/cell-data-store";
 import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
 import { Mouse } from "../utils/mouse";
@@ -45,6 +46,7 @@ export class Table<TDataRow extends TableRow> {
   private tableWorker: TableWorker;
 
   private sortedRowModel: SortedRowModel<TDataRow>;
+  private cellDataStore: CellDataStore<TDataRow>;
 
   constructor(
     private root: HTMLDivElement,
@@ -54,7 +56,11 @@ export class Table<TDataRow extends TableRow> {
 
     this.tableWorker = new TableWorker();
     this.mouse = new Mouse(root);
-    this.sortedRowModel = new SortedRowModel(this.tableConfig.rows);
+    this.cellDataStore = new CellDataStore(this.tableConfig.columns);
+    this.sortedRowModel = new SortedRowModel(
+      this.cellDataStore,
+      this.tableConfig.rows,
+    );
 
     const { width, height } = this.root.getBoundingClientRect();
     this.rootDimensions.w = width;
@@ -112,6 +118,7 @@ export class Table<TDataRow extends TableRow> {
       this.tableWorker,
       this.mouse,
       this.sortedRowModel,
+      this.cellDataStore,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.rootDimensions.h -

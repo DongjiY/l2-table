@@ -10,13 +10,9 @@ import { SortedRowModel } from "../../utils/sorted-row-model";
 import { TableWorker } from "../table-worker";
 import { Mouse } from "../../utils/mouse";
 import { Point } from "../../utils/point";
-import { CellIndex } from "../../utils/cell-index";
-
-const HEADER_ROW_ID = "HEADER_ROW";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool;
-  private cellIndex: CellIndex;
 
   constructor(
     private readonly camera: Camera,
@@ -29,7 +25,6 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   ) {
     super(dimensions);
 
-    this.cellIndex = new CellIndex();
     this.cellPool = new CellPool();
     this.cellPool.initFromCount({
       count: this.config.columns.length,
@@ -68,15 +63,32 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   }
 
   handleMouseDown = (p: Point) => {
-    for (const { cell, columnId } of this.cellIndex.getCellsForRowById(
-      HEADER_ROW_ID,
-    )) {
-      if (cell.getBoundingBox().intersects(p) && columnId) {
-        this.sortedRowModel.toggleSort(columnId);
-        break;
+    const worldX = p.x + this.camera.x;
+    const worldY = p.y;
+
+    const headerHeight = this.config.style.header.row.height;
+
+    if (worldY < 0 || worldY > headerHeight) return;
+
+    const columnId = this.getColumnIdAtX(worldX);
+    if (!columnId) return;
+
+    this.sortedRowModel.toggleSort(columnId);
+    this.requestRedraw();
+  };
+
+  private getColumnIdAtX(worldX: number): string | undefined {
+    for (const column of this.config.columns) {
+      const x = this.columnSizes.getColumnXPos(column.columnId) ?? 0;
+      const width = this.columnSizes.getColumnWidth(column.columnId) ?? 0;
+
+      if (worldX >= x && worldX <= x + width) {
+        return column.columnId;
       }
     }
-  };
+
+    return undefined;
+  }
 
   private drawCells(ctx: CanvasRenderingContext2D): void {
     this.cellPool.beginFrame();
@@ -93,7 +105,6 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         height: this.config.style.header.row.height,
       });
       cell.draw(ctx);
-      this.cellIndex.register(column.columnId, HEADER_ROW_ID, cell);
     }
   }
 
