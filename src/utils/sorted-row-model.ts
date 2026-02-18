@@ -1,4 +1,5 @@
 import { TableRow } from "../types/table-config";
+import { CellDataStore } from "./cell-data-store";
 
 export class SortedRowModel<TDataRow extends TableRow> {
   public sortDirection: "ASC" | "DESC" | undefined;
@@ -9,11 +10,14 @@ export class SortedRowModel<TDataRow extends TableRow> {
     columnUnderSortValue: any;
   }>;
 
-  constructor(rowDefintion: Array<TDataRow>) {
+  constructor(
+    private readonly cellDataStore: CellDataStore<TDataRow>,
+    private readonly rowDefinition: Array<TDataRow>,
+  ) {
     this.rowIdToIndexMap = new Map(
-      rowDefintion.map((row, index) => [row.rowId, index]),
+      rowDefinition.map((row, index) => [row.rowId, index]),
     );
-    this.sortedRows = rowDefintion.map((row) => ({
+    this.sortedRows = rowDefinition.map((row) => ({
       rowDefinition: row,
       columnUnderSortValue: undefined,
     }));
@@ -27,17 +31,20 @@ export class SortedRowModel<TDataRow extends TableRow> {
     if (this.columnIdUnderSort !== columnId) {
       this.columnIdUnderSort = columnId;
       this.sortDirection = "ASC";
+      this.initialSort();
       return;
     }
 
     if (this.sortDirection === "ASC") {
       this.sortDirection = "DESC";
+      this.initialSort();
       return;
     }
 
     if (this.sortDirection === "DESC") {
       this.columnIdUnderSort = undefined;
       this.sortDirection = undefined;
+      this.initialSort();
       return;
     }
 
@@ -47,6 +54,52 @@ export class SortedRowModel<TDataRow extends TableRow> {
 
   public getRow(index: number): TDataRow {
     return this.sortedRows[index].rowDefinition;
+  }
+
+  private initialSort(): void {
+    if (this.columnIdUnderSort === undefined) {
+      this.sortedRows = this.rowDefinition.map((row) => ({
+        rowDefinition: row,
+        columnUnderSortValue: undefined,
+      }));
+      return;
+    }
+
+    let compareFn;
+    this.sortedRows = this.rowDefinition.map((row) => {
+      const placeholder = row.placeholders[this.columnIdUnderSort!];
+      const cellData = this.cellDataStore.getCellData(
+        row.rowId,
+        this.columnIdUnderSort!,
+      );
+      compareFn = cellData.compare;
+      const existingValue = cellData.getValue();
+
+      return {
+        rowDefinition: row,
+        columnUnderSortValue: existingValue ?? placeholder,
+      };
+    });
+
+    if (compareFn) this.sort(compareFn);
+  }
+
+  private sort(compare: (a: any, b: any) => -1 | 0 | 1): void {
+    const compareProxy = (a: any, b: any): number => {
+      if (a === undefined && b === undefined) return 0;
+      if (a === undefined) return 1;
+      if (b === undefined) return -1;
+      return compare(a, b) * this.getSortDirectionMultiplier();
+    };
+
+    this.sortedRows.sort((a, b) =>
+      compareProxy(a.columnUnderSortValue, b.columnUnderSortValue),
+    );
+
+    this.rowIdToIndexMap.clear();
+    for (let i = 0; i < this.sortedRows.length; i++) {
+      this.rowIdToIndexMap.set(this.sortedRows[i].rowDefinition.rowId, i);
+    }
   }
 
   public resort({
@@ -67,21 +120,7 @@ export class SortedRowModel<TDataRow extends TableRow> {
 
     this.sortedRows[index].columnUnderSortValue = value;
 
-    const compareProxy = (a: any, b: any): number => {
-      if (a === undefined && b === undefined) return 0;
-      if (a === undefined) return 1;
-      if (b === undefined) return -1;
-      return compare(a, b) * this.getSortDirectionMultiplier();
-    };
-
-    this.sortedRows.sort((a, b) =>
-      compareProxy(a.columnUnderSortValue, b.columnUnderSortValue),
-    );
-
-    this.rowIdToIndexMap.clear();
-    for (let i = 0; i < this.sortedRows.length; i++) {
-      this.rowIdToIndexMap.set(this.sortedRows[i].rowDefinition.rowId, i);
-    }
+    this.sort(compare);
   }
 
   private getSortDirectionMultiplier(): 1 | -1 {

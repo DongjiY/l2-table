@@ -1,9 +1,11 @@
-import { interval, map, mergeMap, from, Observable } from "rxjs";
+import { interval, map, mergeMap, from, Observable, EMPTY } from "rxjs";
 import type { TableConfig, TableRow, TableSourceData } from "../../../dist";
 
 export function numberSource<TDataRow extends TableRow>(
   tableConfig: TableConfig<TDataRow>,
 ): Observable<TableSourceData> {
+  return EMPTY;
+
   const cells: Array<{ rowId: string; columnId: string }> = [];
 
   tableConfig.rows.forEach((row) => {

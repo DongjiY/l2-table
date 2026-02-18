@@ -78,4 +78,10 @@ export class CellIndex {
       columnId: this.cellMap.get(cell)?.columnId,
     }));
   }
+
+  public clear(): void {
+    this.rowCollection.clear();
+    this.columnCollection.clear();
+    this.cellMap.clear();
+  }
 }

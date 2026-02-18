@@ -21,12 +21,15 @@ export class CellDataStore<TDataRow extends TableRow> {
     columnId: string,
     dataFactory?: () => TableData<unknown>,
   ): TableData<unknown> {
+    console.log(rowId, columnId);
     let cellData = this.cellData.get(this.toKey(rowId, columnId));
     if (!cellData) {
       const columnFactory = this.columnCellDataFactories.get(columnId);
       if (dataFactory) {
+        console.log("invoking data factory");
         cellData = dataFactory();
       } else if (columnFactory) {
+        console.log("invoking column factory");
         cellData = columnFactory();
       } else {
         throw new Error(

@@ -21,7 +21,6 @@ import { Closeable } from "../../utils/closeable";
 import { CellDataStore } from "../../utils/cell-data-store";
 import { TableData } from "../../utils/table-data";
 import { TableWorker } from "../table-worker";
-import { CellIndex } from "../../utils/cell-index";
 import { Point } from "../../utils/point";
 import { Mouse } from "../../utils/mouse";
 import { TableBodyOverlay } from "../table-body-overlay";
@@ -33,8 +32,6 @@ export class TableBody<TDataRow extends TableRow>
 {
   private canvasWrapperDiv: HTMLDivElement;
   private cellPool: CellPool;
-  private cellDataStore: CellDataStore<TDataRow>;
-  private cellIndex: CellIndex;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
   private hoveredRowId: string | undefined;
@@ -49,6 +46,7 @@ export class TableBody<TDataRow extends TableRow>
     private readonly tableWorker: TableWorker,
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
+    private readonly cellDataStore: CellDataStore<TDataRow>,
     dimensions: Dimensions,
   ) {
     super(dimensions);
@@ -75,9 +73,6 @@ export class TableBody<TDataRow extends TableRow>
       },
     });
 
-    this.cellIndex = new CellIndex();
-
-    this.cellDataStore = new CellDataStore(this.config.columns);
     this.sourceSubscription = this.source.subscribe((v) => {
       const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
       cellData.setValue(v.data);
@@ -229,19 +224,20 @@ export class TableBody<TDataRow extends TableRow>
       for (let c = leftColumnIndex; c <= rightColumnIndex; c++) {
         const cell = this.cellPool.next();
         const column = this.config.columns[c];
+        const tableData = this.cellDataStore.getCellData(
+          row.rowId,
+          column.columnId,
+          tableDataFactoryWithPlaceholder(column, row),
+        );
+        console.log(tableData.getValue());
         cell.bind({
           x: this.columnSizes.getColumnXPos(column.columnId) ?? 0,
           y: r * this.config.style.body.row.height,
           width: this.columnSizes.getColumnWidth(column.columnId) ?? 0,
           height: this.config.style.body.row.height,
-          data: this.cellDataStore.getCellData(
-            row.rowId,
-            column.columnId,
-            tableDataFactoryWithPlaceholder(column, row),
-          ),
+          data: tableData,
         });
         cell.draw(ctx);
-        this.cellIndex.register(column.columnId, row.rowId, cell);
       }
     }
   }
