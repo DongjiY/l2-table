@@ -224,18 +224,16 @@ export class TableBody<TDataRow extends TableRow>
       for (let c = leftColumnIndex; c <= rightColumnIndex; c++) {
         const cell = this.cellPool.next();
         const column = this.config.columns[c];
-        const tableData = this.cellDataStore.getCellData(
-          row.rowId,
-          column.columnId,
-          tableDataFactoryWithPlaceholder(column, row),
-        );
-        console.log(tableData.getValue());
         cell.bind({
           x: this.columnSizes.getColumnXPos(column.columnId) ?? 0,
           y: r * this.config.style.body.row.height,
           width: this.columnSizes.getColumnWidth(column.columnId) ?? 0,
           height: this.config.style.body.row.height,
-          data: tableData,
+          data: this.cellDataStore.getCellData(
+            row.rowId,
+            column.columnId,
+            tableDataFactoryWithPlaceholder(column, row),
+          ),
         });
         cell.draw(ctx);
       }
