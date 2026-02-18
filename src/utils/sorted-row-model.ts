@@ -72,6 +72,9 @@ export class SortedRowModel<TDataRow extends TableRow> {
         row.rowId,
         this.columnIdUnderSort!,
       );
+      if (cellData.getValue() === undefined) {
+        cellData.setValue(placeholder);
+      }
       compareFn = cellData.compare;
       const existingValue = cellData.getValue();
 
