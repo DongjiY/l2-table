@@ -13,6 +13,7 @@ import { Point } from "../../utils/point";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool;
+  private headerNameMap: Map<string, string>;
 
   constructor(
     private readonly camera: Camera,
@@ -24,6 +25,12 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     dimensions: Dimensions,
   ) {
     super(dimensions);
+
+    this.headerNameMap = new Map(
+      this.config.columns.map(({ columnId, name }) => {
+        return [columnId, name];
+      }),
+    );
 
     this.cellPool = new CellPool();
     this.cellPool.initFromCount({
@@ -74,6 +81,15 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     if (!columnId) return;
 
     this.sortedRowModel.toggleSort(columnId);
+
+    this.tableWorker.send({
+      type: "CELL_SIZE",
+      payload: {
+        columnId,
+        content: `${this.headerNameMap.get(columnId)}${this.getSortSymbol(columnId)}`,
+      },
+    });
+
     this.requestRedraw();
   };
 
