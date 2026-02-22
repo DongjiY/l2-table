@@ -25,7 +25,14 @@ import { Point } from "../../utils/point";
 import { Mouse } from "../../utils/mouse";
 import { TableBodyOverlay } from "../table-body-overlay";
 import { SortedRowModel } from "../../utils/sorted-row-model";
+import { ColumnLookup } from "../../utils/column-lookup";
 
+type VirtualBounds = {
+  leftColumnIndex: number;
+  rightColumnIndex: number;
+  topRowIndex: number;
+  bottomRowIndex: number;
+};
 export class TableBody<TDataRow extends TableRow>
   extends DrawCanvas
   implements Closeable
@@ -37,6 +44,7 @@ export class TableBody<TDataRow extends TableRow>
   private hoveredRowId: string | undefined;
   private _prevMousePoint: Point = new Point();
   private overlay: TableBodyOverlay;
+  private _cachedVirtualBounds: VirtualBounds | undefined;
 
   constructor(
     private readonly camera: Camera,
@@ -47,6 +55,7 @@ export class TableBody<TDataRow extends TableRow>
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     private readonly cellDataStore: CellDataStore<TDataRow>,
+    private readonly columnLookup: ColumnLookup<TDataRow>,
     dimensions: Dimensions,
   ) {
     super(dimensions);
@@ -73,24 +82,7 @@ export class TableBody<TDataRow extends TableRow>
       },
     });
 
-    this.sourceSubscription = this.source.subscribe((v) => {
-      const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
-      cellData.setValue(v.data);
-      this.tableWorker.send({
-        type: "CELL_SIZE",
-        payload: {
-          columnId: v.columnId,
-          content: cellData.getDisplayableContent(),
-        },
-      });
-      this.sortedRowModel.resort({
-        value: v.data,
-        columnId: v.columnId,
-        rowId: v.rowId,
-        compare: cellData.compare,
-      });
-      this.requestRedraw();
-    });
+    this.sourceSubscription = this.source.subscribe(this.handleRecvSourceData);
     this.columnResizeSubscription = this.getColumnResizeObservables(
       this.config.columns,
     ).subscribe(() => {
@@ -128,6 +120,37 @@ export class TableBody<TDataRow extends TableRow>
     return this.canvasWrapperDiv;
   }
 
+  handleRecvSourceData = (v: TableSourceData) => {
+    const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
+    cellData.setValue(v.data);
+    const { leftColumnIndex, rightColumnIndex, topRowIndex, bottomRowIndex } =
+      this.getCachedVirtualBounds();
+    const columnIndex = this.columnLookup.getIndex(v.columnId);
+    const isVisibleColumn =
+      columnIndex &&
+      leftColumnIndex <= columnIndex &&
+      columnIndex <= rightColumnIndex;
+    const rowIndex = this.sortedRowModel.getIndex(v.rowId);
+    const isVisibleRow =
+      rowIndex && topRowIndex <= rowIndex && rowIndex <= bottomRowIndex;
+    if (isVisibleColumn && isVisibleRow) {
+      this.tableWorker.send({
+        type: "CELL_SIZE",
+        payload: {
+          columnId: v.columnId,
+          content: cellData.getDisplayableContent(),
+        },
+      });
+    }
+    this.sortedRowModel.resort({
+      value: v.data,
+      columnId: v.columnId,
+      rowId: v.rowId,
+      compare: cellData.compare,
+    });
+    this.requestRedraw();
+  };
+
   mouseMove = (point: Point): void => {
     this._prevMousePoint.copy(point);
     const worldY = point.y + this.camera.y;
@@ -157,15 +180,17 @@ export class TableBody<TDataRow extends TableRow>
     this.columnResizeSubscription.unsubscribe();
   }
 
+  private getCachedVirtualBounds(): VirtualBounds {
+    if (!this._cachedVirtualBounds) {
+      this._cachedVirtualBounds = this.getVirtualBounds();
+    }
+    return this._cachedVirtualBounds;
+  }
+
   private getVirtualBounds(
     bufferX: number = 1,
     bufferY: number = 1,
-  ): {
-    leftColumnIndex: number;
-    rightColumnIndex: number;
-    topRowIndex: number;
-    bottomRowIndex: number;
-  } {
+  ): VirtualBounds {
     const columnBoundingBoxes = this.columnSizes.getBoundingBoxes();
     const viewportBoundingBox = this.camera.boundingBox;
 
@@ -217,8 +242,9 @@ export class TableBody<TDataRow extends TableRow>
   private drawCells(ctx: CanvasRenderingContext2D): void {
     this.cellPool.beginFrame();
 
+    this._cachedVirtualBounds = this.getVirtualBounds();
     const { leftColumnIndex, rightColumnIndex, topRowIndex, bottomRowIndex } =
-      this.getVirtualBounds();
+      this._cachedVirtualBounds;
     for (let r = topRowIndex; r <= bottomRowIndex; r++) {
       const row = this.sortedRowModel.getRow(r);
       for (let c = leftColumnIndex; c <= rightColumnIndex; c++) {

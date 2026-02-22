@@ -5,7 +5,7 @@ import { getPadding } from "../utils/padding-utils";
 
 export class ColumnSizeManager {
   private columnConstraints: ColumnConstraints = {};
-  private columnSizeMap = new Map<string, number>();
+  private columnSizeMap: Map<string, number> = new Map();
   private canvas: OffscreenCanvas | undefined;
   private ctx: OffscreenCanvasRenderingContext2D | null | undefined;
   private cellStyling: TableCellStyles | undefined;
@@ -30,11 +30,6 @@ export class ColumnSizeManager {
     width: number;
     overflown: boolean;
   } {
-    // return {
-    //   columnId,
-    //   width: this.columnConstraints[columnId].maxWidth,
-    //   overflown: false,
-    // };
     if (!this.ctx)
       return {
         columnId,
@@ -48,10 +43,11 @@ export class ColumnSizeManager {
     const { left: leftPadding, right: rightPadding } = getPadding(
       this.cellStyling?.padding,
     );
+    const computedWidth = computedMetrics.width + leftPadding + rightPadding;
     const newCellWidth = Math.min(
       this.columnConstraints[columnId].maxWidth,
       Math.max(
-        computedMetrics.width + leftPadding + rightPadding,
+        computedWidth,
         currColumnWidth,
         this.columnConstraints[columnId].minWidth,
       ),
@@ -60,7 +56,7 @@ export class ColumnSizeManager {
     return {
       columnId,
       width: newCellWidth,
-      overflown: false, // TODO - need to implement this
+      overflown: computedWidth > newCellWidth,
     };
   }
 }
