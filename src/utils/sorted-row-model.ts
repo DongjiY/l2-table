@@ -27,6 +27,10 @@ export class SortedRowModel<TDataRow extends TableRow> {
     return this.sortedRows.length;
   }
 
+  public getIndex(rowId: string): number | undefined {
+    return this.rowIdToIndexMap.get(rowId);
+  }
+
   public toggleSort(columnId: string): void {
     if (this.columnIdUnderSort !== columnId) {
       this.columnIdUnderSort = columnId;

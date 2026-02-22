@@ -7,6 +7,7 @@ import {
 } from "../types/table-config";
 import { Camera } from "../utils/camera";
 import { CellDataStore } from "../utils/cell-data-store";
+import { ColumnLookup } from "../utils/column-lookup";
 import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
 import { Mouse } from "../utils/mouse";
@@ -26,6 +27,7 @@ import { TableWorker } from "./table-worker";
 
 export class Table<TDataRow extends TableRow> {
   private rootDimensions: Dimensions = new Dimensions();
+  private columnLookup: ColumnLookup<TDataRow>;
 
   private verticalWrapper: HTMLDivElement;
   private horizontalWrapper: HTMLDivElement;
@@ -53,6 +55,8 @@ export class Table<TDataRow extends TableRow> {
     private readonly opts: TableOptions<TDataRow>,
   ) {
     this.tableConfig = this.opts.config;
+
+    this.columnLookup = new ColumnLookup(this.opts.config.columns);
 
     this.tableWorker = new TableWorker();
     this.mouse = new Mouse(root);
@@ -119,6 +123,7 @@ export class Table<TDataRow extends TableRow> {
       this.mouse,
       this.sortedRowModel,
       this.cellDataStore,
+      this.columnLookup,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.rootDimensions.h -
