@@ -11,11 +11,11 @@ import {
 import { getPadding } from "../../utils/padding-utils";
 
 export class TableCell extends WorldObject {
-  private data: TableData<unknown> | null = null;
-  private dimensions: Dimensions = new Dimensions();
-  private _tempBoundingBox: BoundingBox | undefined;
+  protected data: TableData<unknown> | null = null;
+  protected dimensions: Dimensions = new Dimensions();
+  protected _tempBoundingBox: BoundingBox | undefined;
 
-  constructor(private readonly style: TableCellStyles | undefined) {
+  constructor(protected readonly style: TableCellStyles | undefined) {
     super();
   }
 
@@ -58,16 +58,6 @@ export class TableCell extends WorldObject {
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
 
-    if (this.state.isHovered) {
-      ctx.fillStyle = "red";
-      ctx.fillRect(
-        this.point.x,
-        this.point.y,
-        this.dimensions.w,
-        this.dimensions.h,
-      );
-    }
-
     ctx.font = this.style?.text?.font ?? DEFAULT_FONT_STRING;
     ctx.fillStyle = this.style?.text?.color ?? DEFAULT_TEXT_COLOR;
     ctx.textBaseline = "middle";
@@ -101,7 +91,7 @@ export class TableCell extends WorldObject {
     ctx.restore();
   }
 
-  private getAlignment(innerWidth: number): {
+  protected getAlignment(innerWidth: number): {
     x: number;
     textAlign: CanvasTextAlign;
   } {
