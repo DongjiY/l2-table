@@ -14,6 +14,7 @@ import { Point } from "../../utils/point";
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool;
   private headerNameMap: Map<string, string>;
+  private clickStartPosition: Point = new Point();
 
   constructor(
     private readonly camera: Camera,
@@ -65,11 +66,18 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.camera.onCameraFocusChange(() => this.requestRedraw());
     this.camera.onCameraResize(() => this.requestRedraw());
 
+    this.mouse.onMouseClick(this.handleMouseClick);
     this.mouse.onMouseDown(this.handleMouseDown);
     this.requestRedraw();
   }
 
   handleMouseDown = (p: Point) => {
+    this.clickStartPosition.copy(p);
+  };
+
+  handleMouseClick = (p: Point) => {
+    if (!this.clickStartPosition.equals(p)) return;
+
     const worldX = p.x + this.camera.x;
     const worldY = p.y;
 
