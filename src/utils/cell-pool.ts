@@ -1,10 +1,10 @@
 import { TableCell } from "../table/components/table-cell";
 
-export class CellPool {
-  private cells: Array<TableCell> = [];
+export class CellPool<TCell extends TableCell> {
+  private cells: Array<TCell> = [];
   private index: number = 0;
 
-  public addCell(cell: TableCell): void {
+  public addCell(cell: TCell): void {
     this.cells.push(cell);
   }
 
@@ -12,7 +12,7 @@ export class CellPool {
     this.index = 0;
   }
 
-  public next(): TableCell {
+  public next(): TCell {
     if (this.index >= this.cells.length) {
       throw new Error("CellPool exhausted — increase pool size");
     }
@@ -24,7 +24,7 @@ export class CellPool {
     cellFactory,
   }: {
     count: number;
-    cellFactory: () => TableCell;
+    cellFactory: () => TCell;
   }): void {
     for (let i = 0; i < count; i++) {
       this.addCell(cellFactory());
@@ -46,7 +46,7 @@ export class CellPool {
     bufferY: number;
     rowHeight: number;
     minColumnWidth: number;
-    cellFactory: () => TableCell;
+    cellFactory: () => TCell;
   }): void {
     const maxVisibleRows = Math.ceil(viewportHeight / rowHeight) + bufferX;
 

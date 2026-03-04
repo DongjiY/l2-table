@@ -2,7 +2,6 @@ import { TableConfig, TableRow } from "../../types/table-config";
 import { Camera } from "../../utils/camera";
 import { Dimensions } from "../../utils/dimensions";
 import { DrawCanvas } from "../../utils/draw-canvas";
-import { TableCell } from "./table-cell";
 import { StringTableData } from "../../utils/string-table-data";
 import { ColumnSizeMap } from "../../utils/column-size-map";
 import { CellPool } from "../../utils/cell-pool";
@@ -10,9 +9,10 @@ import { SortedRowModel } from "../../utils/sorted-row-model";
 import { TableWorker } from "../table-worker";
 import { Mouse } from "../../utils/mouse";
 import { Point } from "../../utils/point";
+import { TableHeaderCell } from "./table-header-cell";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
-  private cellPool: CellPool;
+  private cellPool: CellPool<TableHeaderCell>;
   private headerNameMap: Map<string, string>;
   private clickStartPosition: Point = new Point();
 
@@ -37,7 +37,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.cellPool.initFromCount({
       count: this.config.columns.length,
       cellFactory: () => {
-        return new TableCell(this.config.style.header.cell);
+        return new TableHeaderCell(this.config.style.header.cell);
       },
     });
 
@@ -94,7 +94,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       type: "CELL_SIZE",
       payload: {
         columnId,
-        content: `${this.headerNameMap.get(columnId)}${this.getSortSymbol(columnId)}`,
+        content: `${this.headerNameMap.get(columnId)}`,
       },
     });
 
@@ -122,11 +122,10 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       cell.bind({
         x: this.columnSizes.getColumnXPos(column.columnId) ?? 0,
         y: 0,
-        data: new StringTableData(
-          `${column.name}${this.getSortSymbol(column.columnId)}`,
-        ),
+        data: new StringTableData(`${column.name}`),
         width: this.columnSizes.getColumnWidth(column.columnId) ?? 0,
         height: this.config.style.header.row.height,
+        sortDirection: this.getSortDirection(column.columnId),
       });
       cell.draw(ctx);
     }
@@ -138,13 +137,12 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.drawCells(ctx);
   }
 
-  private getSortSymbol(columnId: string): string {
+  private getSortDirection(columnId: string): "ASC" | "DESC" | undefined {
     if (
       this.sortedRowModel.columnIdUnderSort === undefined ||
       this.sortedRowModel.columnIdUnderSort !== columnId
     )
-      return "";
-    if (this.sortedRowModel.sortDirection === "ASC") return " ↑";
-    return " ↓";
+      return undefined;
+    return this.sortedRowModel.sortDirection;
   }
 }

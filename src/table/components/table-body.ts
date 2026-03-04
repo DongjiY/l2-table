@@ -38,7 +38,7 @@ export class TableBody<TDataRow extends TableRow>
   implements Closeable
 {
   private canvasWrapperDiv: HTMLDivElement;
-  private cellPool: CellPool;
+  private cellPool: CellPool<TableCell>;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
   private hoveredRowId: string | undefined;

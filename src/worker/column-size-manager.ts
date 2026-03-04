@@ -1,3 +1,4 @@
+import { HEADER_FILTER_BUFFER } from "../table/components/header-filter";
 import { ColumnConstraints } from "../types/column-constraints";
 import { TableCellStyles } from "../types/table-cell-types";
 import { DEFAULT_FONT_STRING } from "../utils/cell-style-defaults";
@@ -43,7 +44,8 @@ export class ColumnSizeManager {
     const { left: leftPadding, right: rightPadding } = getPadding(
       this.cellStyling?.padding,
     );
-    const computedWidth = computedMetrics.width + leftPadding + rightPadding;
+    const computedWidth =
+      computedMetrics.width + leftPadding + rightPadding + HEADER_FILTER_BUFFER;
     const newCellWidth = Math.min(
       this.columnConstraints[columnId].maxWidth,
       Math.max(
