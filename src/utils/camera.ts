@@ -2,9 +2,7 @@ import { BoundingBox } from "./bounding-box";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";
 
-type CameraChangeCallback = (c: Camera) => void;
-
-type CameraResizeCallback = (c: Camera) => void;
+type ReflectiveCallback<T> = (t: T) => void;
 
 type CameraOptions = {
   x?: number;
@@ -16,8 +14,11 @@ type CameraOptions = {
 };
 
 export class Camera {
-  private cameraFocusChangeCallbacks: Set<CameraChangeCallback> = new Set();
-  private cameraResizeCallbacks: Set<CameraResizeCallback> = new Set();
+  private cameraFocusChangeCallbacks: Set<ReflectiveCallback<Camera>> =
+    new Set();
+  private cameraResizeCallbacks: Set<ReflectiveCallback<Camera>> = new Set();
+  private worldResizeCallbacks: Set<ReflectiveCallback<Camera>> = new Set();
+
   private focus: Point;
   private viewportDimensions: Dimensions;
   private worldDimensions: Dimensions;
@@ -80,6 +81,7 @@ export class Camera {
   public updateWorldDimensions({ w, h }: { w?: number; h?: number }): void {
     if (w !== undefined) this.worldDimensions.w = w;
     if (h !== undefined) this.worldDimensions.h = h;
+    this.broadcast(this.worldResizeCallbacks);
   }
 
   public updateViewportDimensions({ w, h }: { w?: number; h?: number }): void {
@@ -87,24 +89,30 @@ export class Camera {
     if (h !== undefined) this.viewportDimensions.h = h;
     this.focus.x = this.clampX(this.focus.x);
     this.focus.y = this.clampY(this.focus.y);
-    this.cameraResizeCallbacks.forEach((cb) => {
-      cb(this);
-    });
+    this.broadcast(this.cameraResizeCallbacks);
   }
 
   public updateFocus({ dx = 0, dy = 0 }: { dx?: number; dy?: number }): void {
     this.focus.x = this.clampX(this.focus.x + dx);
     this.focus.y = this.clampY(this.focus.y + dy);
-    this.cameraFocusChangeCallbacks.forEach((cb) => {
-      cb(this);
-    });
+    this.broadcast(this.cameraFocusChangeCallbacks);
   }
 
-  public onCameraResize(fn: CameraResizeCallback): void {
+  private broadcast(iterable: Iterable<ReflectiveCallback<Camera>>): void {
+    for (const callback of iterable) {
+      callback(this);
+    }
+  }
+
+  public onWorldResize(fn: ReflectiveCallback<Camera>): void {
+    this.worldResizeCallbacks.add(fn);
+  }
+
+  public onCameraResize(fn: ReflectiveCallback<Camera>): void {
     this.cameraResizeCallbacks.add(fn);
   }
 
-  public onCameraFocusChange(fn: CameraChangeCallback): void {
+  public onCameraFocusChange(fn: ReflectiveCallback<Camera>): void {
     this.cameraFocusChangeCallbacks.add(fn);
   }
 }

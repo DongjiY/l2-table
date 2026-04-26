@@ -36,6 +36,11 @@ export class HorizontalScrollbar extends DrawCanvas {
       this.thumb.updateX(viewportWidth, worldWidth, x, this.w);
       this.requestRedraw();
     });
+    this.camera.onWorldResize(({ viewportWidth, worldWidth, x }) => {
+      this.thumb.updateW(viewportWidth, worldWidth, this.w);
+      this.thumb.updateX(viewportWidth, worldWidth, x, this.w);
+      this.requestRedraw();
+    });
 
     this.mouse.onMouseLost(() => this.thumb.setIsHovered(false));
     this.initMouseCallbacks();

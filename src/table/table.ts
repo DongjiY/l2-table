@@ -1,3 +1,4 @@
+import { distinctUntilChanged, Subscription } from "rxjs";
 import { ColumnConstraints } from "../types/column-constraints";
 import {
   TableColumnDef,
@@ -24,8 +25,11 @@ import {
   VerticalScrollbar,
 } from "./components/vertical-scrollbar";
 import { TableWorker } from "./table-worker";
+import { Closeable } from "../utils/closeable";
 
-export class Table<TDataRow extends TableRow> {
+export class Table<TDataRow extends TableRow> implements Closeable {
+  private totalColumnWidthSubscription: Subscription;
+
   private rootDimensions: Dimensions = new Dimensions();
   private columnLookup: ColumnLookup<TDataRow>;
 
@@ -103,16 +107,19 @@ export class Table<TDataRow extends TableRow> {
       viewportHeight: this.rootDimensions.h,
     });
 
-    this.columnSizes.getTotalColumnSizeObservable().subscribe((w) => {
-      this.camera.updateWorldDimensions({
-        w: w + VERTICAL_SCROLLBAR_WIDTH,
-        h:
-          this.opts.config.rows.length *
-            this.opts.config.style.body.row.height +
-          this.opts.config.style.header.row.height +
-          HORIZONTAL_SCROLLBAR_HEIGHT,
+    this.totalColumnWidthSubscription = this.columnSizes
+      .getTotalColumnSizeObservable()
+      .pipe(distinctUntilChanged())
+      .subscribe((w) => {
+        this.camera.updateWorldDimensions({
+          w: w + VERTICAL_SCROLLBAR_WIDTH,
+          h:
+            this.opts.config.rows.length *
+              this.opts.config.style.body.row.height +
+            this.opts.config.style.header.row.height +
+            HORIZONTAL_SCROLLBAR_HEIGHT,
+        });
       });
-    });
 
     this.body = new TableBody(
       this.camera,
@@ -203,6 +210,10 @@ export class Table<TDataRow extends TableRow> {
       this.scrollXBar,
       this.scrollYBar,
     ]);
+  }
+
+  public close(): void {
+    this.totalColumnWidthSubscription.unsubscribe();
   }
 
   private getColumnConstraints(

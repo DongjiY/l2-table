@@ -2,8 +2,7 @@ import { Drawable } from "../../utils/drawable";
 
 const HEADER_FILTER_WIDTH = 6;
 const HEADER_FILTER_SPACING = 2;
-export const HEADER_FILTER_BUFFER =
-  HEADER_FILTER_WIDTH + HEADER_FILTER_SPACING + 20;
+export const HEADER_FILTER_BUFFER = HEADER_FILTER_WIDTH + 20;
 
 export class HeaderFilter implements Drawable {
   private direction: "ASC" | "DESC" | undefined;
@@ -13,8 +12,6 @@ export class HeaderFilter implements Drawable {
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
-    // if (!this.direction) return;
-
     const x = 0;
     const y = -HEADER_FILTER_WIDTH;
 

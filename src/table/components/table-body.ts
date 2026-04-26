@@ -153,6 +153,10 @@ export class TableBody<TDataRow extends TableRow>
 
   mouseMove = (point: Point): void => {
     this._prevMousePoint.copy(point);
+    if (point.y < 0) {
+      this.overlay.hide();
+      return;
+    }
     const worldY = point.y + this.camera.y;
     const rowHeight = this.config.style.body.row.height;
     const rowIndex = Math.floor(worldY / rowHeight);
