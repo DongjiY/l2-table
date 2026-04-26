@@ -127,12 +127,14 @@ export class TableBody<TDataRow extends TableRow>
       this.getCachedVirtualBounds();
     const columnIndex = this.columnLookup.getIndex(v.columnId);
     const isVisibleColumn =
-      columnIndex &&
+      columnIndex !== undefined &&
       leftColumnIndex <= columnIndex &&
       columnIndex <= rightColumnIndex;
     const rowIndex = this.sortedRowModel.getIndex(v.rowId);
     const isVisibleRow =
-      rowIndex && topRowIndex <= rowIndex && rowIndex <= bottomRowIndex;
+      rowIndex !== undefined &&
+      topRowIndex <= rowIndex &&
+      rowIndex <= bottomRowIndex;
     if (isVisibleColumn && isVisibleRow) {
       this.tableWorker.send({
         type: "CELL_SIZE",
