@@ -123,19 +123,13 @@ export class TableBody<TDataRow extends TableRow>
   handleRecvSourceData = (v: TableSourceData) => {
     const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
     cellData.setValue(v.data);
-    const { leftColumnIndex, rightColumnIndex, topRowIndex, bottomRowIndex } =
-      this.getCachedVirtualBounds();
-    const columnIndex = this.columnLookup.getIndex(v.columnId);
-    const isVisibleColumn =
-      columnIndex !== undefined &&
-      leftColumnIndex <= columnIndex &&
-      columnIndex <= rightColumnIndex;
+    const { topRowIndex, bottomRowIndex } = this.getCachedVirtualBounds();
     const rowIndex = this.sortedRowModel.getIndex(v.rowId);
     const isVisibleRow =
       rowIndex !== undefined &&
       topRowIndex <= rowIndex &&
       rowIndex <= bottomRowIndex;
-    if (isVisibleColumn && isVisibleRow) {
+    if (isVisibleRow) {
       this.tableWorker.send({
         type: "CELL_SIZE",
         payload: {
