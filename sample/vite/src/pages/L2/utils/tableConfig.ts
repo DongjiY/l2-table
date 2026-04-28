@@ -1,4 +1,8 @@
-import type { TableRow, TableColumnDef, TableConfig } from "../../../dist";
+import type {
+  TableRow,
+  TableColumnDef,
+  TableConfig,
+} from "../../../../../../dist";
 import { NumberTableData } from "./numberTableData";
 
 export type StatsRow = TableRow & {
@@ -19,16 +23,11 @@ export type StatsRow = TableRow & {
   };
 };
 
-/**
- * Column definitions (ordered, explicit)
- */
 const columns: Array<TableColumnDef<StatsRow, number>> = [
   {
     columnId: "index",
     name: "index",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 170,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.index,
     cellData: () => new NumberTableData(),
@@ -37,8 +36,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "avg",
     name: "average",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 170,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.avg,
     cellData: () => new NumberTableData(),
@@ -47,8 +44,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "med",
     name: "median",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.med,
     cellData: () => new NumberTableData(),
@@ -57,8 +52,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "min",
     name: "minimum",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.min,
     cellData: () => new NumberTableData(),
@@ -67,8 +60,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "max",
     name: "maximum",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.max,
     cellData: () => new NumberTableData(),
@@ -77,8 +68,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "p50",
     name: "p50",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.p50,
     cellData: () => new NumberTableData(),
@@ -87,8 +76,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "p75",
     name: "p75",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.p75,
     cellData: () => new NumberTableData(),
@@ -97,8 +84,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "p90",
     name: "p90",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.p90,
     cellData: () => new NumberTableData(),
@@ -107,8 +92,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "p95",
     name: "p95",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.p95,
     cellData: () => new NumberTableData(),
@@ -117,8 +100,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "p99",
     name: "p99",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.p99,
     cellData: () => new NumberTableData(),
@@ -127,8 +108,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "poop",
     name: "poop",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.poop,
     cellData: () => new NumberTableData(),
@@ -137,8 +116,6 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "2",
     name: "two",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders["2"],
     cellData: () => new NumberTableData(),
@@ -147,20 +124,14 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     columnId: "1",
     name: "one",
     hidden: false,
-    // minWidth: 0,
-    // maxWidth: 140,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders["1"],
     cellData: () => new NumberTableData(),
   },
 ];
 
-/**
- * Row generator
- */
 function generateRows(rowCount = 1): StatsRow[] {
   const res: StatsRow[] = [];
-
   for (let i = 0; i < rowCount; i++) {
     res.push({
       rowId: `${i}`,
@@ -181,13 +152,9 @@ function generateRows(rowCount = 1): StatsRow[] {
       },
     });
   }
-
   return res;
 }
 
-/**
- * Final table config
- */
 export const config: TableConfig<StatsRow> = {
   columns,
   rows: generateRows(1000),

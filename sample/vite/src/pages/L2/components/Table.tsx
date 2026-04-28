@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { createTable, type Table } from "l2-table";
-import { numberSource } from "./numberSource";
-import { EMPTY } from "rxjs";
-import { config, type StatsRow } from "./tableConfig";
+import { createTable, type Table } from "../../../../../../dist";
+import { numberSource } from "../../../common/numberSource";
+import { config, type StatsRow } from "../utils/tableConfig";
 
 export function NumberTable(): ReactNode {
   const [isLargeW, setIsLargeW] = useState<boolean>(true);
