@@ -1,5 +1,5 @@
 import { interval, map, mergeMap, from, Observable } from "rxjs";
-import type { TableConfig, TableRow, TableSourceData } from "../../../dist";
+import type { TableConfig, TableRow, TableSourceData } from "../../../../dist";
 
 export function numberSource<TDataRow extends TableRow>(
   tableConfig: TableConfig<TDataRow>,
@@ -21,7 +21,6 @@ export function numberSource<TDataRow extends TableRow>(
 
   return interval(50).pipe(
     map(() => {
-      // pick N random cells (with replacement)
       const batch: TableSourceData[] = [];
 
       for (let i = 0; i < batchSize; i++) {
@@ -37,7 +36,6 @@ export function numberSource<TDataRow extends TableRow>(
 
       return batch;
     }),
-    // emit each cell update one by one
     mergeMap((batch) => from(batch)),
   );
 }

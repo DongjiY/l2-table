@@ -1,4 +1,4 @@
-import { TableData } from "l2-table";
+import { TableData } from "../../../../../../dist";
 
 export class NumberTableData extends TableData<number> {
   constructor() {

@@ -1,28 +1,35 @@
-import { useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { L2TablePage } from "./pages/L2/L2TablePage";
+import { TanStackComparisonPage } from "./pages/TanStack/TanStackComparisonPage";
 import "./App.css";
-import { NumberTable } from "./Table";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <h1>Vite + React</h1>
-      <div
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 16,
+      }}
+    >
+      <h1>Table Comparison</h1>
+      <nav
         style={{
-          width: "100%",
           display: "flex",
-          justifyContent: "center",
+          gap: 12,
         }}
       >
-        <NumberTable></NumberTable>
-      </div>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </>
+        <a href="/l2">L2 Table</a>
+        <a href="/tanstack">TanStack Table</a>
+      </nav>
+      <Routes>
+        <Route path="/l2" element={<L2TablePage />} />
+        <Route path="/tanstack" element={<TanStackComparisonPage />} />
+        <Route path="*" element={<Navigate to="/l2" replace />} />
+      </Routes>
+    </div>
   );
 }
 
