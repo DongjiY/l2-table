@@ -15,6 +15,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;
   private headerNameMap: Map<string, string>;
   private clickStartPosition: Point = new Point();
+  private hoveredViewportPosition: Point | undefined = new Point();
 
   constructor(
     private readonly camera: Camera,
@@ -68,8 +69,21 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
 
     this.mouse.onMouseClick(this.handleMouseClick);
     this.mouse.onMouseDown(this.handleMouseDown);
+    this.mouse.onMouseMove(this.handleMouseMove);
     this.requestRedraw();
   }
+
+  handleMouseMove = (p: Point) => {
+    if (p.y > this.h) {
+      this.hoveredViewportPosition = undefined;
+      return;
+    }
+    const viewportY = p.y;
+    const worldPoint = this.camera.toWorldPoint(p);
+    worldPoint.y = viewportY;
+    this.hoveredViewportPosition = worldPoint;
+    this.requestRedraw();
+  };
 
   handleMouseDown = (p: Point) => {
     this.clickStartPosition.copy(p);
@@ -117,8 +131,10 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private drawCells(ctx: CanvasRenderingContext2D): void {
     this.cellPool.beginFrame();
 
+    let isMouseHoveringAnyResizer = false;
     for (const column of this.config.columns) {
       const cell = this.cellPool.next();
+
       cell.bind({
         x: this.columnSizes.getColumnXPos(column.columnId) ?? 0,
         y: 0,
@@ -127,7 +143,18 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         height: this.config.style.header.row.height,
         sortDirection: this.getSortDirection(column.columnId),
       });
+
+      isMouseHoveringAnyResizer =
+        isMouseHoveringAnyResizer ||
+        cell.checkAndSetResizerHovered(this.hoveredViewportPosition);
+
       cell.draw(ctx);
+    }
+
+    if (!isMouseHoveringAnyResizer) {
+      document.body.style.cursor = "default";
+    } else {
+      document.body.style.cursor = "col-resize";
     }
   }
 
