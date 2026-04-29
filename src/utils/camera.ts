@@ -50,6 +50,14 @@ export class Camera {
     );
   }
 
+  public toWorldPoint(viewportPoint: Point): Point {
+    return new Point(viewportPoint.x + this.x, viewportPoint.y + this.y);
+  }
+
+  public toViewportPoint(worldPoint: Point): Point {
+    return new Point(worldPoint.x - this.x, worldPoint.y - this.y);
+  }
+
   public get x(): number {
     return this.focus.x;
   }
