@@ -10,12 +10,18 @@ import { TableWorker } from "../table-worker";
 import { Mouse } from "../../utils/mouse";
 import { Point } from "../../utils/point";
 import { TableHeaderCell } from "./table-header-cell";
+import { BufferedStream } from "../../utils/buffered-stream";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;
   private headerNameMap: Map<string, string>;
   private clickStartPosition: Point = new Point();
   private hoveredViewportPosition: Point | undefined = new Point();
+
+  private resizingColumnId: string | undefined;
+  private hoveredResizerColumnId: string | undefined;
+  private headerResizeStartWidth: number | undefined;
+  private headerResizeStartWorldPoint: Point = new Point();
 
   constructor(
     private readonly camera: Camera,
@@ -24,6 +30,10 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     private readonly tableWorker: TableWorker,
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
+    private readonly autoSizedBufferedStream: BufferedStream<{
+      columnId: string;
+      size: number;
+    }>,
     dimensions: Dimensions,
   ) {
     super(dimensions);
@@ -70,23 +80,25 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.mouse.onMouseClick(this.handleMouseClick);
     this.mouse.onMouseDown(this.handleMouseDown);
     this.mouse.onMouseMove(this.handleMouseMove);
+    this.mouse.onMouseUp(this.handleMouseUp);
     this.requestRedraw();
   }
 
   handleMouseMove = (p: Point) => {
-    if (p.y > this.h) {
-      this.hoveredViewportPosition = undefined;
-      return;
-    }
-    const viewportY = p.y;
-    const worldPoint = this.camera.toWorldPoint(p);
-    worldPoint.y = viewportY;
-    this.hoveredViewportPosition = worldPoint;
+    this.trackResizedColumnDistance(p);
+    this.updateHoveredWorldXPosition(p);
+    this.requestRedraw();
+  };
+
+  handleMouseUp = () => {
+    this.manualResizeEnd();
     this.requestRedraw();
   };
 
   handleMouseDown = (p: Point) => {
+    this.manualResizeStart(p);
     this.clickStartPosition.copy(p);
+    this.requestRedraw();
   };
 
   handleMouseClick = (p: Point) => {
@@ -114,6 +126,42 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
 
     this.requestRedraw();
   };
+
+  private manualResizeEnd(): void {
+    this.resizingColumnId = undefined;
+    this.autoSizedBufferedStream.resume();
+  }
+
+  private manualResizeStart(p: Point): void {
+    if (!this.hoveredResizerColumnId) return;
+    this.autoSizedBufferedStream.pause();
+    const worldPoint = this.camera.toWorldPoint(p);
+    this.resizingColumnId = this.hoveredResizerColumnId;
+    this.headerResizeStartWorldPoint = worldPoint;
+    this.headerResizeStartWidth = this.columnSizes.getColumnWidth(
+      this.resizingColumnId,
+    );
+    this.columnSizes.addColumnToManualControl(this.resizingColumnId);
+  }
+
+  private trackResizedColumnDistance(p: Point): void {
+    if (!this.resizingColumnId || !this.headerResizeStartWidth) return;
+    const newWidth =
+      this.headerResizeStartWidth +
+      (this.camera.toWorldPoint(p).x - this.headerResizeStartWorldPoint.x);
+
+    this.columnSizes.updateColumnSize(this.resizingColumnId, newWidth);
+  }
+
+  private updateHoveredWorldXPosition(p: Point): void {
+    if (p.y > this.h) {
+      this.hoveredViewportPosition = undefined;
+      return;
+    }
+    const worldPoint = this.camera.toWorldPoint(p);
+    worldPoint.y = p.y;
+    this.hoveredViewportPosition = worldPoint;
+  }
 
   private getColumnIdAtX(worldX: number): string | undefined {
     for (const column of this.config.columns) {
@@ -144,17 +192,25 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         sortDirection: this.getSortDirection(column.columnId),
       });
 
+      const isMouseHoveringThisResizer = cell.checkAndSetResizerHovered(
+        this.hoveredViewportPosition,
+      );
+
       isMouseHoveringAnyResizer =
-        isMouseHoveringAnyResizer ||
-        cell.checkAndSetResizerHovered(this.hoveredViewportPosition);
+        isMouseHoveringAnyResizer || isMouseHoveringThisResizer;
+
+      if (isMouseHoveringThisResizer) {
+        this.hoveredResizerColumnId = column.columnId;
+      }
 
       cell.draw(ctx);
     }
 
-    if (!isMouseHoveringAnyResizer) {
-      document.body.style.cursor = "default";
-    } else {
+    if (isMouseHoveringAnyResizer) {
       document.body.style.cursor = "col-resize";
+    } else {
+      document.body.style.cursor = "default";
+      this.hoveredResizerColumnId = undefined;
     }
   }
 

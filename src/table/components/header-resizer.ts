@@ -6,6 +6,8 @@ import { WorldObject } from "../../utils/world-object";
 export const RESIZER_WIDTH = 1;
 export const RESIZER_HOVER_BUFFER_LEFT = 10;
 export const RESIZER_HOVER_BUFFER_RIGHT = 2;
+export const RESIZER_EFFECTIVE_WIDTH =
+  RESIZER_WIDTH + RESIZER_HOVER_BUFFER_LEFT + RESIZER_HOVER_BUFFER_RIGHT;
 
 export class HeaderResizer extends WorldObject {
   private isShowResizer: boolean = false;

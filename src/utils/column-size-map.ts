@@ -11,10 +11,16 @@ import { AnnotatedBoundingBox } from "./annotated-bounding-box";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";
 import { TableColumnDef, TableRow } from "../types/table-config";
+import { ColumnConstraints } from "../types/column-constraints";
+import { clamp } from "./clamp";
+import { RESIZER_EFFECTIVE_WIDTH } from "../table/components/header-resizer";
+import { Closeable } from "./closeable";
 
 type BoundingBoxMetadata = { columnId: string; columnIndex: number };
 
-export class ColumnSizeMap<TDataRow extends TableRow> {
+export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
+  private readonly columnConstraints: ColumnConstraints;
+
   private totalColumnSizeUpdates$: Subject<number>;
   private totalColumnSize: number = 0;
 
@@ -25,12 +31,20 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
   private minColumnSize: number = Infinity;
   private boundingBoxes: Array<AnnotatedBoundingBox<BoundingBoxMetadata>>;
 
-  constructor(cols: Array<TableColumnDef<TDataRow, unknown>>) {
+  private manualControlledColumnIds: Set<string>;
+
+  constructor(
+    cols: Array<TableColumnDef<TDataRow, unknown>>,
+    columnConstraints: ColumnConstraints,
+  ) {
     this.totalColumnSizeUpdates$ = new ReplaySubject(1);
     this.columnSizeUpdates$ = new Subject();
     this.columnSizes = new Map();
     this.columnXPos = new Map();
     this.boundingBoxes = [];
+    this.manualControlledColumnIds = new Set();
+
+    this.columnConstraints = columnConstraints;
 
     // seed the initial widths
     for (const col of cols) {
@@ -45,11 +59,19 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
    * @param size
    */
   public updateColumnSize(columnId: string, size: number): void {
+    const clampedSize = clamp(
+      size,
+      Math.max(
+        this.columnConstraints[columnId].minWidth,
+        RESIZER_EFFECTIVE_WIDTH,
+      ),
+      this.columnConstraints[columnId].maxWidth,
+    );
     const currColumnSize = this.columnSizes.get(columnId) ?? 0;
-    this.columnSizes.set(columnId, size);
-    this.minColumnSize = Math.min(size, this.minColumnSize);
-    this.updateTotalColumnSize(size - currColumnSize);
-    this.columnSizeUpdates$.next({ columnId, value: size });
+    this.columnSizes.set(columnId, clampedSize);
+    this.minColumnSize = Math.min(clampedSize, this.minColumnSize);
+    this.updateTotalColumnSize(clampedSize - currColumnSize);
+    this.columnSizeUpdates$.next({ columnId, value: clampedSize });
     this.recomputeBoundingBoxesAndXPos();
   }
 
@@ -102,6 +124,18 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
     return this.boundingBoxes;
   }
 
+  public addColumnToManualControl(columnId: string): void {
+    this.manualControlledColumnIds.add(columnId);
+  }
+
+  public removeColumnFromManualControl(columnId: string): void {
+    this.manualControlledColumnIds.delete(columnId);
+  }
+
+  public getManualControlledColumns(): Set<string> {
+    return this.manualControlledColumnIds;
+  }
+
   private recomputeBoundingBoxesAndXPos(): void {
     this.boundingBoxes = [];
     let x = 0;
@@ -121,5 +155,9 @@ export class ColumnSizeMap<TDataRow extends TableRow> {
       i++;
       x += columnWidth;
     }
+  }
+
+  public close(): void {
+    this.columnSizeUpdates$.complete();
   }
 }
