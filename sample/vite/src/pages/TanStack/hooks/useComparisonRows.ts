@@ -4,7 +4,7 @@ import { config } from "../../L2/utils/tableConfig";
 import { toComparisonRows } from "../utils/tableData";
 import type { CellColumnId, ComparisonRow } from "../types";
 
-export function useComparisonRows(): ComparisonRow[] {
+export function useComparisonRows(): Array<ComparisonRow> {
   const initialRows = useMemo(() => toComparisonRows(), []);
   const [rows, setRows] = useState<ComparisonRow[]>(initialRows);
 
