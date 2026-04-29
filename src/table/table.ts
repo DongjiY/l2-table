@@ -1,4 +1,4 @@
-import { distinctUntilChanged, Subscription } from "rxjs";
+import { distinctUntilChanged, filter, Subscription, tap } from "rxjs";
 import { ColumnConstraints } from "../types/column-constraints";
 import {
   TableColumnDef,
@@ -26,6 +26,7 @@ import {
 } from "./components/vertical-scrollbar";
 import { TableWorker } from "./table-worker";
 import { Closeable } from "../utils/closeable";
+import { BufferedStream } from "../utils/buffered-stream";
 
 export class Table<TDataRow extends TableRow> implements Closeable {
   private totalColumnWidthSubscription: Subscription;
@@ -50,6 +51,10 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
   private columnSizes: ColumnSizeMap<TDataRow>;
   private tableWorker: TableWorker;
+  private readonly autoSizedBufferedStream: BufferedStream<{
+    columnId: string;
+    size: number;
+  }>;
 
   private sortedRowModel: SortedRowModel<TDataRow>;
   private cellDataStore: CellDataStore<TDataRow>;
@@ -74,12 +79,15 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.rootDimensions.w = width;
     this.rootDimensions.h = height;
 
+    const columnConstraints = this.getColumnConstraints(
+      this.opts.config.columns,
+    );
     this.tableWorker.send({
       type: "INIT",
       payload: {
         w: this.rootDimensions.w,
         h: this.rootDimensions.h,
-        columnConstraints: this.getColumnConstraints(this.opts.config.columns),
+        columnConstraints,
         cellStyling: this.opts.config.style.body.cell,
       },
     });
@@ -97,9 +105,26 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.horizontalWrapper.style.height = "100%";
     this.horizontalWrapper.appendChild(this.verticalWrapper);
 
-    this.columnSizes = new ColumnSizeMap(this.opts.config.columns);
+    this.columnSizes = new ColumnSizeMap(
+      this.opts.config.columns,
+      columnConstraints,
+    );
+    this.autoSizedBufferedStream = new BufferedStream(
+      ({ columnId }) => columnId,
+    );
+
+    this.autoSizedBufferedStream.stream$
+      .pipe(
+        filter(
+          ({ columnId }) =>
+            !this.columnSizes.getManualControlledColumns().has(columnId),
+        ),
+      )
+      .subscribe(({ columnId, size }) => {
+        this.columnSizes.updateColumnSize(columnId, size);
+      });
     this.tableWorker.on("CELL_SIZE", ({ columnId, width }) => {
-      this.columnSizes.updateColumnSize(columnId, width);
+      this.autoSizedBufferedStream.next({ columnId, size: width });
     });
 
     this.camera = new Camera({
@@ -145,6 +170,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.tableWorker,
       this.mouse,
       this.sortedRowModel,
+      this.autoSizedBufferedStream,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.opts.config.style.header.row.height,
