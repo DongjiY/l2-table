@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, type ReactNode } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -9,22 +9,92 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { ComparisonRow } from "../types";
+import type { CellColumnId, ComparisonRow } from "../types";
 
 type TanStackTableViewProps = {
   rows: ComparisonRow[];
   columns: Array<ColumnDef<ComparisonRow, number>>;
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
+  onVisibleRowIdsChange?: (rowIds: string[]) => void;
   width: number;
   height: number;
 };
+
+type BodyRowProps = {
+  row: ComparisonRow;
+  columnIds: CellColumnId[];
+  gridTemplateColumns: string;
+  virtualRowStart: number;
+  virtualRowSize: number;
+};
+
+function BodyCell({ value }: { value: number }): ReactNode {
+  return (
+    <div
+      style={{
+        textAlign: "right",
+        color: "blue",
+        font: "24px monospace",
+        padding: "0 6px",
+        height: 40,
+        lineHeight: "40px",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {value.toString()}
+    </div>
+  );
+}
+
+const MemoizedBodyCell = memo(BodyCell);
+
+function BodyRow({
+  row,
+  columnIds,
+  gridTemplateColumns,
+  virtualRowStart,
+  virtualRowSize,
+}: BodyRowProps): ReactNode {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: `${virtualRowSize}px`,
+        transform: `translateY(${virtualRowStart}px)`,
+        display: "grid",
+        gridTemplateColumns,
+        alignItems: "center",
+      }}
+    >
+      {columnIds.map((columnId) => (
+        <MemoizedBodyCell key={`${row.rowId}-${columnId}`} value={row[columnId]} />
+      ))}
+    </div>
+  );
+}
+
+const MemoizedBodyRow = memo(
+  BodyRow,
+  (prev, next) =>
+    prev.row === next.row &&
+    prev.columnIds === next.columnIds &&
+    prev.gridTemplateColumns === next.gridTemplateColumns &&
+    prev.virtualRowStart === next.virtualRowStart &&
+    prev.virtualRowSize === next.virtualRowSize,
+);
 
 export function TanStackTableView({
   rows,
   columns,
   sorting,
   onSortingChange,
+  onVisibleRowIdsChange,
   width,
   height,
 }: TanStackTableViewProps) {
@@ -43,6 +113,14 @@ export function TanStackTableView({
 
   const rowModel = table.getRowModel();
   const leafColumnCount = table.getAllLeafColumns().length;
+  const visibleColumnIds = useMemo(
+    () =>
+      table
+        .getAllLeafColumns()
+        .map((column) => column.id)
+        .filter((columnId): columnId is CellColumnId => columnId !== "rowId"),
+    [table],
+  );
   const gridTemplateColumns = useMemo(
     () => `repeat(${leafColumnCount}, minmax(110px, 1fr))`,
     [leafColumnCount],
@@ -58,6 +136,16 @@ export function TanStackTableView({
 
   const virtualRows = rowVirtualizer.getVirtualItems();
   const totalHeight = rowVirtualizer.getTotalSize();
+
+  useEffect(() => {
+    if (!onVisibleRowIdsChange) {
+      return;
+    }
+    const visibleIds = virtualRows
+      .map((virtualRow) => rowModel.rows[virtualRow.index]?.id)
+      .filter((rowId): rowId is string => rowId !== undefined);
+    onVisibleRowIdsChange(visibleIds);
+  }, [onVisibleRowIdsChange, rowModel.rows, virtualRows]);
 
   return (
     <div
@@ -122,39 +210,14 @@ export function TanStackTableView({
             const row = rowModel.rows[virtualRow.index];
 
             return (
-              <div
+              <MemoizedBodyRow
                 key={row.id}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: `${virtualRow.size}px`,
-                  transform: `translateY(${virtualRow.start}px)`,
-                  display: "grid",
-                  gridTemplateColumns,
-                  alignItems: "center",
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <div
-                    key={cell.id}
-                    style={{
-                      textAlign: "right",
-                      color: "blue",
-                      font: "24px monospace",
-                      padding: "0 6px",
-                      height: 40,
-                      lineHeight: "40px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </div>
-                ))}
-              </div>
+                row={row.original}
+                columnIds={visibleColumnIds}
+                gridTemplateColumns={gridTemplateColumns}
+                virtualRowStart={virtualRow.start}
+                virtualRowSize={virtualRow.size}
+              />
             );
           })}
         </div>
