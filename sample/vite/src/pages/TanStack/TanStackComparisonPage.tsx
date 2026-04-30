@@ -10,7 +10,7 @@ export function TanStackComparisonPage(): ReactNode {
   const [isLargeH, setIsLargeH] = useState<boolean>(true);
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const rows = useComparisonRows();
+  const { rows, setVisibleRowIds } = useComparisonRows();
   const columns = useMemo(() => toTanStackColumns(), []);
 
   return (
@@ -25,6 +25,7 @@ export function TanStackComparisonPage(): ReactNode {
         columns={columns}
         sorting={sorting}
         onSortingChange={setSorting}
+        onVisibleRowIdsChange={setVisibleRowIds}
         width={isLargeW ? 600 : 300}
         height={isLargeH ? 600 : 400}
       />
