@@ -18,8 +18,8 @@ import {
   HORIZONTAL_SCROLLBAR_HEIGHT,
   HorizontalScrollbar,
 } from "./components/horizontal-scrollbar";
-import { TableBody } from "./components/table-body";
-import { TableHeader } from "./components/table-header";
+import { TableBody } from "./components/body/table-body";
+import { TableHeader } from "./components/header/table-header";
 import {
   VERTICAL_SCROLLBAR_WIDTH,
   VerticalScrollbar,
@@ -155,7 +155,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.mouse,
       this.sortedRowModel,
       this.cellDataStore,
-      this.columnLookup,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.rootDimensions.h -

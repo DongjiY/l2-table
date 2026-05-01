@@ -1,7 +1,7 @@
-import { BoundingBox } from "../../utils/bounding-box";
-import { Dimensions } from "../../utils/dimensions";
-import { Point } from "../../utils/point";
-import { WorldObject } from "../../utils/world-object";
+import { BoundingBox } from "../../../utils/bounding-box";
+import { Dimensions } from "../../../utils/dimensions";
+import { Point } from "../../../utils/point";
+import { WorldObject } from "../../../utils/world-object";
 
 export const RESIZER_WIDTH = 1;
 export const RESIZER_HOVER_BUFFER_LEFT = 10;

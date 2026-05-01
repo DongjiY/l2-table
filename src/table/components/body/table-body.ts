@@ -3,29 +3,28 @@ import {
   TableConfig,
   TableRow,
   TableSourceData,
-} from "../../types/table-config";
-import { Dimensions } from "../../utils/dimensions";
-import { Camera } from "../../utils/camera";
-import { DrawCanvas } from "../../utils/draw-canvas";
-import { TableCell } from "./table-cell";
+} from "../../../types/table-config";
+import { Dimensions } from "../../../utils/dimensions";
+import { Camera } from "../../../utils/camera";
+import { DrawCanvas } from "../../../utils/draw-canvas";
 import { merge, Observable, Subscription } from "rxjs";
-import { ColumnSizeMap } from "../../utils/column-size-map";
+import { ColumnSizeMap } from "../../../utils/column-size-map";
 import {
   boundaryBinarySearchLeftOrTop,
   boundaryBinarySearchRightOrBottom,
   calculateTopAndBottomRowBounds,
-} from "../../utils/boundary-search";
-import { Axis } from "../../utils/axis";
-import { CellPool } from "../../utils/cell-pool";
-import { Closeable } from "../../utils/closeable";
-import { CellDataStore } from "../../utils/cell-data-store";
-import { TableData } from "../../utils/table-data";
-import { TableWorker } from "../table-worker";
-import { Point } from "../../utils/point";
-import { Mouse } from "../../utils/mouse";
-import { TableBodyOverlay } from "../table-body-overlay";
-import { SortedRowModel } from "../../utils/sorted-row-model";
-import { ColumnLookup } from "../../utils/column-lookup";
+} from "../../../utils/boundary-search";
+import { Axis } from "../../../utils/axis";
+import { CellPool } from "../../../utils/cell-pool";
+import { Closeable } from "../../../utils/closeable";
+import { CellDataStore } from "../../../utils/cell-data-store";
+import { TableData } from "../../../utils/table-data";
+import { TableWorker } from "../../table-worker";
+import { Point } from "../../../utils/point";
+import { Mouse } from "../../../utils/mouse";
+import { TableBodyOverlay } from "../../table-body-overlay";
+import { SortedRowModel } from "../../../utils/sorted-row-model";
+import { TableBodyCell } from "./table-body-cell";
 
 type VirtualBounds = {
   leftColumnIndex: number;
@@ -38,10 +37,10 @@ export class TableBody<TDataRow extends TableRow>
   implements Closeable
 {
   private canvasWrapperDiv: HTMLDivElement;
-  private cellPool: CellPool<TableCell>;
+  private cellPool: CellPool<TableBodyCell>;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
-  private hoveredRowId: string | undefined;
+  private hoveredRowIndex: number | undefined;
   private _prevMousePoint: Point = new Point();
   private overlay: TableBodyOverlay;
   private _cachedVirtualBounds: VirtualBounds | undefined;
@@ -55,7 +54,6 @@ export class TableBody<TDataRow extends TableRow>
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     private readonly cellDataStore: CellDataStore<TDataRow>,
-    private readonly columnLookup: ColumnLookup<TDataRow>,
     dimensions: Dimensions,
   ) {
     super(dimensions);
@@ -78,7 +76,7 @@ export class TableBody<TDataRow extends TableRow>
       rowHeight: this.config.style.body.row.height,
       minColumnWidth: this.columnSizes.getMinColumnWidth(),
       cellFactory: () => {
-        return new TableCell(this.config.style.body.cell);
+        return new TableBodyCell(this.config.style.body.cell);
       },
     });
 
@@ -111,7 +109,7 @@ export class TableBody<TDataRow extends TableRow>
       this.mouseMove,
       new Point(0, -1 * this.config.style.header.row.height),
     );
-    this.mouse.onMouseLost(() => this.overlay.hide());
+    this.mouse.onMouseLost(this.mouseLost);
 
     this.requestRedraw();
   }
@@ -147,24 +145,49 @@ export class TableBody<TDataRow extends TableRow>
     this.requestRedraw();
   };
 
+  mouseLost = () => {
+    this.overlay.hide();
+    this.hoveredRowIndex = undefined;
+    this.requestRedraw();
+  };
+
   mouseMove = (point: Point): void => {
     this._prevMousePoint.copy(point);
-    if (point.y < 0) {
+    this.updateHoveredRowState(point);
+    this.requestRedraw();
+  };
+
+  private updateHoveredRowState(mousePoint: Point): void {
+    if (mousePoint.y < 0) {
       this.overlay.hide();
+      this.hoveredRowIndex = undefined;
       return;
     }
-    const worldY = point.y + this.camera.y;
+    const rowIndex = this.getHoveredRowIndexFromMousePoint(mousePoint);
+    if (rowIndex === undefined) {
+      this.overlay.hide();
+      this.hoveredRowIndex = undefined;
+      return;
+    }
+
+    const rowTopY =
+      rowIndex * this.config.style.body.row.height - this.camera.y;
+    this.overlay.drawAtPoint(rowTopY);
+
+    this.hoveredRowIndex = rowIndex;
+  }
+
+  private getHoveredRowIndexFromMousePoint(
+    mousePoint: Point,
+  ): number | undefined {
+    const worldY = mousePoint.y + this.camera.y;
     const rowHeight = this.config.style.body.row.height;
     const rowIndex = Math.floor(worldY / rowHeight);
-    let nextHoveredRowId: string | undefined;
     if (rowIndex >= 0 && rowIndex < this.sortedRowModel.length) {
-      nextHoveredRowId = this.sortedRowModel.getRow(rowIndex).rowId;
-      const rowTopY = rowIndex * rowHeight - this.camera.y;
-      this.overlay.drawAtPoint(rowTopY);
+      return rowIndex;
     }
-    if (nextHoveredRowId === this.hoveredRowId) return;
-    this.hoveredRowId = nextHoveredRowId;
-  };
+    return undefined;
+  }
 
   private getColumnResizeObservables(
     columns: Array<TableColumnDef<TDataRow>>,
@@ -260,6 +283,7 @@ export class TableBody<TDataRow extends TableRow>
             column.columnId,
             tableDataFactoryWithPlaceholder(column, row),
           ),
+          isHovered: this.hoveredRowIndex === r,
         });
         cell.draw(ctx);
       }

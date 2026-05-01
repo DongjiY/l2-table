@@ -1,4 +1,4 @@
-import { TableCellStyles } from "../../types/table-cell-types";
+import { Padding, TableCellStyles } from "../../types/table-cell-types";
 import { Dimensions } from "../../utils/dimensions";
 import { WorldObject } from "../../utils/world-object";
 import { TableData } from "../../utils/table-data";
@@ -10,7 +10,7 @@ import {
 } from "../../utils/cell-style-defaults";
 import { getPadding } from "../../utils/padding-utils";
 
-export class TableCell extends WorldObject {
+export abstract class TableCell extends WorldObject {
   protected data: TableData<unknown> | null = null;
   protected dimensions: Dimensions = new Dimensions();
   protected _tempBoundingBox: BoundingBox | undefined;
@@ -55,6 +55,14 @@ export class TableCell extends WorldObject {
     return this._tempBoundingBox;
   }
 
+  public abstract drawClipped(
+    ctx: CanvasRenderingContext2D,
+    clippedDimensions: Dimensions,
+    padding: Required<Padding>,
+  ): void;
+
+  public abstract drawGlobal(ctx: CanvasRenderingContext2D): void;
+
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
 
@@ -62,12 +70,15 @@ export class TableCell extends WorldObject {
     ctx.fillStyle = this.style?.text?.color ?? DEFAULT_TEXT_COLOR;
     ctx.textBaseline = "middle";
 
+    this.drawGlobal(ctx);
+
+    const padding = getPadding(this.style?.padding);
     const {
       left: leftPadding,
       right: rightPadding,
       top: topPadding,
       bottom: bottomPadding,
-    } = getPadding(this.style?.padding);
+    } = padding;
 
     ctx.beginPath();
     const innerWidth = this.dimensions.w - leftPadding - rightPadding;
@@ -80,13 +91,7 @@ export class TableCell extends WorldObject {
     );
     ctx.clip();
 
-    const { x, textAlign } = this.getAlignment(innerWidth);
-
-    ctx.textAlign = textAlign;
-
-    const y = this.point.y + topPadding + innerHeight / 2;
-
-    ctx.fillText(this.data?.getDisplayableContent() ?? "NA", x, y);
+    this.drawClipped(ctx, new Dimensions(innerWidth, innerHeight), padding);
 
     ctx.restore();
   }

@@ -1,4 +1,4 @@
-import { HEADER_FILTER_BUFFER } from "../table/components/header-filter";
+import { HEADER_FILTER_BUFFER } from "../table/components/header/header-filter";
 import { ColumnConstraints } from "../types/column-constraints";
 import { TableCellStyles } from "../types/table-cell-types";
 import { DEFAULT_FONT_STRING } from "../utils/cell-style-defaults";
