@@ -1,16 +1,16 @@
-import { TableConfig, TableRow } from "../../types/table-config";
-import { Camera } from "../../utils/camera";
-import { Dimensions } from "../../utils/dimensions";
-import { DrawCanvas } from "../../utils/draw-canvas";
-import { StringTableData } from "../../utils/string-table-data";
-import { ColumnSizeMap } from "../../utils/column-size-map";
-import { CellPool } from "../../utils/cell-pool";
-import { SortedRowModel } from "../../utils/sorted-row-model";
-import { TableWorker } from "../table-worker";
-import { Mouse } from "../../utils/mouse";
-import { Point } from "../../utils/point";
+import { TableConfig, TableRow } from "../../../types/table-config";
+import { Camera } from "../../../utils/camera";
+import { Dimensions } from "../../../utils/dimensions";
+import { DrawCanvas } from "../../../utils/draw-canvas";
+import { StringTableData } from "../../../utils/string-table-data";
+import { ColumnSizeMap } from "../../../utils/column-size-map";
+import { CellPool } from "../../../utils/cell-pool";
+import { SortedRowModel } from "../../../utils/sorted-row-model";
+import { TableWorker } from "../../table-worker";
+import { Mouse } from "../../../utils/mouse";
+import { Point } from "../../../utils/point";
 import { TableHeaderCell } from "./table-header-cell";
-import { BufferedStream } from "../../utils/buffered-stream";
+import { BufferedStream } from "../../../utils/buffered-stream";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;

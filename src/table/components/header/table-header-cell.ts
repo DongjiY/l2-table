@@ -1,14 +1,14 @@
-import { TableCellStyles } from "../../types/table-cell-types";
+import { Padding, TableCellStyles } from "../../../types/table-cell-types";
 import {
   DEFAULT_FONT_STRING,
   DEFAULT_TEXT_COLOR,
-} from "../../utils/cell-style-defaults";
-import { getPadding } from "../../utils/padding-utils";
-import { Point } from "../../utils/point";
-import { TableData } from "../../utils/table-data";
+} from "../../../utils/cell-style-defaults";
+import { Point } from "../../../utils/point";
+import { TableData } from "../../../utils/table-data";
 import { HeaderFilter } from "./header-filter";
 import { HeaderResizer, RESIZER_WIDTH } from "./header-resizer";
-import { TableCell } from "./table-cell";
+import { TableCell } from "../table-cell";
+import { Dimensions } from "../../../utils/dimensions";
 
 export class TableHeaderCell extends TableCell {
   private headerFilter: HeaderFilter;
@@ -53,16 +53,13 @@ export class TableHeaderCell extends TableCell {
     return isResizerHovered;
   }
 
-  private drawClippedContent(ctx: CanvasRenderingContext2D): void {
-    const {
-      left: leftPadding,
-      right: rightPadding,
-      top: topPadding,
-    } = getPadding(this.style?.padding);
-
-    const innerWidth = this.dimensions.w - leftPadding - rightPadding;
-    const innerHeight =
-      this.dimensions.h - topPadding - (this.style?.padding?.bottom ?? 0);
+  public drawClipped(
+    ctx: CanvasRenderingContext2D,
+    clippedDimensions: Dimensions,
+    padding: Required<Padding>,
+  ): void {
+    const innerWidth = clippedDimensions.w;
+    const innerHeight = clippedDimensions.h;
 
     ctx.save();
 
@@ -72,8 +69,8 @@ export class TableHeaderCell extends TableCell {
 
     ctx.beginPath();
     ctx.rect(
-      this.point.x + leftPadding,
-      this.point.y + topPadding,
+      this.point.x + padding.left,
+      this.point.y + padding.top,
       innerWidth,
       innerHeight,
     );
@@ -82,12 +79,12 @@ export class TableHeaderCell extends TableCell {
     const { x, textAlign } = this.getAlignment(innerWidth);
     ctx.textAlign = textAlign;
 
-    const y = this.point.y + topPadding + innerHeight / 2;
+    const y = this.point.y + padding.top + innerHeight / 2;
 
     ctx.fillText(this.data?.getDisplayableContent() ?? "NA", x, y);
 
-    const filterX = this.point.x + this.dimensions.w - rightPadding - 6;
-    const filterY = this.point.y + topPadding + innerHeight / 2;
+    const filterX = this.point.x + this.dimensions.w - padding.right - 6;
+    const filterY = this.point.y + padding.top + innerHeight / 2;
 
     ctx.save();
     ctx.translate(filterX, filterY);
@@ -97,21 +94,12 @@ export class TableHeaderCell extends TableCell {
     ctx.restore();
   }
 
-  private drawOverlay(ctx: CanvasRenderingContext2D): void {
+  public drawGlobal(ctx: CanvasRenderingContext2D): void {
     const resizerX = this.point.x + this.dimensions.w - RESIZER_WIDTH;
 
     ctx.save();
     ctx.translate(resizerX, this.point.y);
     this.headerResizer.draw(ctx);
-    ctx.restore();
-  }
-
-  public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.save();
-
-    this.drawClippedContent(ctx);
-    this.drawOverlay(ctx);
-
     ctx.restore();
   }
 }

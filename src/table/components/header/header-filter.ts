@@ -1,4 +1,4 @@
-import { Drawable } from "../../utils/drawable";
+import { Drawable } from "../../../utils/drawable";
 
 const HEADER_FILTER_WIDTH = 6;
 const HEADER_FILTER_SPACING = 2;

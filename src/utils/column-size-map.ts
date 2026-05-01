@@ -13,7 +13,7 @@ import { Point } from "./point";
 import { TableColumnDef, TableRow } from "../types/table-config";
 import { ColumnConstraints } from "../types/column-constraints";
 import { clamp } from "./clamp";
-import { RESIZER_EFFECTIVE_WIDTH } from "../table/components/header-resizer";
+import { RESIZER_EFFECTIVE_WIDTH } from "../table/components/header/header-resizer";
 import { Closeable } from "./closeable";
 
 type BoundingBoxMetadata = { columnId: string; columnIndex: number };

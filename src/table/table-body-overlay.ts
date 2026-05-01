@@ -6,7 +6,7 @@ export class TableBodyOverlay {
     this.rowActionContainer.style.position = "absolute";
     this.rowActionContainer.style.width = "100%";
     this.rowActionContainer.style.height = `${rowHeight}px`;
-    this.rowActionContainer.style.background = "red";
+    this.rowActionContainer.style.background = "transparent";
     this.rowActionContainer.style.opacity = "0";
     this.rowActionContainer.style.top = "0";
     parent.appendChild(this.rowActionContainer);
