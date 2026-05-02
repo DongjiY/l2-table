@@ -44,8 +44,9 @@ export class ColumnSizeManager {
     const { left: leftPadding, right: rightPadding } = getPadding(
       this.cellStyling?.padding,
     );
-    const computedWidth =
-      computedMetrics.width + leftPadding + rightPadding + HEADER_FILTER_BUFFER;
+    const computedWidth = Math.ceil(
+      computedMetrics.width + leftPadding + rightPadding + HEADER_FILTER_BUFFER,
+    );
     const newCellWidth = Math.min(
       this.columnConstraints[columnId].maxWidth,
       Math.max(
