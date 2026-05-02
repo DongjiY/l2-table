@@ -49,12 +49,12 @@ export class TableBodyCell extends TableCell {
     ctx.save();
 
     if (this.isHovered) {
-      ctx.fillStyle = "red";
+      ctx.fillStyle = "black";
 
       ctx.fillRect(
         this.point.x,
         this.point.y,
-        this.dimensions.w,
+        this.dimensions.w + 1, // todo - figure out why a sometimes a 1px gap appears between cells without this
         this.dimensions.h,
       );
     }
