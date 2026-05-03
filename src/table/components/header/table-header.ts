@@ -13,7 +13,7 @@ import { TableHeaderCell } from "./table-header-cell";
 import { BufferedStream } from "../../../utils/buffered-stream";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
-  private cellPool!: CellPool<TableHeaderCell>;
+  private cellPool: CellPool<TableHeaderCell>;
   private headerNameMap: Map<string, string>;
   private clickStartPosition: Point = new Point();
   private hoveredViewportPosition: Point | undefined = new Point();
@@ -44,7 +44,12 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       }),
     );
 
-    this.initializeCellPool();
+    this.cellPool = CellPool.initFromCount({
+      count: this.config.columns.length,
+      cellFactory: () => {
+        return new TableHeaderCell(this.config.style.header.cell);
+      },
+    });
 
     this.config.columns.forEach(({ columnId, name }) => {
       this.tableWorker.send({
@@ -76,16 +81,6 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.mouse.onMouseMove(this.handleMouseMove);
     this.mouse.onMouseUp(this.handleMouseUp);
     this.requestRedraw();
-  }
-
-  public initializeCellPool(): void {
-    this.cellPool = new CellPool();
-    this.cellPool.initFromCount({
-      count: this.config.columns.length,
-      cellFactory: () => {
-        return new TableHeaderCell(this.config.style.header.cell);
-      },
-    });
   }
 
   handleMouseMove = (p: Point) => {
