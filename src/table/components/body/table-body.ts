@@ -37,7 +37,7 @@ export class TableBody<TDataRow extends TableRow>
   implements Closeable
 {
   private canvasWrapperDiv: HTMLDivElement;
-  private cellPool: CellPool<TableBodyCell>;
+  private cellPool!: CellPool<TableBodyCell>;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
   private hoveredRowIndex: number | undefined;
@@ -67,18 +67,7 @@ export class TableBody<TDataRow extends TableRow>
       this.config.style.body.row.height,
     );
 
-    this.cellPool = new CellPool();
-    this.cellPool.initFromViewport({
-      viewportHeight: this.camera.viewportHeight,
-      viewportWidth: this.camera.viewportWidth,
-      bufferX: 4,
-      bufferY: 4,
-      rowHeight: this.config.style.body.row.height,
-      minColumnWidth: this.columnSizes.getMinColumnWidth(),
-      cellFactory: () => {
-        return new TableBodyCell(this.config.style.body.cell);
-      },
-    });
+    this.initializeCellPool();
 
     this.sourceSubscription = this.source.subscribe(this.handleRecvSourceData);
     this.columnResizeSubscription = this.getColumnResizeObservables(
@@ -112,6 +101,21 @@ export class TableBody<TDataRow extends TableRow>
     this.mouse.onMouseLost(this.mouseLost);
 
     this.requestRedraw();
+  }
+
+  public initializeCellPool(): void {
+    this.cellPool = new CellPool();
+    this.cellPool.initFromViewport({
+      viewportHeight: this.camera.viewportHeight,
+      viewportWidth: this.camera.viewportWidth,
+      bufferX: 4,
+      bufferY: 4,
+      rowHeight: this.config.style.body.row.height,
+      minColumnWidth: this.columnSizes.getMinColumnWidth(),
+      cellFactory: () => {
+        return new TableBodyCell(this.config.style.body.cell);
+      },
+    });
   }
 
   public getElement(): HTMLElement {
