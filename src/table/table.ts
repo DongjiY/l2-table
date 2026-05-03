@@ -1,4 +1,4 @@
-import { distinctUntilChanged, filter, Subscription, tap } from "rxjs";
+import { distinctUntilChanged, filter, Subscription } from "rxjs";
 import { ColumnConstraints } from "../types/column-constraints";
 import {
   TableColumnDef,
@@ -8,7 +8,6 @@ import {
 } from "../types/table-config";
 import { Camera } from "../utils/camera";
 import { CellDataStore } from "../utils/cell-data-store";
-import { ColumnLookup } from "../utils/column-lookup";
 import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
 import { Mouse } from "../utils/mouse";
@@ -32,15 +31,13 @@ export class Table<TDataRow extends TableRow> implements Closeable {
   private totalColumnWidthSubscription: Subscription;
 
   private rootDimensions: Dimensions = new Dimensions();
-  private columnLookup: ColumnLookup<TDataRow>;
-
   private verticalWrapper: HTMLDivElement;
   private horizontalWrapper: HTMLDivElement;
 
   private tableConfig: TableConfig<TDataRow>;
   private resizeObserver: ResizeObserver;
   private camera: Camera;
-  private renderer: Renderer;
+  private readonly renderer: Renderer;
 
   private mouse: Mouse;
 
@@ -64,8 +61,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     private readonly opts: TableOptions<TDataRow>,
   ) {
     this.tableConfig = this.opts.config;
-
-    this.columnLookup = new ColumnLookup(this.opts.config.columns);
 
     this.tableWorker = new TableWorker();
     this.mouse = new Mouse(root);
@@ -239,6 +234,14 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
   public close(): void {
     this.totalColumnWidthSubscription.unsubscribe();
+    this.autoSizedBufferedStream.close();
+    this.body.close();
+    this.header.close();
+    this.scrollXBar.close();
+    this.scrollYBar.close();
+    this.columnSizes.close();
+    this.renderer.close();
+    this.mouse.close();
   }
 
   private getColumnConstraints(
