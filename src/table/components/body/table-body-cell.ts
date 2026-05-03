@@ -48,8 +48,8 @@ export class TableBodyCell extends TableCell {
   public drawGlobal(ctx: CanvasRenderingContext2D): void {
     ctx.save();
 
-    if (this.isHovered) {
-      ctx.fillStyle = "black";
+    if (this.isHovered && this.style?.hovered?.backgroundColor) {
+      ctx.fillStyle = this.style?.hovered?.backgroundColor;
 
       ctx.fillRect(
         this.point.x,
