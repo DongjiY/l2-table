@@ -19,19 +19,21 @@ export class CellPool<TCell extends TableCell> {
     return this.cells[this.index++];
   }
 
-  public initFromCount({
+  public static initFromCount<TCell extends TableCell>({
     count,
     cellFactory,
   }: {
     count: number;
     cellFactory: () => TCell;
-  }): void {
+  }): CellPool<TCell> {
+    const cellPool = new CellPool<TCell>();
     for (let i = 0; i < count; i++) {
-      this.addCell(cellFactory());
+      cellPool.addCell(cellFactory());
     }
+    return cellPool;
   }
 
-  public initFromViewport({
+  public static initFromViewport<TCell extends TableCell>({
     viewportWidth,
     viewportHeight,
     rowHeight,
@@ -47,16 +49,17 @@ export class CellPool<TCell extends TableCell> {
     rowHeight: number;
     minColumnWidth: number;
     cellFactory: () => TCell;
-  }): void {
+  }): CellPool<TCell> {
+    const cellPool = new CellPool<TCell>();
+
     const maxVisibleRows = Math.ceil(viewportHeight / rowHeight) + bufferX;
-
     const maxVisibleCols = Math.ceil(viewportWidth / minColumnWidth) + bufferY;
-
     const poolSize = maxVisibleRows * maxVisibleCols;
 
     for (let i = 0; i < poolSize; i++) {
-      this.addCell(cellFactory());
+      cellPool.addCell(cellFactory());
     }
+    return cellPool;
   }
 
   public *allCells(): IterableIterator<TableCell> {

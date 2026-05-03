@@ -220,9 +220,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
         w: width,
         h: height,
       });
-
-      this.body.initializeCellPool();
-      this.header.initializeCellPool();
+      this.body.reinitializeCellPool();
     });
 
     this.resizeObserver.observe(this.root);

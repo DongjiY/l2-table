@@ -37,7 +37,7 @@ export class TableBody<TDataRow extends TableRow>
   implements Closeable
 {
   private canvasWrapperDiv: HTMLDivElement;
-  private cellPool!: CellPool<TableBodyCell>;
+  private cellPool: CellPool<TableBodyCell>;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
   private hoveredRowIndex: number | undefined;
@@ -67,7 +67,7 @@ export class TableBody<TDataRow extends TableRow>
       this.config.style.body.row.height,
     );
 
-    this.initializeCellPool();
+    this.cellPool = this.createCellPool();
 
     this.sourceSubscription = this.source.subscribe(this.handleRecvSourceData);
     this.columnResizeSubscription = this.getColumnResizeObservables(
@@ -103,9 +103,12 @@ export class TableBody<TDataRow extends TableRow>
     this.requestRedraw();
   }
 
-  public initializeCellPool(): void {
-    this.cellPool = new CellPool();
-    this.cellPool.initFromViewport({
+  public reinitializeCellPool(): void {
+    this.cellPool = this.createCellPool();
+  }
+
+  private createCellPool(): CellPool<TableBodyCell> {
+    return CellPool.initFromViewport({
       viewportHeight: this.camera.viewportHeight,
       viewportWidth: this.camera.viewportWidth,
       bufferX: 4,
