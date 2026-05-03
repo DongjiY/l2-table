@@ -108,7 +108,7 @@ export class TableBody<TDataRow extends TableRow>
   }
 
   private createCellPool(): CellPool<TableBodyCell> {
-    return CellPool.initFromViewport({
+    return CellPool.fromViewport({
       viewportHeight: this.camera.viewportHeight,
       viewportWidth: this.camera.viewportWidth,
       bufferX: 4,

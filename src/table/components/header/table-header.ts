@@ -44,7 +44,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       }),
     );
 
-    this.cellPool = CellPool.initFromCount({
+    this.cellPool = CellPool.fromCount({
       count: this.config.columns.length,
       cellFactory: () => {
         return new TableHeaderCell(this.config.style.header.cell);

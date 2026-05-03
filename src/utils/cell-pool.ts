@@ -19,7 +19,7 @@ export class CellPool<TCell extends TableCell> {
     return this.cells[this.index++];
   }
 
-  public static initFromCount<TCell extends TableCell>({
+  public static fromCount<TCell extends TableCell>({
     count,
     cellFactory,
   }: {
@@ -33,7 +33,7 @@ export class CellPool<TCell extends TableCell> {
     return cellPool;
   }
 
-  public static initFromViewport<TCell extends TableCell>({
+  public static fromViewport<TCell extends TableCell>({
     viewportWidth,
     viewportHeight,
     rowHeight,
