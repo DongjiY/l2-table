@@ -54,7 +54,7 @@ export class TableBodyCell extends TableCell {
       ctx.fillRect(
         this.point.x,
         this.point.y,
-        this.dimensions.w + 1, // todo - figure out why a sometimes a 1px gap appears between cells without this
+        this.dimensions.w + 1,
         this.dimensions.h,
       );
     }
