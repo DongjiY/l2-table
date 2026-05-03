@@ -173,6 +173,9 @@ export const config: TableConfig<StatsRow> = {
           left: 6,
           right: 6,
         },
+        hovered: {
+          backgroundColor: "#fcba03",
+        },
       },
     },
     header: {
