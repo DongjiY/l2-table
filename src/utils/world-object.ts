@@ -1,6 +1,7 @@
 import { BoundingBox } from "./bounding-box";
 import { Drawable } from "./drawable";
 import { ObjectState } from "./object-state";
+import { Painter } from "./painter";
 import { Point } from "./point";
 
 export abstract class WorldObject implements Drawable {
@@ -11,7 +12,7 @@ export abstract class WorldObject implements Drawable {
     if (point) this.point = point;
   }
 
-  public abstract draw(ctx: CanvasRenderingContext2D): void;
+  public abstract draw(ctx: Painter): void;
 
   public abstract getBoundingBox(): BoundingBox;
 }

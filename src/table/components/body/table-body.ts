@@ -27,6 +27,7 @@ import { TableBodyCell } from "./table-body-cell";
 import { NonUniformCellPool } from "../../../utils/nonuniform-cell-pool";
 import { TableCell } from "../table-cell";
 import { TableCellStyles } from "../../../types/table-cell-types";
+import { Painter } from "../../../utils/painter";
 
 type VirtualBounds = {
   leftColumnIndex: number;
@@ -270,7 +271,7 @@ export class TableBody<TDataRow extends TableRow>
     };
   }
 
-  private drawCells(ctx: CanvasRenderingContext2D): void {
+  private drawCells(painter: Painter): void {
     this.cellPool.beginFrame();
 
     this._cachedVirtualBounds = this.getVirtualBounds();
@@ -293,18 +294,15 @@ export class TableBody<TDataRow extends TableRow>
           ),
           isHovered: this.hoveredRowIndex === r,
         });
-        cell.draw(ctx);
+        cell.draw(painter);
       }
     }
   }
 
-  public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.translate(
-      -this.snapToDevicePixel(this.camera.x),
-      -this.snapToDevicePixel(this.camera.y),
-    );
+  public draw(painter: Painter): void {
+    painter.translateFromViewport(this.camera.x, this.camera.y);
 
-    this.drawCells(ctx);
+    this.drawCells(painter);
   }
 }
 

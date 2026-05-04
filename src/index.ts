@@ -12,3 +12,4 @@ export { StringTableData } from "./utils/string-table-data";
 export { TableData } from "./utils/table-data";
 export { TableCell } from "./table/components/table-cell";
 export { Dimensions } from "./utils/dimensions";
+export { Painter } from "./utils/painter";

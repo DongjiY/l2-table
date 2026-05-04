@@ -3,6 +3,7 @@ import { Camera } from "../../utils/camera";
 import { Dimensions } from "../../utils/dimensions";
 import { DrawCanvas } from "../../utils/draw-canvas";
 import { Mouse } from "../../utils/mouse";
+import { Painter } from "../../utils/painter";
 import { Point } from "../../utils/point";
 import { WorldObject } from "../../utils/world-object";
 
@@ -98,10 +99,9 @@ export class HorizontalScrollbar extends DrawCanvas {
     this.initMouseCallbacks();
   }
 
-  public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, this.w, this.h);
-    this.thumb.draw(ctx);
+  public draw(painter: Painter): void {
+    painter.drawRect(Point.at(0, 0), Dimensions.of(this.w, this.h), "#fff");
+    this.thumb.draw(painter);
   }
 }
 
@@ -177,10 +177,10 @@ class HorizontalThumb extends WorldObject {
     this.state.isActive = isActive;
   }
 
-  public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle =
+  public draw(painter: Painter): void {
+    const color =
       this.state.isHovered || this.state.isActive ? "#6b7280" : "#9ca3af";
-    ctx.fillRect(this.point.x, 0, this.dimensions.w, this.dimensions.h);
+    painter.drawRect(Point.at(this.point.x, 0), this.dimensions, color);
   }
 
   public getBoundingBox(): BoundingBox {

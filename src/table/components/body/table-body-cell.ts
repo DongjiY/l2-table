@@ -1,36 +1,35 @@
 import { Padding } from "../../../types/table-cell-types";
 import { Dimensions } from "../../../utils/dimensions";
+import { Painter } from "../../../utils/painter";
+import { Point } from "../../../utils/point";
 import { TableCell } from "../table-cell";
 
 export class TableBodyCell extends TableCell {
   public drawClipped(
-    ctx: CanvasRenderingContext2D,
+    painter: Painter,
     clippedDimensions: Dimensions,
     padding: Required<Padding>,
   ): void {
     const { x, textAlign } = this.getAlignment(clippedDimensions.w);
 
-    ctx.textAlign = textAlign;
-
     const y = this.point.y + padding.top + clippedDimensions.h / 2;
 
-    ctx.fillText(this.data?.getDisplayableContent() ?? "NA", x, y);
+    const textContent = this.data?.getDisplayableContent() ?? "NA";
+    painter.writeText(textContent, Point.at(x, y), {
+      font: this.style?.text?.font,
+      color: this.style?.text?.color,
+      baseline: "middle",
+      alignment: textAlign,
+    });
   }
 
-  public drawGlobal(ctx: CanvasRenderingContext2D): void {
-    ctx.save();
-
+  public drawGlobal(painter: Painter): void {
     if (this.isHovered && this.style?.hovered?.backgroundColor) {
-      ctx.fillStyle = this.style?.hovered?.backgroundColor;
-
-      ctx.fillRect(
-        this.point.x,
-        this.point.y,
-        this.dimensions.w + 1,
-        this.dimensions.h,
+      painter.drawRect(
+        this.point,
+        this.dimensions,
+        this.style.hovered.backgroundColor,
       );
     }
-
-    ctx.restore();
   }
 }

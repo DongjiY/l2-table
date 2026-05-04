@@ -1,4 +1,5 @@
 import { Drawable } from "../../../utils/drawable";
+import { Painter } from "../../../utils/painter";
 
 const HEADER_FILTER_WIDTH = 6;
 const HEADER_FILTER_SPACING = 2;
@@ -11,33 +12,43 @@ export class HeaderFilter implements Drawable {
     this.direction = direction;
   }
 
-  public draw(ctx: CanvasRenderingContext2D): void {
+  public draw(painter: Painter): void {
     const x = 0;
     const y = -HEADER_FILTER_WIDTH;
 
-    ctx.save();
+    painter.dangerouslyGetRenderingContext().save();
 
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
-    ctx.lineTo(x + HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
-    ctx.closePath();
-    ctx.fillStyle =
+    painter.dangerouslyGetRenderingContext().beginPath();
+    painter.dangerouslyGetRenderingContext().moveTo(x, y);
+    painter
+      .dangerouslyGetRenderingContext()
+      .lineTo(x - HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
+    painter
+      .dangerouslyGetRenderingContext()
+      .lineTo(x + HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
+    painter.dangerouslyGetRenderingContext().closePath();
+    painter.dangerouslyGetRenderingContext().fillStyle =
       this.direction === "ASC" ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.3)";
-    ctx.fill();
+    painter.dangerouslyGetRenderingContext().fill();
 
     const downY = y + HEADER_FILTER_WIDTH + HEADER_FILTER_SPACING;
 
-    ctx.beginPath();
-    ctx.moveTo(x, downY + HEADER_FILTER_WIDTH);
-    ctx.lineTo(x - HEADER_FILTER_WIDTH, downY);
-    ctx.lineTo(x + HEADER_FILTER_WIDTH, downY);
-    ctx.closePath();
-    ctx.fillStyle =
+    painter.dangerouslyGetRenderingContext().beginPath();
+    painter
+      .dangerouslyGetRenderingContext()
+      .moveTo(x, downY + HEADER_FILTER_WIDTH);
+    painter
+      .dangerouslyGetRenderingContext()
+      .lineTo(x - HEADER_FILTER_WIDTH, downY);
+    painter
+      .dangerouslyGetRenderingContext()
+      .lineTo(x + HEADER_FILTER_WIDTH, downY);
+    painter.dangerouslyGetRenderingContext().closePath();
+    painter.dangerouslyGetRenderingContext().fillStyle =
       this.direction === "DESC" ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.3)";
-    ctx.fill();
+    painter.dangerouslyGetRenderingContext().fill();
 
-    ctx.restore();
+    painter.dangerouslyGetRenderingContext().restore();
   }
 
   public setDirection(direction: "ASC" | "DESC" | undefined) {

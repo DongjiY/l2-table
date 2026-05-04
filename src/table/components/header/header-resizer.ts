@@ -1,5 +1,6 @@
 import { BoundingBox } from "../../../utils/bounding-box";
 import { Dimensions } from "../../../utils/dimensions";
+import { Painter } from "../../../utils/painter";
 import { Point } from "../../../utils/point";
 import { WorldObject } from "../../../utils/world-object";
 
@@ -46,14 +47,13 @@ export class HeaderResizer extends WorldObject {
     return this.resizerBoundingBox;
   }
 
-  public draw(ctx: CanvasRenderingContext2D): void {
+  public draw(painter: Painter): void {
     if (!this.isShowResizer) return;
 
-    ctx.save();
-
-    ctx.fillStyle = "red";
-    ctx.fillRect(0, 0, RESIZER_WIDTH, this.resizerHeight);
-
-    ctx.restore();
+    painter.drawRect(
+      Point.at(0, 0),
+      Dimensions.of(RESIZER_WIDTH, this.resizerHeight),
+      "red",
+    );
   }
 }
