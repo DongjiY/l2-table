@@ -4,6 +4,7 @@ import type {
   TableConfig,
 } from "../../../../../../dist";
 import { NumberTableData } from "./numberTableData";
+import { P50RenderCell } from "./p50RenderCell";
 
 export type StatsRow = TableRow & {
   placeholders: {
@@ -71,6 +72,7 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.p50,
     cellData: () => new NumberTableData(),
+    renderCell: () => new P50RenderCell(),
   },
   {
     columnId: "p75",

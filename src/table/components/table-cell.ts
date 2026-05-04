@@ -15,7 +15,9 @@ export abstract class TableCell extends WorldObject {
   protected dimensions: Dimensions = new Dimensions();
   protected _tempBoundingBox: BoundingBox | undefined;
 
-  constructor(protected readonly style: TableCellStyles | undefined) {
+  protected isHovered: boolean = false;
+
+  constructor(protected readonly style?: TableCellStyles) {
     super();
   }
 
@@ -25,18 +27,21 @@ export abstract class TableCell extends WorldObject {
     data,
     width,
     height,
+    isHovered = false,
   }: {
     x: number;
     y: number;
     data: TableData<unknown>;
     width: number;
     height: number;
+    isHovered?: boolean;
   }): void {
     this.point.x = x;
     this.point.y = y;
     this.dimensions.w = width;
     this.dimensions.h = height;
     this.data = data;
+    this.isHovered = isHovered;
   }
 
   public get w(): number {

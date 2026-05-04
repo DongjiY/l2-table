@@ -1,6 +1,7 @@
 import { Observable } from "rxjs";
 import { TableData } from "../utils/table-data";
 import { TableCellStyles } from "./table-cell-types";
+import { TableCell } from "../table/components/table-cell";
 
 export type TableOptions<TDataRow extends TableRow> = {
   config: TableConfig<TDataRow>;
@@ -37,6 +38,7 @@ export type TableColumnDef<TDataRow extends TableRow, TValue = unknown> = {
   autoResize: boolean;
   placeholderAccessorFn: (row: TDataRow) => TValue;
   cellData: () => TableData<TValue>;
+  renderCell?: () => TableCell;
 };
 
 export type TableRow = {
