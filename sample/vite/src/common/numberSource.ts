@@ -1,5 +1,5 @@
 import { interval, map, mergeMap, from, Observable } from "rxjs";
-import type { TableConfig, TableRow, TableSourceData } from "../../../../dist";
+import type { TableConfig, TableRow, TableSourceData } from "l2-table";
 
 export function numberSource<TDataRow extends TableRow>(
   tableConfig: TableConfig<TDataRow>,

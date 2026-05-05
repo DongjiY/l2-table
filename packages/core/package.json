@@ -1,0 +1,37 @@
+{
+  "name": "l2-table",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "fast, observable-driven, canvas tables",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup --format esm --dts",
+    "dev": "tsup --watch --format esm --dts",
+    "test": "jest"
+  },
+  "author": "Dongji Y",
+  "license": "ISC",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "rxjs": "^7.8.2"
+  }
+}

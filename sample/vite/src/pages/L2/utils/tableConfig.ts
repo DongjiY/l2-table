@@ -1,8 +1,4 @@
-import type {
-  TableRow,
-  TableColumnDef,
-  TableConfig,
-} from "../../../../../../dist";
+import type { TableRow, TableColumnDef, TableConfig } from "l2-table";
 import { NumberTableData } from "./numberTableData";
 import { P50RenderCell } from "./p50RenderCell";
 
