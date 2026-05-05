@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { createTable, type Table } from "../../../../../../dist";
+import { createTable, type Table } from "l2-table";
 import { config, type StatsRow } from "../utils/tableConfig";
 import { NEVER } from "rxjs";
 

@@ -1,10 +1,4 @@
-import {
-  Dimensions,
-  Painter,
-  Point,
-  TableCell,
-  type Padding,
-} from "../../../../../../dist";
+import { Dimensions, Painter, Point, TableCell, type Padding } from "l2-table";
 
 export class P50RenderCell extends TableCell {
   drawClipped(
