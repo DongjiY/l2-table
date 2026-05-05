@@ -1,17 +1,22 @@
-import { Dimensions, Painter, TableCell } from "../../../../../../dist";
+import {
+  Dimensions,
+  Painter,
+  Point,
+  TableCell,
+  type Padding,
+} from "../../../../../../dist";
 
 export class P50RenderCell extends TableCell {
   drawClipped(
     painter: Painter,
     clippedDimensions: Dimensions,
-    padding: Required<{
-      top?: number;
-      bottom?: number;
-      left?: number;
-      right?: number;
-    }>,
+    padding: Required<Padding>,
   ): void {
-    void this.drawClipped;
+    painter.drawRect(
+      Point.at(this.point.x + padding.left, this.point.y + padding.top),
+      clippedDimensions,
+      "pink",
+    );
   }
 
   drawGlobal(painter: Painter): void {

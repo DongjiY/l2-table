@@ -325,7 +325,15 @@ function extractRenderCellFactories<TDataRow extends TableRow>(
   const defaultTableBodyCellFactory = () => new TableBodyCell(tableCellStyles);
   const accumulator: Record<string, () => TableCell> = {};
   const res = columnDefs.reduce((acc, curr) => {
-    acc[curr.columnId] = curr.renderCell ?? defaultTableBodyCellFactory;
+    const renderCellFactory = curr.renderCell;
+    if (renderCellFactory) {
+      const customTableBodyCellFactory = () => {
+        return renderCellFactory(tableCellStyles);
+      };
+      acc[curr.columnId] = customTableBodyCellFactory;
+    } else {
+      acc[curr.columnId] = defaultTableBodyCellFactory;
+    }
     return acc;
   }, accumulator);
   return res;
