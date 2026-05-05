@@ -3,11 +3,7 @@ import { Dimensions } from "../../utils/dimensions";
 import { WorldObject } from "../../utils/world-object";
 import { TableData } from "../../utils/table-data";
 import { BoundingBox } from "../../utils/bounding-box";
-import {
-  DEFAULT_FONT_STRING,
-  DEFAULT_TEXT_COLOR,
-  DEFAULT_TEXT_ALIGN,
-} from "../../utils/cell-style-defaults";
+import { DEFAULT_TEXT_ALIGN } from "../../utils/cell-style-defaults";
 import { getPadding } from "../../utils/padding-utils";
 import { Painter } from "../../utils/painter";
 

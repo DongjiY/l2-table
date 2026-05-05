@@ -38,8 +38,12 @@ export type TableColumnDef<TDataRow extends TableRow, TValue = unknown> = {
   autoResize: boolean;
   placeholderAccessorFn: (row: TDataRow) => TValue;
   cellData: () => TableData<TValue>;
-  renderCell?: () => TableCell;
+  renderCell?: RenderCellFactory;
 };
+
+export type RenderCellFactory = (
+  ...args: ConstructorParameters<typeof TableCell>
+) => TableCell;
 
 export type TableRow = {
   rowId: string;
