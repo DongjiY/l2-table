@@ -214,7 +214,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.translate(-this.camera.x, 0);
+    ctx.translate(-this.snapToDevicePixel(this.camera.x), 0);
 
     this.drawCells(ctx);
   }

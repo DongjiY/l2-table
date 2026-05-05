@@ -7,6 +7,7 @@ import { Dimensions } from "./dimensions";
 export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
   private ctx: CanvasRenderingContext2D;
   private drawQueue$: ReplaySubject<void>;
+  protected dpr: number = 1;
 
   constructor(dimensions: Dimensions) {
     super(dimensions);
@@ -16,6 +17,7 @@ export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
   }
 
   public resize(w: number, h: number, dpr: number = 1): void {
+    this.dpr = dpr;
     this.canvas.width = Math.round(w * dpr);
     this.canvas.height = Math.round(h * dpr);
     this.resizeCanvas(w, h);
@@ -44,5 +46,9 @@ export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
 
   public close(): void {
     this.drawQueue$.complete();
+  }
+
+  protected snapToDevicePixel(value: number): number {
+    return Math.round(value * this.dpr) / this.dpr;
   }
 }

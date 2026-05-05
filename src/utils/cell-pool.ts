@@ -52,8 +52,8 @@ export class CellPool<TCell extends TableCell> {
   }): CellPool<TCell> {
     const cellPool = new CellPool<TCell>();
 
-    const maxVisibleRows = Math.ceil(viewportHeight / rowHeight) + bufferX;
-    const maxVisibleCols = Math.ceil(viewportWidth / minColumnWidth) + bufferY;
+    const maxVisibleRows = Math.ceil(viewportHeight / rowHeight) + bufferY;
+    const maxVisibleCols = Math.ceil(viewportWidth / minColumnWidth) + bufferX;
     const poolSize = maxVisibleRows * maxVisibleCols;
 
     for (let i = 0; i < poolSize; i++) {

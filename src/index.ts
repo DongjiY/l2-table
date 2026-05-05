@@ -10,3 +10,5 @@ export type {
 } from "./types/table-config";
 export { StringTableData } from "./utils/string-table-data";
 export { TableData } from "./utils/table-data";
+export { TableCell } from "./table/components/table-cell";
+export { Dimensions } from "./utils/dimensions";

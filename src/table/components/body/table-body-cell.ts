@@ -1,36 +1,8 @@
 import { Padding } from "../../../types/table-cell-types";
 import { Dimensions } from "../../../utils/dimensions";
-import { TableData } from "../../../utils/table-data";
 import { TableCell } from "../table-cell";
 
 export class TableBodyCell extends TableCell {
-  private isHovered: boolean = false;
-
-  public bind({
-    x,
-    y,
-    data,
-    width,
-    height,
-    isHovered,
-  }: {
-    x: number;
-    y: number;
-    data: TableData<unknown>;
-    width: number;
-    height: number;
-    isHovered: boolean;
-  }): void {
-    super.bind({
-      x,
-      y,
-      data,
-      width,
-      height,
-    });
-    this.isHovered = isHovered;
-  }
-
   public drawClipped(
     ctx: CanvasRenderingContext2D,
     clippedDimensions: Dimensions,

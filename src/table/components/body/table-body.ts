@@ -15,7 +15,6 @@ import {
   calculateTopAndBottomRowBounds,
 } from "../../../utils/boundary-search";
 import { Axis } from "../../../utils/axis";
-import { CellPool } from "../../../utils/cell-pool";
 import { Closeable } from "../../../utils/closeable";
 import { CellDataStore } from "../../../utils/cell-data-store";
 import { TableData } from "../../../utils/table-data";
@@ -25,6 +24,9 @@ import { Mouse } from "../../../utils/mouse";
 import { TableBodyOverlay } from "../../table-body-overlay";
 import { SortedRowModel } from "../../../utils/sorted-row-model";
 import { TableBodyCell } from "./table-body-cell";
+import { NonUniformCellPool } from "../../../utils/nonuniform-cell-pool";
+import { TableCell } from "../table-cell";
+import { TableCellStyles } from "../../../types/table-cell-types";
 
 type VirtualBounds = {
   leftColumnIndex: number;
@@ -37,7 +39,7 @@ export class TableBody<TDataRow extends TableRow>
   implements Closeable
 {
   private canvasWrapperDiv: HTMLDivElement;
-  private cellPool: CellPool<TableBodyCell>;
+  private cellPool: NonUniformCellPool;
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
   private hoveredRowIndex: number | undefined;
@@ -107,17 +109,16 @@ export class TableBody<TDataRow extends TableRow>
     this.cellPool = this.createCellPool();
   }
 
-  private createCellPool(): CellPool<TableBodyCell> {
-    return CellPool.fromViewport({
+  private createCellPool(): NonUniformCellPool {
+    return NonUniformCellPool.fromViewport({
       viewportHeight: this.camera.viewportHeight,
-      viewportWidth: this.camera.viewportWidth,
-      bufferX: 4,
       bufferY: 4,
       rowHeight: this.config.style.body.row.height,
       minColumnWidth: this.columnSizes.getMinColumnWidth(),
-      cellFactory: () => {
-        return new TableBodyCell(this.config.style.body.cell);
-      },
+      cellFactories: extractRenderCellFactories(
+        this.config.columns,
+        this.config.style.body.cell,
+      ),
     });
   }
 
@@ -278,8 +279,8 @@ export class TableBody<TDataRow extends TableRow>
     for (let r = topRowIndex; r <= bottomRowIndex; r++) {
       const row = this.sortedRowModel.getRow(r);
       for (let c = leftColumnIndex; c <= rightColumnIndex; c++) {
-        const cell = this.cellPool.next();
         const column = this.config.columns[c];
+        const cell = this.cellPool.next(column.columnId);
         cell.bind({
           x: this.columnSizes.getColumnXPos(column.columnId) ?? 0,
           y: r * this.config.style.body.row.height,
@@ -298,7 +299,10 @@ export class TableBody<TDataRow extends TableRow>
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.translate(-this.camera.x, -this.camera.y);
+    ctx.translate(
+      -this.snapToDevicePixel(this.camera.x),
+      -this.snapToDevicePixel(this.camera.y),
+    );
 
     this.drawCells(ctx);
   }
@@ -314,4 +318,17 @@ function tableDataFactoryWithPlaceholder<TDataRow extends TableRow>(
     cellData.setValue(initialValue);
     return cellData;
   };
+}
+
+function extractRenderCellFactories<TDataRow extends TableRow>(
+  columnDefs: Array<TableColumnDef<TDataRow>>,
+  tableCellStyles: TableCellStyles | undefined,
+): Record<string, () => TableCell> {
+  const defaultTableBodyCellFactory = () => new TableBodyCell(tableCellStyles);
+  const accumulator: Record<string, () => TableCell> = {};
+  const res = columnDefs.reduce((acc, curr) => {
+    acc[curr.columnId] = curr.renderCell ?? defaultTableBodyCellFactory;
+    return acc;
+  }, accumulator);
+  return res;
 }
