@@ -9,6 +9,7 @@ import {
   DEFAULT_TEXT_ALIGN,
 } from "../../utils/cell-style-defaults";
 import { getPadding } from "../../utils/padding-utils";
+import { Painter } from "../../utils/painter";
 
 export abstract class TableCell extends WorldObject {
   protected data: TableData<unknown> | null = null;
@@ -61,44 +62,30 @@ export abstract class TableCell extends WorldObject {
   }
 
   public abstract drawClipped(
-    ctx: CanvasRenderingContext2D,
+    painter: Painter,
     clippedDimensions: Dimensions,
     padding: Required<Padding>,
   ): void;
 
-  public abstract drawGlobal(ctx: CanvasRenderingContext2D): void;
+  public abstract drawGlobal(painter: Painter): void;
 
-  public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.save();
-
-    ctx.font = this.style?.text?.font ?? DEFAULT_FONT_STRING;
-    ctx.fillStyle = this.style?.text?.color ?? DEFAULT_TEXT_COLOR;
-    ctx.textBaseline = "middle";
-
-    this.drawGlobal(ctx);
+  public draw(painter: Painter): void {
+    this.drawGlobal(painter);
 
     const padding = getPadding(this.style?.padding);
-    const {
-      left: leftPadding,
-      right: rightPadding,
-      top: topPadding,
-      bottom: bottomPadding,
-    } = padding;
 
-    ctx.beginPath();
-    const innerWidth = this.dimensions.w - leftPadding - rightPadding;
-    const innerHeight = this.dimensions.h - topPadding - bottomPadding;
-    ctx.rect(
-      this.point.x + leftPadding,
-      this.point.y + topPadding,
-      innerWidth,
-      innerHeight,
+    const restoreClip = painter.clipArea(this.point, this.dimensions, padding);
+
+    this.drawClipped(
+      painter,
+      new Dimensions(
+        this.dimensions.w - padding.left - padding.right,
+        this.dimensions.h - padding.top - padding.bottom,
+      ),
+      padding,
     );
-    ctx.clip();
 
-    this.drawClipped(ctx, new Dimensions(innerWidth, innerHeight), padding);
-
-    ctx.restore();
+    restoreClip();
   }
 
   protected getAlignment(innerWidth: number): {

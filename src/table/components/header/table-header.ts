@@ -11,6 +11,7 @@ import { Mouse } from "../../../utils/mouse";
 import { Point } from "../../../utils/point";
 import { TableHeaderCell } from "./table-header-cell";
 import { BufferedStream } from "../../../utils/buffered-stream";
+import { Painter } from "../../../utils/painter";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;
@@ -175,7 +176,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     return undefined;
   }
 
-  private drawCells(ctx: CanvasRenderingContext2D): void {
+  private drawCells(painter: Painter): void {
     this.cellPool.beginFrame();
 
     let isMouseHoveringAnyResizer = false;
@@ -202,7 +203,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         this.hoveredResizerColumnId = column.columnId;
       }
 
-      cell.draw(ctx);
+      cell.draw(painter);
     }
 
     if (isMouseHoveringAnyResizer) {
@@ -213,10 +214,10 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     }
   }
 
-  public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.translate(-this.snapToDevicePixel(this.camera.x), 0);
+  public draw(painter: Painter): void {
+    painter.translateFromViewport(this.camera.x, 0);
 
-    this.drawCells(ctx);
+    this.drawCells(painter);
   }
 
   private getSortDirection(columnId: string): "ASC" | "DESC" | undefined {
