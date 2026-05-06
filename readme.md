@@ -26,7 +26,14 @@ The docs will focus on table usage in react moving forward. For details on the c
 
 ### Creating a Table
 
-Tables
+Tables can be created using the `L2Table` react component. The component takes the following props:
+
+| Prop Name | Type | Required |
+| ---: | ---: | ---: |
+| config | TableConfig | yes |
+| source | TableSource | yes |
+| width | number | no |
+| height | number | no |
 
 ## Contribution
 
