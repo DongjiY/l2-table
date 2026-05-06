@@ -16,7 +16,8 @@
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.14.2",
     "rxjs": "^7.8.2",
-    "l2-table": "^1.0.0"
+    "l2-table": "^1.0.0",
+    "@l2-table/react": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

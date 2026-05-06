@@ -1,23 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { createTable, type Table } from "l2-table";
-import { config, type StatsRow } from "../utils/tableConfig";
+import { useState, type ReactNode } from "react";
+import { config } from "../utils/tableConfig";
 import { NEVER } from "rxjs";
+import { L2Table } from "@l2-table/react";
 
 export function StaticNumberTable(): ReactNode {
   const [isLargeW, setIsLargeW] = useState<boolean>(true);
   const [isLargeH, setIsLargeH] = useState<boolean>(true);
-
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const table = useRef<Table<StatsRow> | null>(null);
-
-  useEffect(() => {
-    if (tableContainerRef.current && !table.current) {
-      table.current = createTable(tableContainerRef.current, {
-        config,
-        source: NEVER,
-      });
-    }
-  }, []);
 
   return (
     <div
@@ -26,13 +14,12 @@ export function StaticNumberTable(): ReactNode {
         border: "2px solid red",
       }}
     >
-      <div
-        ref={tableContainerRef}
-        style={{
-          width: isLargeW ? 600 : 300,
-          height: isLargeH ? 600 : 400,
-        }}
-      ></div>
+      <L2Table
+        config={config}
+        source={NEVER}
+        width={isLargeW ? 600 : 300}
+        height={isLargeH ? 600 : 300}
+      />
 
       <div
         style={{

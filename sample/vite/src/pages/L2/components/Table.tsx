@@ -1,23 +1,13 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { createTable, type Table } from "l2-table";
+import { useMemo, useState, type ReactNode } from "react";
 import { numberSource } from "../../../common/numberSource";
-import { config, type StatsRow } from "../utils/tableConfig";
+import { config } from "../utils/tableConfig";
+import { L2Table } from "@l2-table/react";
 
 export function NumberTable(): ReactNode {
   const [isLargeW, setIsLargeW] = useState<boolean>(true);
   const [isLargeH, setIsLargeH] = useState<boolean>(true);
 
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const table = useRef<Table<StatsRow> | null>(null);
-
-  useEffect(() => {
-    if (tableContainerRef.current && !table.current) {
-      table.current = createTable(tableContainerRef.current, {
-        config,
-        source: numberSource(config),
-      });
-    }
-  }, []);
+  const source = useMemo(() => numberSource(config), []);
 
   return (
     <div
@@ -26,13 +16,12 @@ export function NumberTable(): ReactNode {
         border: "2px solid red",
       }}
     >
-      <div
-        ref={tableContainerRef}
-        style={{
-          width: isLargeW ? 600 : 300,
-          height: isLargeH ? 600 : 400,
-        }}
-      ></div>
+      <L2Table
+        config={config}
+        source={source}
+        width={isLargeW ? 600 : 300}
+        height={isLargeH ? 600 : 300}
+      />
 
       <div
         style={{

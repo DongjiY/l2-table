@@ -234,6 +234,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
   }
 
   public close(): void {
+    this.resizeObserver.disconnect();
     this.totalColumnWidthSubscription.unsubscribe();
     this.autoSizedBufferedStream.close();
     this.body.close();
@@ -243,6 +244,10 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.columnSizes.close();
     this.renderer.close();
     this.mouse.close();
+  }
+
+  public unmount(): void {
+    this.root.childNodes.forEach((child) => this.root.removeChild(child));
   }
 
   private getColumnConstraints(
