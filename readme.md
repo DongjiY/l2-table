@@ -25,7 +25,34 @@ npm install @l2-table/react
 The docs will focus on table usage in react moving forward. For details on the core library, visit LINK_HERE.
 
 ### Creating a Table
+A table is driven by a configuration object that provides the blueprint for the columns and rows of the table, and a source observable that acts as a single pipe for data to flow into the table.
 
+#### Table Configuration
+A table configuration object contains a column definition, row definition, and styling object.
+
+This is an example of a column definition.
+```ts
+const columns = [
+  {
+    columnId: "index",
+    name: "index",
+    hidden: false,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.index,
+    cellData: () => new NumberTableData(),
+  },
+  {
+    columnId: "avg",
+    name: "average",
+    hidden: false,
+    autoResize: false,
+    placeholderAccessorFn: (row) => row.placeholders.avg,
+    cellData: () => new NumberTableData(),
+  }
+];
+```
+
+#### Table Creation
 Tables can be created using the `L2Table` react component. The component takes the following props:
 
 | Prop Name | Type | Required |
@@ -34,6 +61,13 @@ Tables can be created using the `L2Table` react component. The component takes t
 | source | TableSource | yes |
 | width | number | no |
 | height | number | no |
+
+The config and source object should be stable references. Do not provide inline instances of these objects. Instead, wrap them in a use memo or define them in a separate module.
+```ts
+function MyComponent(): ReactNode {
+    return <L2Table config={CONFIG} source={SOURCE} width={300} height={400} />
+}
+```
 
 ## Contribution
 

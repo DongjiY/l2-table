@@ -45,9 +45,9 @@ export type RenderCellFactory = (
   ...args: ConstructorParameters<typeof TableCell>
 ) => TableCell;
 
-export type TableRow = {
+export type TableRow<TPlaceholders extends Record<string, unknown> = {}> = {
   rowId: string;
-  placeholders: Record<string, unknown>;
+  placeholders: TPlaceholders;
 };
 
 export type TableSourceObservable = Observable<TableSourceData>;

@@ -2,8 +2,7 @@ import type { TableRow, TableColumnDef, TableConfig } from "l2-table";
 import { NumberTableData } from "./numberTableData";
 import { P50RenderCell } from "./p50RenderCell";
 
-export type StatsRow = TableRow & {
-  placeholders: {
+export type StatsRow = TableRow<{
     index: number;
     avg: number;
     med: number;
@@ -17,8 +16,7 @@ export type StatsRow = TableRow & {
     poop: number;
     "2": number;
     "1": number;
-  };
-};
+  }>;
 
 const columns: Array<TableColumnDef<StatsRow, number>> = [
   {
