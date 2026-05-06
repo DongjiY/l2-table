@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsup --format esm --dts",
     "dev": "tsup --watch --format esm --dts",
-    "test": "tsc --noEmit"
+    "test": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "author": "Dongji Y",
   "license": "ISC",
@@ -31,11 +32,17 @@
     "react-dom": ">=18"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.6.0",
+    "jiti": "^2.7.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.2"
   }
 }
