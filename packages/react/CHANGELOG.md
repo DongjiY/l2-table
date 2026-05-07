@@ -1,5 +1,13 @@
 # @dongjiy/l2-table-react
 
+## 1.0.4
+
+### Patch Changes
+
+- 3114d05: update npm in ci
+- Updated dependencies [3114d05]
+  - @dongjiy/l2-table@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes

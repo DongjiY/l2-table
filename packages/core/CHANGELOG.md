@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 1.0.4
+
+### Patch Changes
+
+- 3114d05: update npm in ci
+
 ## 1.0.3
 
 ### Patch Changes
