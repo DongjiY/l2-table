@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 1.0.5
+
+### Patch Changes
+
+- 3121d78: update provenance
+
 ## 1.0.4
 
 ### Patch Changes

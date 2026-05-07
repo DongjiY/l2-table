@@ -1,5 +1,13 @@
 # @dongjiy/l2-table-react
 
+## 1.0.5
+
+### Patch Changes
+
+- 3121d78: update provenance
+- Updated dependencies [3121d78]
+  - @dongjiy/l2-table@1.0.5
+
 ## 1.0.4
 
 ### Patch Changes
