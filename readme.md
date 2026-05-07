@@ -13,13 +13,13 @@ L2 table is a table framework backed by HTML canvas. L2 table is fundamentally b
 The core table library can be installed via npm using the following command
 
 ```sh
-npm install l2-table
+npm install @dongjiy/l2-table
 ```
 
 To install the react-specific table library you can run the following command
 
 ```sh
-npm install @l2-table/react
+npm install @dongjiy/l2-table-react
 ```
 
 The docs will focus on table usage in react moving forward. For details on the core library, visit LINK_HERE.
@@ -155,11 +155,16 @@ function MyComponent(): ReactNode {
 ## Contribution
 
 ### Getting Started
+Install dependencies by running
+```sh
+pnpm install
+```
+From the root directory.
 
 Source code is located in the `packages` subdirectory. After making changes, you can run
 
 ```sh
-npm run build
+pnpm run build
 ```
 
 to rebuild all packages.
@@ -167,7 +172,7 @@ to rebuild all packages.
 To run the sample vite app, navigate to `sample/vite` and run
 
 ```sh
-npm run dev
+pnpm run dev
 ```
 
 ### PR Rules
