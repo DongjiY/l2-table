@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "build": "pnpm --filter './packages/*' run build",
-    "test": "pnpm --filter './packages/*' run test --if-present",
+    "test": "pnpm --filter './packages/*' run --if-present test",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
