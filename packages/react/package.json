@@ -46,6 +46,7 @@
     "typescript-eslint": "^8.59.2"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }
