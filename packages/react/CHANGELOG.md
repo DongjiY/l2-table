@@ -1,5 +1,13 @@
 # @dongjiy/l2-table-react
 
+## 1.0.3
+
+### Patch Changes
+
+- 9b70360: add provenance field to publish config and bump node vers
+- Updated dependencies [9b70360]
+  - @dongjiy/l2-table@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes

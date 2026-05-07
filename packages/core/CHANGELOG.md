@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 1.0.3
+
+### Patch Changes
+
+- 9b70360: add provenance field to publish config and bump node vers
+
 ## 1.0.2
 
 ### Patch Changes
