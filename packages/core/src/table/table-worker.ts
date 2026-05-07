@@ -3,6 +3,7 @@ import {
   WorkerRequest,
   WorkerResponse,
 } from "../types/table-worker-types";
+import workerSource from "../worker/entrypoint-inline";
 
 export class TableWorker {
   private worker: Worker;
@@ -10,8 +11,12 @@ export class TableWorker {
 
   constructor() {
     this.listeners = new Map();
+
+    const blob = new Blob([workerSource], { type: "application/javascript" });
+    const blobUrl = URL.createObjectURL(blob);
+
     this.worker = new Worker(
-      new URL("./worker/entrypoint.js", import.meta.url), // this is relative to dist
+      blobUrl,
       {
         type: "module",
       },
