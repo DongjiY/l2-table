@@ -1,5 +1,5 @@
 {
-  "name": "@l2-table/react",
+  "name": "@dongjiy/l2-table-react",
   "type": "module",
   "version": "1.0.0",
   "description": "React bindings for l2-table",
@@ -20,12 +20,12 @@
     "lint": "eslint ."
   },
   "author": "Dongji Y",
-  "license": "ISC",
+  "license": "MIT",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "l2-table": "^1.0.0"
+    "@dongjiy/l2-table": "^1.0.0"
   },
   "peerDependencies": {
     "react": ">=18",
@@ -44,5 +44,8 @@
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
