@@ -4,7 +4,7 @@ import {
   TableConfig,
   TableRow,
   TableSourceObservable,
-} from "l2-table";
+} from "@dongjiy/l2-table";
 import { RefObject, useEffect, useRef } from "react";
 
 export function useL2Table<TDataRow extends TableRow>(
