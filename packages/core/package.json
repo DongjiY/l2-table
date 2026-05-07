@@ -1,5 +1,5 @@
 {
-  "name": "l2-table",
+  "name": "@dongjiy/l2-table",
   "type": "module",
   "version": "1.0.0",
   "description": "fast, observable-driven, canvas tables",
@@ -18,7 +18,7 @@
     "test": "jest"
   },
   "author": "Dongji Y",
-  "license": "ISC",
+  "license": "MIT",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -33,5 +33,16 @@
   },
   "dependencies": {
     "rxjs": "^7.8.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dongjiy/l2-table.git"
+  },
+  "homepage": "https://github.com/dongjiy/l2-table",
+  "bugs": {
+    "url": "https://github.com/dongjiy/l2-table/issues"
   }
 }

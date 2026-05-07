@@ -9,11 +9,15 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces --if-present",
-    "dev": "npm run dev --workspace l2-table",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
+    "dev": "npm run dev --workspace @dongjiy/l2-table",
     "serve": "serve . -l 3000",
-    "dev:all": "concurrently \"npm run dev --workspace l2-table\" \"npm run serve\""
+    "dev:all": "concurrently \"npm run dev --workspace @dongjiy/l2-table\" \"npm run serve\""
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "concurrently": "^9.2.1",
     "serve": "^14.2.5"
   }

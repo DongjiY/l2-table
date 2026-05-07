@@ -1,3 +1,3 @@
 build:
-	npm run build --workspace l2-table
-	npm run build --workspace @l2-table/react
+	npm run build --workspace @dongjiy/l2-table
+	npm run build --workspace @dongjiy/l2-table-react
