@@ -2,19 +2,24 @@
   "name": "l2-table-monorepo",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=10"
+  },
   "workspaces": [
     "packages/*",
     "sample/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces --if-present",
+    "build": "pnpm --filter './packages/*' run build",
+    "test": "pnpm --filter './packages/*' run test --if-present",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
-    "dev": "npm run dev --workspace @dongjiy/l2-table",
+    "dev": "pnpm --filter @dongjiy/l2-table run dev",
     "serve": "serve . -l 3000",
-    "dev:all": "concurrently \"npm run dev --workspace @dongjiy/l2-table\" \"npm run serve\""
+    "dev:all": "concurrently \"pnpm --filter @dongjiy/l2-table run dev\" \"pnpm run serve\""
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

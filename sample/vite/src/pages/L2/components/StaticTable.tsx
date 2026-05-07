@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { config } from "../utils/tableConfig";
 import { NEVER } from "rxjs";
-import { L2Table } from "@l2-table/react";
+import { L2Table } from "@dongjiy/l2-table-react";
 
 export function StaticNumberTable(): ReactNode {
   const [isLargeW, setIsLargeW] = useState<boolean>(true);
