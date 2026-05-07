@@ -176,6 +176,10 @@ pnpm run dev
 ```
 
 ### PR Rules
+Before opening a PR you must create a new changeset. Run the following command and follow the interactive prompts
+```sh
+pnpm changeset
+```
 
 PRs should be opened using the following format:
 `<github-username>/<feature-name>`
