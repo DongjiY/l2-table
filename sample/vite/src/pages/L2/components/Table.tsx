@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { numberSource } from "../../../common/numberSource";
 import { config } from "../utils/tableConfig";
-import { L2Table } from "@l2-table/react";
+import { L2Table } from "@dongjiy/l2-table-react";
 
 export function NumberTable(): ReactNode {
   const [isLargeW, setIsLargeW] = useState<boolean>(true);

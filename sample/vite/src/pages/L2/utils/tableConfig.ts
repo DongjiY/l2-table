@@ -1,4 +1,4 @@
-import type { TableRow, TableColumnDef, TableConfig } from "l2-table";
+import type { TableRow, TableColumnDef, TableConfig } from "@dongjiy/l2-table";
 import { NumberTableData } from "./numberTableData";
 import { P50RenderCell } from "./p50RenderCell";
 
