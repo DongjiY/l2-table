@@ -48,5 +48,13 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DongjiY/l2-table"
+  },
+  "homepage": "https://github.com/DongjiY/l2-table#readme",
+  "bugs": {
+    "url": "https://github.com/DongjiY/l2-table/issues"
   }
 }

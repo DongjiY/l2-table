@@ -40,10 +40,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dongjiy/l2-table.git"
+    "url": "https://github.com/DongjiY/l2-table"
   },
-  "homepage": "https://github.com/dongjiy/l2-table",
+  "homepage": "https://github.com/DongjiY/l2-table#readme",
   "bugs": {
-    "url": "https://github.com/dongjiy/l2-table/issues"
+    "url": "https://github.com/DongjiY/l2-table/issues"
   }
 }
