@@ -1,4 +1,4 @@
-import { TableConfig, TableRow, TableSourceObservable } from "l2-table";
+import { TableConfig, TableRow, TableSourceObservable } from "@dongjiy/l2-table";
 import { ReactNode, useRef } from "react";
 import { useL2Table } from "./useL2Table";
 
