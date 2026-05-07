@@ -1,7 +1,7 @@
 {
   "name": "@dongjiy/l2-table-react",
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "React bindings for l2-table",
   "main": "dist/index.js",
   "module": "dist/index.js",
