@@ -3,7 +3,7 @@ export {
   TableCellStyles,
   TableCellHoverStyles,
   Padding,
-} from "./table-cell-types";
+} from "./styles";
 export {
   TableOptions,
   TableConfig,

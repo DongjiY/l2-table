@@ -1,4 +1,4 @@
-import { Padding, TableCellStyles } from "../../types/table-cell-types";
+import { Padding, TableCellStyles } from "../../types/styles";
 import { Dimensions } from "../../utils/dimensions";
 import { WorldObject } from "../../utils/world-object";
 import { TableData } from "../../utils/table-data";

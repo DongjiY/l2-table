@@ -1,5 +1,5 @@
 import { ColumnConstraints } from "./column-constraints";
-import { TableCellStyles } from "./table-cell-types";
+import { TableCellStyles } from "./styles";
 
 export interface WorkerEvents {
   INIT: {

@@ -1,30 +1,43 @@
+import { TableHeaderResizerStyles } from "../../../types/styles";
 import { BoundingBox } from "../../../utils/bounding-box";
 import { Dimensions } from "../../../utils/dimensions";
 import { Painter } from "../../../utils/painter";
 import { Point } from "../../../utils/point";
 import { WorldObject } from "../../../utils/world-object";
 
-export const RESIZER_WIDTH = 1;
+export const DEFAULT_RESIZER_WIDTH = 1;
 export const RESIZER_HOVER_BUFFER_LEFT = 10;
 export const RESIZER_HOVER_BUFFER_RIGHT = 2;
-export const RESIZER_EFFECTIVE_WIDTH =
-  RESIZER_WIDTH + RESIZER_HOVER_BUFFER_LEFT + RESIZER_HOVER_BUFFER_RIGHT;
+const RESIZER_DEFAULT_COLOR = "gray";
 
 export class HeaderResizer extends WorldObject {
   private isShowResizer: boolean = false;
   private resizerHeight: number = 0;
-  private resizerBoundingBoxDimensions = new Dimensions(
-    RESIZER_WIDTH + RESIZER_HOVER_BUFFER_LEFT + RESIZER_HOVER_BUFFER_RIGHT,
-  );
+  private resizerWidth: number;
+
+  private resizerBoundingBoxDimensions;
   private resizerBoundingBoxWorldPoint: Point = new Point();
-  private resizerBoundingBox: BoundingBox = new BoundingBox(
-    this.resizerBoundingBoxWorldPoint,
-    this.resizerBoundingBoxDimensions,
-  );
+  private resizerBoundingBox: BoundingBox;
+
+  constructor(private readonly styles: TableHeaderResizerStyles | undefined) {
+    super();
+    this.resizerWidth = styles?.width ?? DEFAULT_RESIZER_WIDTH;
+    this.resizerBoundingBoxDimensions = new Dimensions(
+      this.resizerWidth + RESIZER_HOVER_BUFFER_LEFT + RESIZER_HOVER_BUFFER_RIGHT
+    );
+    this.resizerBoundingBox = new BoundingBox(
+      this.resizerBoundingBoxWorldPoint,
+      this.resizerBoundingBoxDimensions
+    );
+  }
+
+  public get w(): number {
+    return this.resizerWidth;
+  }
 
   public bindResizer(
     headerCellWorldPoint: Point,
-    headerCellDimensions: Dimensions,
+    headerCellDimensions: Dimensions
   ): void {
     this.resizerHeight = headerCellDimensions.h;
     this.resizerBoundingBoxDimensions.h = this.resizerHeight;
@@ -42,7 +55,7 @@ export class HeaderResizer extends WorldObject {
   public getBoundingBox(): BoundingBox {
     this.resizerBoundingBox.update(
       this.resizerBoundingBoxWorldPoint,
-      this.resizerBoundingBoxDimensions,
+      this.resizerBoundingBoxDimensions
     );
     return this.resizerBoundingBox;
   }
@@ -52,8 +65,8 @@ export class HeaderResizer extends WorldObject {
 
     painter.drawRect(
       Point.at(0, 0),
-      Dimensions.of(RESIZER_WIDTH, this.resizerHeight),
-      "red",
+      Dimensions.of(this.resizerWidth, this.resizerHeight),
+      this.styles?.color ?? RESIZER_DEFAULT_COLOR
     );
   }
 }

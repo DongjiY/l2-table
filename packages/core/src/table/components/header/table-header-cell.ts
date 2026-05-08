@@ -1,8 +1,12 @@
-import { Padding, TableCellStyles } from "../../../types/table-cell-types";
+import {
+  Padding,
+  TableCellStyles,
+  TableHeaderResizerStyles,
+} from "../../../types/styles";
 import { Point } from "../../../utils/point";
 import { TableData } from "../../../utils/table-data";
 import { HeaderFilter } from "./header-filter";
-import { HeaderResizer, RESIZER_WIDTH } from "./header-resizer";
+import { HeaderResizer } from "./header-resizer";
 import { TableCell } from "../table-cell";
 import { Dimensions } from "../../../utils/dimensions";
 import { Painter } from "../../../utils/painter";
@@ -11,10 +15,13 @@ export class TableHeaderCell extends TableCell {
   private headerFilter: HeaderFilter;
   private headerResizer: HeaderResizer;
 
-  constructor(style: TableCellStyles | undefined) {
-    super(style);
+  constructor(
+    cellStyle: TableCellStyles | undefined,
+    resizerStyle: TableHeaderResizerStyles | undefined
+  ) {
+    super(cellStyle);
     this.headerFilter = new HeaderFilter();
-    this.headerResizer = new HeaderResizer();
+    this.headerResizer = new HeaderResizer(resizerStyle);
   }
 
   public bind({
@@ -53,7 +60,7 @@ export class TableHeaderCell extends TableCell {
   public drawClipped(
     painter: Painter,
     clippedDimensions: Dimensions,
-    padding: Required<Padding>,
+    padding: Required<Padding>
   ): void {
     const innerWidth = clippedDimensions.w;
     const innerHeight = clippedDimensions.h;
@@ -80,7 +87,7 @@ export class TableHeaderCell extends TableCell {
   }
 
   public drawGlobal(painter: Painter): void {
-    const resizerX = this.point.x + this.dimensions.w - RESIZER_WIDTH;
+    const resizerX = this.point.x + this.dimensions.w - this.headerResizer.w;
 
     painter.dangerouslyGetRenderingContext().save();
     painter.dangerouslyGetRenderingContext().translate(resizerX, this.point.y);

@@ -35,20 +35,23 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       columnId: string;
       size: number;
     }>,
-    dimensions: Dimensions,
+    dimensions: Dimensions
   ) {
     super(dimensions);
 
     this.headerNameMap = new Map(
       this.config.columns.map(({ columnId, name }) => {
         return [columnId, name];
-      }),
+      })
     );
 
     this.cellPool = CellPool.fromCount({
       count: this.config.columns.length,
       cellFactory: () => {
-        return new TableHeaderCell(this.config.style.header.cell);
+        return new TableHeaderCell(
+          this.config.style.header.cell,
+          this.config.style.header.resizer
+        );
       },
     });
 
@@ -72,7 +75,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       },
       {
         passive: false,
-      },
+      }
     );
     this.camera.onCameraFocusChange(() => this.requestRedraw());
     this.camera.onCameraResize(() => this.requestRedraw());
@@ -139,7 +142,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.resizingColumnId = this.hoveredResizerColumnId;
     this.headerResizeStartWorldPoint = worldPoint;
     this.headerResizeStartWidth = this.columnSizes.getColumnWidth(
-      this.resizingColumnId,
+      this.resizingColumnId
     );
     this.columnSizes.addColumnToManualControl(this.resizingColumnId);
   }
@@ -193,7 +196,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       });
 
       const isMouseHoveringThisResizer = cell.checkAndSetResizerHovered(
-        this.hoveredViewportPosition,
+        this.hoveredViewportPosition
       );
 
       isMouseHoveringAnyResizer =

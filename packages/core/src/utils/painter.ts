@@ -1,4 +1,4 @@
-import { Padding } from "../types/table-cell-types";
+import { Padding } from "../types/styles";
 import { DEFAULT_FONT_STRING, DEFAULT_TEXT_COLOR } from "./cell-style-defaults";
 import { Dimensions } from "./dimensions";
 import { Point } from "./point";

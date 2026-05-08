@@ -1,6 +1,6 @@
 import { Observable } from "rxjs";
 import { TableData } from "../utils/table-data";
-import { TableCellStyles } from "./table-cell-types";
+import { TableCellStyles, TableHeaderResizerStyles } from "./styles";
 import { TableCell } from "../table/components/table-cell";
 
 export type TableOptions<TDataRow extends TableRow> = {
@@ -26,6 +26,7 @@ export type TableStyles = {
     row: {
       height: number;
     };
+    resizer?: TableHeaderResizerStyles;
   };
 };
 
