@@ -8,6 +8,7 @@ export type TableCellStyles = {
   text?: TableCellFontStyling;
   padding?: Padding;
   hovered?: TableCellHoverStyles;
+  backgroundColor?: string;
 };
 
 export type TableCellHoverStyles = {

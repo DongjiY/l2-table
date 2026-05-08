@@ -8,7 +8,7 @@ export class TableBodyCell extends TableCell {
   public drawClipped(
     painter: Painter,
     clippedDimensions: Dimensions,
-    padding: Required<Padding>,
+    padding: Required<Padding>
   ): void {
     const { x, textAlign } = this.getAlignment(clippedDimensions.w);
 
@@ -24,11 +24,15 @@ export class TableBodyCell extends TableCell {
   }
 
   public drawGlobal(painter: Painter): void {
+    if (this.style?.backgroundColor) {
+      painter.drawRect(this.point, this.dimensions, this.style.backgroundColor);
+    }
+
     if (this.isHovered && this.style?.hovered?.backgroundColor) {
       painter.drawRect(
         this.point,
         this.dimensions,
-        this.style.hovered.backgroundColor,
+        this.style.hovered.backgroundColor
       );
     }
   }
