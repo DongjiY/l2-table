@@ -26,7 +26,7 @@ import { SortedRowModel } from "../../../utils/sorted-row-model";
 import { TableBodyCell } from "./table-body-cell";
 import { NonUniformCellPool } from "../../../utils/nonuniform-cell-pool";
 import { TableCell } from "../table-cell";
-import { TableCellStyles } from "../../../types/table-cell-types";
+import { TableCellStyles } from "../../../types/styles";
 import { Painter } from "../../../utils/painter";
 
 type VirtualBounds = {

@@ -1,6 +1,6 @@
 import { HEADER_FILTER_BUFFER } from "../table/components/header/header-filter";
 import { ColumnConstraints } from "../types/column-constraints";
-import { TableCellStyles } from "../types/table-cell-types";
+import { TableCellStyles } from "../types/styles";
 import { DEFAULT_FONT_STRING } from "../utils/cell-style-defaults";
 import { getPadding } from "../utils/padding-utils";
 

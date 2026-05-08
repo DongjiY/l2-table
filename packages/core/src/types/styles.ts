@@ -20,3 +20,8 @@ export type Padding = {
   left?: number;
   right?: number;
 };
+
+export type TableHeaderResizerStyles = {
+  width?: number;
+  color?: string;
+};

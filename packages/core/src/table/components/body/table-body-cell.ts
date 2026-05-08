@@ -1,4 +1,4 @@
-import { Padding } from "../../../types/table-cell-types";
+import { Padding } from "../../../types/styles";
 import { Dimensions } from "../../../utils/dimensions";
 import { Painter } from "../../../utils/painter";
 import { Point } from "../../../utils/point";

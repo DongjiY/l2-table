@@ -13,7 +13,6 @@ import { Point } from "./point";
 import { TableColumnDef, TableRow } from "../types/table-config";
 import { ColumnConstraints } from "../types/column-constraints";
 import { clamp } from "./clamp";
-import { RESIZER_EFFECTIVE_WIDTH } from "../table/components/header/header-resizer";
 import { Closeable } from "./closeable";
 
 type BoundingBoxMetadata = { columnId: string; columnIndex: number };
@@ -35,7 +34,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
 
   constructor(
     cols: Array<TableColumnDef<TDataRow, unknown>>,
-    columnConstraints: ColumnConstraints,
+    columnConstraints: ColumnConstraints
   ) {
     this.totalColumnSizeUpdates$ = new ReplaySubject(1);
     this.columnSizeUpdates$ = new Subject();
@@ -61,11 +60,8 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
   public updateColumnSize(columnId: string, size: number): void {
     const clampedSize = clamp(
       size,
-      Math.max(
-        this.columnConstraints[columnId].minWidth,
-        RESIZER_EFFECTIVE_WIDTH,
-      ),
-      this.columnConstraints[columnId].maxWidth,
+      this.columnConstraints[columnId].minWidth,
+      this.columnConstraints[columnId].maxWidth
     );
     const currColumnSize = this.columnSizes.get(columnId) ?? 0;
     this.columnSizes.set(columnId, clampedSize);
@@ -89,14 +85,14 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
   }
 
   public getColumnWidthObservable(
-    columnId: string,
+    columnId: string
   ): Observable<{ columnId: string; width: number }> {
     return this.columnSizeUpdates$.pipe(
       filter((v) => v.columnId === columnId),
       map((v) => v.value),
       startWith(this.columnSizes.get(columnId) ?? 0),
       distinctUntilChanged(),
-      map((v) => ({ columnId, width: v })),
+      map((v) => ({ columnId, width: v }))
     );
   }
 
@@ -148,8 +144,8 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
           {
             columnId,
             columnIndex: i,
-          },
-        ),
+          }
+        )
       );
       this.updateColumnXPos(columnId, x);
       i++;

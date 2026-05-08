@@ -1,4 +1,4 @@
-import { Padding } from "../types/table-cell-types";
+import { Padding } from "../types/styles";
 
 export function getPadding(padding: Padding | undefined): Required<Padding> {
   return {

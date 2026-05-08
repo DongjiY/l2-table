@@ -17,7 +17,7 @@ export class HorizontalScrollbar extends DrawCanvas {
     private readonly camera: Camera,
     private readonly mouse: Mouse,
     private readonly rootDimensions: Dimensions,
-    dimensions: Dimensions,
+    dimensions: Dimensions
   ) {
     super(dimensions);
 
@@ -25,7 +25,7 @@ export class HorizontalScrollbar extends DrawCanvas {
       this.camera.viewportWidth,
       this.camera.worldWidth,
       this.w,
-      this.h,
+      this.h
     );
 
     this.camera.onCameraFocusChange(({ viewportWidth, worldWidth, x }) => {
@@ -52,11 +52,11 @@ export class HorizontalScrollbar extends DrawCanvas {
   private initMouseCallbacks(): void {
     this.mouse.onMouseMove(
       this.mouseMove,
-      generateTransposePoint(this.rootDimensions.h),
+      generateTransposePoint(this.rootDimensions.h)
     );
     this.mouse.onMouseDown(
       this.mouseDown,
-      generateTransposePoint(this.rootDimensions.h),
+      generateTransposePoint(this.rootDimensions.h)
     );
     this.mouse.onMouseUp(this.mouseUp);
   }
@@ -117,12 +117,12 @@ class HorizontalThumb extends WorldObject {
     viewportWidth: number,
     worldWidth: number,
     parentWidth: number,
-    parentHeight: number,
+    parentHeight: number
   ) {
     super();
     this.dimensions = new Dimensions(
       this.computeWidth(viewportWidth, worldWidth, parentWidth),
-      parentHeight,
+      parentHeight
     );
     this.boundingBox = new BoundingBox(this.point, this.dimensions);
   }
@@ -134,7 +134,7 @@ class HorizontalThumb extends WorldObject {
   private computeWidth(
     viewportWidth: number,
     worldWidth: number,
-    parentWidth: number,
+    parentWidth: number
   ): number {
     const ratio = viewportWidth / worldWidth;
     return Math.max(parentWidth * ratio, 20);
@@ -143,12 +143,12 @@ class HorizontalThumb extends WorldObject {
   public updateW(
     viewportWidth: number,
     worldWidth: number,
-    parentWidth: number,
+    parentWidth: number
   ): void {
     this.dimensions.w = this.computeWidth(
       viewportWidth,
       worldWidth,
-      parentWidth,
+      parentWidth
     );
   }
 
@@ -156,7 +156,7 @@ class HorizontalThumb extends WorldObject {
     viewportWidth: number,
     worldWidth: number,
     camX: number,
-    parentWidth: number,
+    parentWidth: number
   ): void {
     this.point.x =
       (camX / (worldWidth - viewportWidth)) * (parentWidth - this.dimensions.w);
