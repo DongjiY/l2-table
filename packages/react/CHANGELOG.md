@@ -1,5 +1,14 @@
 # @dongjiy/l2-table-react
 
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [a9d0154]
+- Updated dependencies [653d1e5]
+- Updated dependencies [25a71d1]
+  - @dongjiy/l2-table@1.0.6
+
 ## 1.0.5
 
 ### Patch Changes
