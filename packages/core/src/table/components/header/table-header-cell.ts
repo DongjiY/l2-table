@@ -87,6 +87,10 @@ export class TableHeaderCell extends TableCell {
   }
 
   public drawGlobal(painter: Painter): void {
+    if (this.style?.backgroundColor) {
+      painter.drawRect(this.point, this.dimensions, this.style.backgroundColor);
+    }
+
     const resizerX = this.point.x + this.dimensions.w - this.headerResizer.w;
 
     painter.dangerouslyGetRenderingContext().save();

@@ -3,20 +3,20 @@ import { NumberTableData } from "./numberTableData";
 import { P50RenderCell } from "./p50RenderCell";
 
 export type StatsRow = TableRow<{
-    index: number;
-    avg: number;
-    med: number;
-    min: number;
-    max: number;
-    p50: number;
-    p75: number;
-    p90: number;
-    p95: number;
-    p99: number;
-    poop: number;
-    "2": number;
-    "1": number;
-  }>;
+  index: number;
+  avg: number;
+  med: number;
+  min: number;
+  max: number;
+  p50: number;
+  p75: number;
+  p90: number;
+  p95: number;
+  p99: number;
+  poop: number;
+  "2": number;
+  "1": number;
+}>;
 
 const columns: Array<TableColumnDef<StatsRow, number>> = [
   {
