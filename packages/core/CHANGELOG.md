@@ -1,5 +1,13 @@
 # @dongjiy/l2-table
 
+## 1.0.6
+
+### Patch Changes
+
+- a9d0154: round manually updated column widths
+- 653d1e5: allow configuration of header resizer color and width
+- 25a71d1: add styling config for table cell background color
+
 ## 1.0.5
 
 ### Patch Changes
