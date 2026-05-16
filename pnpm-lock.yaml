@@ -10,9 +10,15 @@ importers:
       "@changesets/cli":
         specifier: ^2.31.0
         version: 2.31.0(@types/node@24.12.2)
+      "@types/jest":
+        specifier: ^30.0.0
+        version: 30.0.0
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
+      jest:
+        specifier: ^30.3.0
+        version: 30.3.0(@types/node@24.12.2)(ts-node@10.9.2(@types/node@24.12.2)(typescript@5.9.3))
       pretty-quick:
         specifier: ^4.2.2
         version: 4.2.2(prettier@2.8.8)
@@ -22,6 +28,9 @@ importers:
       simple-git-hooks:
         specifier: ^2.13.1
         version: 2.13.1
+      ts-jest:
+        specifier: ^29.4.9
+        version: 29.4.9(@babel/core@7.29.0)(@jest/transform@30.3.0)(@jest/types@30.3.0)(babel-jest@30.3.0(@babel/core@7.29.0))(esbuild@0.27.7)(jest-util@30.3.0)(jest@30.3.0(@types/node@24.12.2)(ts-node@10.9.2(@types/node@24.12.2)(typescript@5.9.3)))(typescript@5.9.3)
 
   packages/core:
     dependencies:
