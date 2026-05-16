@@ -153,7 +153,10 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       this.headerResizeStartWidth +
       (this.camera.toWorldPoint(p).x - this.headerResizeStartWorldPoint.x);
 
-    this.columnSizes.updateColumnSize(this.resizingColumnId, newWidth);
+    this.columnSizes.updateColumnSize(
+      this.resizingColumnId,
+      Math.round(newWidth)
+    );
   }
 
   private updateHoveredWorldXPosition(p: Point): void {
