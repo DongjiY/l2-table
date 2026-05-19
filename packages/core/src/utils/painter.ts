@@ -19,7 +19,7 @@ export class Painter {
   public translateFromViewport(x: number, y: number): void {
     this.ctx.translate(
       -Point.snapToDevicePixel(x),
-      -Point.snapToDevicePixel(y),
+      -Point.snapToDevicePixel(y)
     );
   }
 
@@ -46,7 +46,7 @@ export class Painter {
       color: string;
       baseline: CanvasTextBaseline;
       alignment: CanvasTextAlign;
-    }>,
+    }>
   ): void {
     this.ctx.save();
 
@@ -63,7 +63,7 @@ export class Painter {
   public clipArea(
     point: Point,
     dimensions: Dimensions,
-    padding: Required<Padding>,
+    padding: Required<Padding>
   ): RestoreFunction {
     this.ctx.save();
 
@@ -74,7 +74,7 @@ export class Painter {
       point.x + padding.left,
       point.y + padding.top,
       innerWidth,
-      innerHeight,
+      innerHeight
     );
     this.ctx.clip();
 

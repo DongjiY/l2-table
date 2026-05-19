@@ -6,6 +6,7 @@ import { BoundingBox } from "../../utils/bounding-box";
 import { DEFAULT_TEXT_ALIGN } from "../../utils/cell-style-defaults";
 import { getPadding } from "../../utils/padding-utils";
 import { Painter } from "../../utils/painter";
+import { Component } from "../../utils/component";
 
 export abstract class TableCell extends WorldObject {
   protected data: TableData<unknown> | null = null;
@@ -57,31 +58,31 @@ export abstract class TableCell extends WorldObject {
     return this._tempBoundingBox;
   }
 
-  public abstract drawClipped(
-    painter: Painter,
-    clippedDimensions: Dimensions,
-    padding: Required<Padding>,
-  ): void;
+  // public abstract drawClipped(
+  //   painter: Painter,
+  //   clippedDimensions: Dimensions,
+  //   padding: Required<Padding>,
+  // ): void;
 
-  public abstract drawGlobal(painter: Painter): void;
+  // public abstract drawGlobal(painter: Painter): void;
+
+  public abstract build(): Component;
 
   public draw(painter: Painter): void {
-    this.drawGlobal(painter);
+    // this.drawGlobal(painter);
+    // const padding = getPadding(this.style?.padding);
+    // const restoreClip = painter.clipArea(this.point, this.dimensions, padding);
+    // this.drawClipped(
+    //   painter,
+    //   new Dimensions(
+    //     this.dimensions.w - padding.left - padding.right,
+    //     this.dimensions.h - padding.top - padding.bottom
+    //   ),
+    //   padding
+    // );
+    // restoreClip();
 
-    const padding = getPadding(this.style?.padding);
-
-    const restoreClip = painter.clipArea(this.point, this.dimensions, padding);
-
-    this.drawClipped(
-      painter,
-      new Dimensions(
-        this.dimensions.w - padding.left - padding.right,
-        this.dimensions.h - padding.top - padding.bottom,
-      ),
-      padding,
-    );
-
-    restoreClip();
+    this.build().draw(painter);
   }
 
   protected getAlignment(innerWidth: number): {
@@ -90,7 +91,7 @@ export abstract class TableCell extends WorldObject {
   } {
     const alignment = this.style?.text?.alignment ?? DEFAULT_TEXT_ALIGN;
     const { left: leftPadding, right: rightPadding } = getPadding(
-      this.style?.padding,
+      this.style?.padding
     );
     switch (alignment) {
       case "middle":
