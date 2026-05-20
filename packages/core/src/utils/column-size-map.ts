@@ -25,6 +25,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
 
   private columnSizeUpdates$: Subject<{ columnId: string; value: number }>;
   private columnSizes: Map<string, number>;
+  private staticLayoutContent: Map<string, number>;
 
   private columnXPos: Map<string, number>;
   private minColumnSize: number = Infinity;
@@ -39,6 +40,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
     this.totalColumnSizeUpdates$ = new ReplaySubject(1);
     this.columnSizeUpdates$ = new Subject();
     this.columnSizes = new Map();
+    this.staticLayoutContent = new Map();
     this.columnXPos = new Map();
     this.boundingBoxes = [];
     this.manualControlledColumnIds = new Set();
@@ -50,6 +52,21 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
       const maxWidth = col.maxWidth ?? 1;
       this.updateColumnSize(col.columnId, maxWidth);
     }
+  }
+
+  public updateStaticLayoutContent(
+    columnId: string,
+    staticLayoutWidth: number
+  ): void {
+    const currStaticLayoutWidth = this.staticLayoutContent.get(columnId) ?? 0;
+    this.staticLayoutContent.set(
+      columnId,
+      Math.max(currStaticLayoutWidth, staticLayoutWidth)
+    );
+  }
+
+  public getStaticLayoutContentWidth(columnId: string): number {
+    return this.staticLayoutContent.get(columnId) ?? 0;
   }
 
   /**

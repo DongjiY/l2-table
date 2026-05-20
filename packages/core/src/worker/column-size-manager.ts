@@ -1,8 +1,6 @@
-import { HEADER_FILTER_BUFFER } from "../table/components/header/header-filter";
 import { ColumnConstraints } from "../types/column-constraints";
 import { TableCellStyles } from "../types/styles";
 import { DEFAULT_FONT_STRING } from "../utils/cell-style-defaults";
-import { getPadding } from "../utils/padding-utils";
 
 export class ColumnSizeManager {
   private columnConstraints: ColumnConstraints = {};
@@ -15,7 +13,7 @@ export class ColumnSizeManager {
     w: number,
     h: number,
     columnMaxWidths: ColumnConstraints,
-    styling: TableCellStyles | undefined,
+    styling: TableCellStyles | undefined
   ): void {
     this.canvas = new OffscreenCanvas(w, h);
     this.ctx = this.canvas.getContext("2d");
@@ -25,7 +23,7 @@ export class ColumnSizeManager {
 
   public computeColumnSize(
     columnId: string,
-    content: string,
+    content: string
   ): {
     columnId: string;
     width: number;
@@ -41,19 +39,15 @@ export class ColumnSizeManager {
     this.ctx.font = this.cellStyling?.text?.font ?? DEFAULT_FONT_STRING;
     const computedMetrics = this.ctx.measureText(content);
     const currColumnWidth = this.columnSizeMap.get(columnId) ?? 0;
-    const { left: leftPadding, right: rightPadding } = getPadding(
-      this.cellStyling?.padding,
-    );
-    const computedWidth = Math.ceil(
-      computedMetrics.width + leftPadding + rightPadding + HEADER_FILTER_BUFFER,
-    );
+
+    const computedWidth = Math.ceil(computedMetrics.width);
     const newCellWidth = Math.min(
       this.columnConstraints[columnId].maxWidth,
       Math.max(
         computedWidth,
         currColumnWidth,
-        this.columnConstraints[columnId].minWidth,
-      ),
+        this.columnConstraints[columnId].minWidth
+      )
     );
     this.columnSizeMap.set(columnId, newCellWidth);
     return {

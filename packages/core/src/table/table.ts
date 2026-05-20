@@ -58,7 +58,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
   constructor(
     private root: HTMLDivElement,
-    private readonly opts: TableOptions<TDataRow>,
+    private readonly opts: TableOptions<TDataRow>
   ) {
     this.tableConfig = this.opts.config;
 
@@ -67,7 +67,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.cellDataStore = new CellDataStore(this.tableConfig.columns);
     this.sortedRowModel = new SortedRowModel(
       this.cellDataStore,
-      this.tableConfig.rows,
+      this.tableConfig.rows
     );
 
     const { width, height } = this.root.getBoundingClientRect();
@@ -75,7 +75,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.rootDimensions.h = height;
 
     const columnConstraints = this.getColumnConstraints(
-      this.opts.config.columns,
+      this.opts.config.columns
     );
     this.tableWorker.send({
       type: "INIT",
@@ -102,21 +102,23 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
     this.columnSizes = new ColumnSizeMap(
       this.opts.config.columns,
-      columnConstraints,
+      columnConstraints
     );
     this.autoSizedBufferedStream = new BufferedStream(
-      ({ columnId }) => columnId,
+      ({ columnId }) => columnId
     );
 
     this.autoSizedBufferedStream.stream$
       .pipe(
         filter(
           ({ columnId }) =>
-            !this.columnSizes.getManualControlledColumns().has(columnId),
-        ),
+            !this.columnSizes.getManualControlledColumns().has(columnId)
+        )
       )
       .subscribe(({ columnId, size }) => {
-        this.columnSizes.updateColumnSize(columnId, size);
+        const staticContentWidth =
+          this.columnSizes.getStaticLayoutContentWidth(columnId);
+        this.columnSizes.updateColumnSize(columnId, size + staticContentWidth);
       });
     this.tableWorker.on("CELL_SIZE", ({ columnId, width }) => {
       this.autoSizedBufferedStream.next({ columnId, size: width });
@@ -154,8 +156,8 @@ export class Table<TDataRow extends TableRow> implements Closeable {
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.rootDimensions.h -
           this.opts.config.style.header.row.height -
-          HORIZONTAL_SCROLLBAR_HEIGHT,
-      ),
+          HORIZONTAL_SCROLLBAR_HEIGHT
+      )
     );
     this.header = new TableHeader(
       this.camera,
@@ -167,8 +169,8 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.autoSizedBufferedStream,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
-        this.opts.config.style.header.row.height,
-      ),
+        this.opts.config.style.header.row.height
+      )
     );
     this.scrollXBar = new HorizontalScrollbar(
       this.camera,
@@ -176,14 +178,14 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.rootDimensions,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
-        HORIZONTAL_SCROLLBAR_HEIGHT,
-      ),
+        HORIZONTAL_SCROLLBAR_HEIGHT
+      )
     );
     this.scrollYBar = new VerticalScrollbar(
       this.camera,
       this.mouse,
       this.rootDimensions,
-      new Dimensions(VERTICAL_SCROLLBAR_WIDTH, this.rootDimensions.h),
+      new Dimensions(VERTICAL_SCROLLBAR_WIDTH, this.rootDimensions.h)
     );
     this.verticalWrapper.appendChild(this.header.getElement());
     this.verticalWrapper.appendChild(this.body.getElement());
@@ -199,22 +201,22 @@ export class Table<TDataRow extends TableRow> implements Closeable {
         height -
           this.opts.config.style.header.row.height -
           HORIZONTAL_SCROLLBAR_HEIGHT,
-        window.devicePixelRatio,
+        window.devicePixelRatio
       );
       this.header.resize(
         width - VERTICAL_SCROLLBAR_WIDTH,
         this.opts.config.style.header.row.height,
-        window.devicePixelRatio,
+        window.devicePixelRatio
       );
       this.scrollXBar.resize(
         width - VERTICAL_SCROLLBAR_WIDTH,
         HORIZONTAL_SCROLLBAR_HEIGHT,
-        window.devicePixelRatio,
+        window.devicePixelRatio
       );
       this.scrollYBar.resize(
         VERTICAL_SCROLLBAR_WIDTH,
         height,
-        window.devicePixelRatio,
+        window.devicePixelRatio
       );
       this.camera.updateViewportDimensions({
         w: width,
@@ -251,7 +253,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
   }
 
   private getColumnConstraints(
-    columns: Array<TableColumnDef<TDataRow>>,
+    columns: Array<TableColumnDef<TDataRow>>
   ): ColumnConstraints {
     const res: ColumnConstraints = {};
     for (const column of columns) {
@@ -266,7 +268,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
 export function createTable<TDataRow extends TableRow>(
   root: HTMLDivElement,
-  opts: TableOptions<TDataRow>,
+  opts: TableOptions<TDataRow>
 ): Table<TDataRow> {
   return new Table(root, opts);
 }
