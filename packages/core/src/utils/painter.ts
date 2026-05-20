@@ -12,14 +12,16 @@ export class Painter {
     this.ctx = ctx;
   }
 
-  public dangerouslyGetRenderingContext(): CanvasRenderingContext2D {
-    return this.ctx;
+  public dangerouslyDrawWithCanvasCtx(
+    cb: (ctx: CanvasRenderingContext2D) => void
+  ): void {
+    cb(this.ctx);
   }
 
   public translateFromViewport(x: number, y: number): void {
     this.ctx.translate(
       -Point.snapToDevicePixel(x),
-      -Point.snapToDevicePixel(y),
+      -Point.snapToDevicePixel(y)
     );
   }
 
@@ -46,7 +48,7 @@ export class Painter {
       color: string;
       baseline: CanvasTextBaseline;
       alignment: CanvasTextAlign;
-    }>,
+    }>
   ): void {
     this.ctx.save();
 
@@ -63,7 +65,7 @@ export class Painter {
   public clipArea(
     point: Point,
     dimensions: Dimensions,
-    padding: Required<Padding>,
+    padding: Required<Padding>
   ): RestoreFunction {
     this.ctx.save();
 
@@ -74,7 +76,7 @@ export class Painter {
       point.x + padding.left,
       point.y + padding.top,
       innerWidth,
-      innerHeight,
+      innerHeight
     );
     this.ctx.clip();
 

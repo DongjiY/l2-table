@@ -21,9 +21,9 @@ export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
     this.canvas.height = Math.round(h * dpr);
     this.resizeCanvas(w, h);
 
-    this.painter
-      .dangerouslyGetRenderingContext()
-      .setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.painter.dangerouslyDrawWithCanvasCtx((ctx) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    });
     this.requestRedraw();
   }
 
@@ -38,13 +38,13 @@ export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
   public abstract draw(painter: Painter): void;
 
   public _drawImpl(): void {
-    this.painter
-      .dangerouslyGetRenderingContext()
-      .clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.painter.dangerouslyDrawWithCanvasCtx((ctx) => {
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.painter.dangerouslyGetRenderingContext().save();
-    this.draw(this.painter);
-    this.painter.dangerouslyGetRenderingContext().restore();
+      ctx.save();
+      this.draw(this.painter);
+      ctx.restore();
+    });
   }
 
   public close(): void {
