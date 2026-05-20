@@ -209,7 +209,9 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         this.hoveredResizerColumnId = column.columnId;
       }
 
+      this.layouter.start();
       cell.draw(painter);
+      this.layouter.stop();
     }
 
     if (isMouseHoveringAnyResizer) {
