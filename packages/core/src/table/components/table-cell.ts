@@ -60,7 +60,7 @@ export abstract class TableCell extends WorldObject {
   public abstract drawClipped(
     painter: Painter,
     clippedDimensions: Dimensions,
-    padding: Required<Padding>,
+    padding: Required<Padding>
   ): void;
 
   public abstract drawGlobal(painter: Painter): void;
@@ -70,18 +70,16 @@ export abstract class TableCell extends WorldObject {
 
     const padding = getPadding(this.style?.padding);
 
-    const restoreClip = painter.clipArea(this.point, this.dimensions, padding);
-
-    this.drawClipped(
-      painter,
-      new Dimensions(
-        this.dimensions.w - padding.left - padding.right,
-        this.dimensions.h - padding.top - padding.bottom,
-      ),
-      padding,
-    );
-
-    restoreClip();
+    painter.clipArea(this.point, this.dimensions, padding, () => {
+      this.drawClipped(
+        painter,
+        new Dimensions(
+          this.dimensions.w - padding.left - padding.right,
+          this.dimensions.h - padding.top - padding.bottom
+        ),
+        padding
+      );
+    });
   }
 
   protected getAlignment(innerWidth: number): {
@@ -90,7 +88,7 @@ export abstract class TableCell extends WorldObject {
   } {
     const alignment = this.style?.text?.alignment ?? DEFAULT_TEXT_ALIGN;
     const { left: leftPadding, right: rightPadding } = getPadding(
-      this.style?.padding,
+      this.style?.padding
     );
     switch (alignment) {
       case "middle":

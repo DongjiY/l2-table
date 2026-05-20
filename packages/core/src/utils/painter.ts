@@ -1,21 +1,24 @@
 import { Padding } from "../types/styles";
 import { DEFAULT_FONT_STRING, DEFAULT_TEXT_COLOR } from "./cell-style-defaults";
 import { Dimensions } from "./dimensions";
+import { Layouter } from "./layouter";
 import { Point } from "./point";
-
-type RestoreFunction = () => void;
 
 export class Painter {
   private ctx: CanvasRenderingContext2D;
 
-  constructor(ctx: CanvasRenderingContext2D) {
+  constructor(
+    ctx: CanvasRenderingContext2D,
+    private readonly layouter: Layouter
+  ) {
     this.ctx = ctx;
   }
 
   public dangerouslyDrawWithCanvasCtx(
     cb: (ctx: CanvasRenderingContext2D) => void
-  ): void {
+  ): Layouter {
     cb(this.ctx);
+    return this.layouter;
   }
 
   public translateFromViewport(x: number, y: number): void {
@@ -25,7 +28,11 @@ export class Painter {
     );
   }
 
-  public drawRect(point: Point, dimensions: Dimensions, color: string): void {
+  public drawRect(
+    point: Point,
+    dimensions: Dimensions,
+    color: string
+  ): Layouter {
     this.ctx.save();
 
     this.ctx.fillStyle = color;
@@ -38,6 +45,8 @@ export class Painter {
     this.ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
 
     this.ctx.restore();
+
+    return this.layouter;
   }
 
   public writeText(
@@ -65,8 +74,9 @@ export class Painter {
   public clipArea(
     point: Point,
     dimensions: Dimensions,
-    padding: Required<Padding>
-  ): RestoreFunction {
+    padding: Required<Padding>,
+    clippedContent: () => void
+  ): Layouter {
     this.ctx.save();
 
     this.ctx.beginPath();
@@ -80,6 +90,10 @@ export class Painter {
     );
     this.ctx.clip();
 
-    return () => this.ctx.restore();
+    clippedContent();
+
+    this.ctx.restore();
+
+    return this.layouter;
   }
 }
