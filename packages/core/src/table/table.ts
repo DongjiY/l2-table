@@ -26,6 +26,7 @@ import {
 import { TableWorker } from "./table-worker";
 import { Closeable } from "../utils/closeable";
 import { BufferedStream } from "../utils/buffered-stream";
+import { ContentWidthCache } from "../utils/content-width-cache";
 
 export class Table<TDataRow extends TableRow> implements Closeable {
   private totalColumnWidthSubscription: Subscription;
@@ -48,6 +49,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
   private columnSizes: ColumnSizeMap<TDataRow>;
   private tableWorker: TableWorker;
+  private contentCache: ContentWidthCache;
   private readonly autoSizedBufferedStream: BufferedStream<{
     columnId: string;
     size: number;
@@ -69,6 +71,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.cellDataStore,
       this.tableConfig.rows
     );
+    this.contentCache = new ContentWidthCache(100);
 
     const { width, height } = this.root.getBoundingClientRect();
     this.rootDimensions.w = width;
@@ -123,6 +126,13 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.tableWorker.on("CELL_SIZE", ({ columnId, width }) => {
       this.autoSizedBufferedStream.next({ columnId, size: width });
     });
+    this.tableWorker.on("MEASURE_CONTENT", ({ key, width, type }) => {
+      if (type === "dynamic") {
+        this.contentCache.setDynamicContentWidth(key, width);
+      } else if (type === "static") {
+        this.contentCache.setStaticContentWidth(key, width);
+      }
+    });
 
     this.camera = new Camera({
       viewportWidth: this.rootDimensions.w,
@@ -152,6 +162,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.mouse,
       this.sortedRowModel,
       this.cellDataStore,
+      this.contentCache,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.rootDimensions.h -
@@ -167,6 +178,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.mouse,
       this.sortedRowModel,
       this.autoSizedBufferedStream,
+      this.contentCache,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         this.opts.config.style.header.row.height
@@ -176,6 +188,8 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.camera,
       this.mouse,
       this.rootDimensions,
+      this.contentCache,
+      this.tableWorker,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         HORIZONTAL_SCROLLBAR_HEIGHT
@@ -185,6 +199,8 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.camera,
       this.mouse,
       this.rootDimensions,
+      this.contentCache,
+      this.tableWorker,
       new Dimensions(VERTICAL_SCROLLBAR_WIDTH, this.rootDimensions.h)
     );
     this.verticalWrapper.appendChild(this.header.getElement());

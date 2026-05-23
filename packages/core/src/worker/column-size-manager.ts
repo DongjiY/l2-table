@@ -36,11 +36,9 @@ export class ColumnSizeManager {
         overflown: false,
       };
 
-    this.ctx.font = this.cellStyling?.text?.font ?? DEFAULT_FONT_STRING;
-    const computedMetrics = this.ctx.measureText(content);
     const currColumnWidth = this.columnSizeMap.get(columnId) ?? 0;
-
-    const computedWidth = Math.ceil(computedMetrics.width);
+    const font = this.cellStyling?.text?.font ?? DEFAULT_FONT_STRING;
+    const computedWidth = this.measureContent(content, font);
     const newCellWidth = Math.min(
       this.columnConstraints[columnId].maxWidth,
       Math.max(
@@ -55,5 +53,12 @@ export class ColumnSizeManager {
       width: newCellWidth,
       overflown: computedWidth > newCellWidth,
     };
+  }
+
+  public measureContent(content: string, font: string): number {
+    if (!this.ctx) return 0;
+    this.ctx.font = font;
+    const computedMetrics = this.ctx.measureText(content);
+    return Math.ceil(computedMetrics.width);
   }
 }

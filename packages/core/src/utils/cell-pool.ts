@@ -33,14 +33,13 @@ export class CellPool<TCell extends TableCell> {
     return cellPool;
   }
 
-  public static fromViewport<TCell extends TableCell>({
+  public static getOptimalPoolSize({
     viewportWidth,
     viewportHeight,
     rowHeight,
     minColumnWidth,
     bufferX,
     bufferY,
-    cellFactory,
   }: {
     viewportWidth: number;
     viewportHeight: number;
@@ -48,18 +47,11 @@ export class CellPool<TCell extends TableCell> {
     bufferY: number;
     rowHeight: number;
     minColumnWidth: number;
-    cellFactory: () => TCell;
-  }): CellPool<TCell> {
-    const cellPool = new CellPool<TCell>();
-
+  }): number {
     const maxVisibleRows = Math.ceil(viewportHeight / rowHeight) + bufferY;
     const maxVisibleCols = Math.ceil(viewportWidth / minColumnWidth) + bufferX;
     const poolSize = maxVisibleRows * maxVisibleCols;
-
-    for (let i = 0; i < poolSize; i++) {
-      cellPool.addCell(cellFactory());
-    }
-    return cellPool;
+    return poolSize;
   }
 
   public *allCells(): IterableIterator<TableCell> {

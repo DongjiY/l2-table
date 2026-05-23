@@ -22,6 +22,18 @@ export interface WorkerEvents {
       width: number;
     };
   };
+  MEASURE_CONTENT: {
+    request: {
+      content: string;
+      font: string;
+      type: "dynamic" | "static";
+    };
+    response: {
+      key: string;
+      width: number;
+      type: "dynamic" | "static";
+    };
+  };
 }
 
 export type WorkerRequest = {
