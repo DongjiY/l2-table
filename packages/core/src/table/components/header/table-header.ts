@@ -13,6 +13,11 @@ import { TableHeaderCell } from "./table-header-cell";
 import { BufferedStream } from "../../../utils/buffered-stream";
 import { Painter } from "../../../utils/painter";
 import { ContentWidthCache } from "../../../utils/content-width-cache";
+import {
+  HeaderResizer,
+  RESIZER_HOVER_BUFFER_LEFT,
+  RESIZER_HOVER_BUFFER_RIGHT,
+} from "./header-resizer";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;
@@ -157,7 +162,12 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
 
     this.columnSizes.updateColumnSize(
       this.resizingColumnId,
-      Math.round(newWidth)
+      Math.max(
+        Math.round(newWidth),
+        HeaderResizer.widthFromStyleConfig(this.config.style.header.resizer) +
+          RESIZER_HOVER_BUFFER_LEFT +
+          RESIZER_HOVER_BUFFER_RIGHT
+      )
     );
   }
 

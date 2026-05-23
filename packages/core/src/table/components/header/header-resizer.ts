@@ -21,7 +21,7 @@ export class HeaderResizer extends WorldObject {
 
   constructor(private readonly styles: TableHeaderResizerStyles | undefined) {
     super();
-    this.resizerWidth = styles?.width ?? DEFAULT_RESIZER_WIDTH;
+    this.resizerWidth = HeaderResizer.widthFromStyleConfig(styles);
     this.resizerBoundingBoxDimensions = new Dimensions(
       this.resizerWidth + RESIZER_HOVER_BUFFER_LEFT + RESIZER_HOVER_BUFFER_RIGHT
     );
@@ -29,6 +29,12 @@ export class HeaderResizer extends WorldObject {
       this.resizerBoundingBoxWorldPoint,
       this.resizerBoundingBoxDimensions
     );
+  }
+
+  public static widthFromStyleConfig(
+    styles: TableHeaderResizerStyles | undefined
+  ): number {
+    return styles?.width ?? DEFAULT_RESIZER_WIDTH;
   }
 
   public get w(): number {
