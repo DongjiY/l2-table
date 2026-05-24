@@ -9,18 +9,16 @@ export class Layouter {
     this.layoutWidth += width;
   }
 
-  public get staticContentWidth(): number {
-    return this.layoutWidth;
-  }
-
   public start(): void {
     if (this.recordingLayout) throw new Error("Layouter is already started");
     this.recordingLayout = true;
   }
 
-  public stop(): void {
+  public stop(): number {
     if (!this.recordingLayout) throw new Error("Layouter is already stopped");
+    const res = this.layoutWidth;
     this.recordingLayout = false;
     this.layoutWidth = 0;
+    return res;
   }
 }

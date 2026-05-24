@@ -296,9 +296,14 @@ export class TableBody<TDataRow extends TableRow>
         });
         this.layouter.start();
         cell.draw(painter);
-        this.layouter.stop();
+        const layoutWidth = this.layouter.stop();
+        this.onLayoutComplete(column.columnId, layoutWidth);
       }
     }
+  }
+
+  private onLayoutComplete(columnId: string, layoutWidth: number): void {
+    this.columnSizes.updateStaticLayoutContent(columnId, layoutWidth);
   }
 
   public draw(painter: Painter): void {
