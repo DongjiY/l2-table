@@ -5,17 +5,28 @@ import { Canvas } from "./canvas";
 import { Dimensions } from "./dimensions";
 import { Painter } from "./painter";
 import { Layouter } from "./layouter";
+import { ContentWidthCache } from "./content-width-cache";
+import { TableWorker } from "../table/table-worker";
 
 export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
   private readonly painter: Painter;
   private drawQueue$: ReplaySubject<void>;
   protected readonly layouter: Layouter;
 
-  constructor(dimensions: Dimensions) {
+  constructor(
+    dimensions: Dimensions,
+    private readonly contentCache: ContentWidthCache,
+    protected readonly tableWorker: TableWorker
+  ) {
     super(dimensions);
 
     this.layouter = new Layouter();
-    this.painter = new Painter(this.canvas.getContext("2d")!, this.layouter);
+    this.painter = new Painter(
+      this.canvas.getContext("2d")!,
+      this.layouter,
+      this.contentCache,
+      this.tableWorker
+    );
     this.drawQueue$ = new ReplaySubject(1);
   }
 

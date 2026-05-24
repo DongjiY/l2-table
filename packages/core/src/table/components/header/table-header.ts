@@ -12,6 +12,7 @@ import { Point } from "../../../utils/point";
 import { TableHeaderCell } from "./table-header-cell";
 import { BufferedStream } from "../../../utils/buffered-stream";
 import { Painter } from "../../../utils/painter";
+import { ContentWidthCache } from "../../../utils/content-width-cache";
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;
@@ -28,16 +29,17 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     private readonly camera: Camera,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
     private readonly config: TableConfig<TDataRow>,
-    private readonly tableWorker: TableWorker,
+    tableWorker: TableWorker,
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     private readonly autoSizedBufferedStream: BufferedStream<{
       columnId: string;
       size: number;
     }>,
+    contentCache: ContentWidthCache,
     dimensions: Dimensions
   ) {
-    super(dimensions);
+    super(dimensions, contentCache, tableWorker);
 
     this.headerNameMap = new Map(
       this.config.columns.map(({ columnId, name }) => {

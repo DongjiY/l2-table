@@ -28,6 +28,7 @@ import { NonUniformCellPool } from "../../../utils/nonuniform-cell-pool";
 import { TableCell } from "../table-cell";
 import { TableCellStyles } from "../../../types/styles";
 import { Painter } from "../../../utils/painter";
+import { ContentWidthCache } from "../../../utils/content-width-cache";
 
 type VirtualBounds = {
   leftColumnIndex: number;
@@ -53,13 +54,14 @@ export class TableBody<TDataRow extends TableRow>
     private readonly config: TableConfig<TDataRow>,
     private readonly source: Observable<TableSourceData>,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
-    private readonly tableWorker: TableWorker,
+    tableWorker: TableWorker,
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     private readonly cellDataStore: CellDataStore<TDataRow>,
+    contentCache: ContentWidthCache,
     dimensions: Dimensions
   ) {
-    super(dimensions);
+    super(dimensions, contentCache, tableWorker);
 
     this.canvasWrapperDiv = document.createElement("div");
     this.canvasWrapperDiv.appendChild(super.getElement());

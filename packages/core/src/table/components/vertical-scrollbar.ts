@@ -1,11 +1,13 @@
 import { BoundingBox } from "../../utils/bounding-box";
 import { Camera } from "../../utils/camera";
+import { ContentWidthCache } from "../../utils/content-width-cache";
 import { Dimensions } from "../../utils/dimensions";
 import { DrawCanvas } from "../../utils/draw-canvas";
 import { Mouse } from "../../utils/mouse";
 import { Painter } from "../../utils/painter";
 import { Point } from "../../utils/point";
 import { WorldObject } from "../../utils/world-object";
+import { TableWorker } from "../table-worker";
 
 export const VERTICAL_SCROLLBAR_WIDTH = 6;
 
@@ -17,15 +19,17 @@ export class VerticalScrollbar extends DrawCanvas {
     private readonly camera: Camera,
     private readonly mouse: Mouse,
     private readonly rootDimensions: Dimensions,
-    dimensions: Dimensions,
+    contentCache: ContentWidthCache,
+    tableWorker: TableWorker,
+    dimensions: Dimensions
   ) {
-    super(dimensions);
+    super(dimensions, contentCache, tableWorker);
 
     this.thumb = new VerticalThumb(
       this.camera.viewportHeight,
       this.camera.worldHeight,
       this.h,
-      this.w,
+      this.w
     );
 
     this.camera.onCameraFocusChange(({ viewportHeight, worldHeight, y }) => {
@@ -47,11 +51,11 @@ export class VerticalScrollbar extends DrawCanvas {
   private initMouseCallbacks(): void {
     this.mouse.onMouseMove(
       this.mouseMove,
-      generateTransposePoint(this.rootDimensions.w),
+      generateTransposePoint(this.rootDimensions.w)
     );
     this.mouse.onMouseDown(
       this.mouseDown,
-      generateTransposePoint(this.rootDimensions.w),
+      generateTransposePoint(this.rootDimensions.w)
     );
     this.mouse.onMouseUp(this.mouseUp);
   }
@@ -112,12 +116,12 @@ class VerticalThumb extends WorldObject {
     viewportHeight: number,
     worldHeight: number,
     parentHeight: number,
-    parentWidth: number,
+    parentWidth: number
   ) {
     super();
     this.dimensions = new Dimensions(
       parentWidth,
-      this.computeHeight(viewportHeight, worldHeight, parentHeight),
+      this.computeHeight(viewportHeight, worldHeight, parentHeight)
     );
     this.boundingBox = new BoundingBox(this.point, this.dimensions);
   }
@@ -129,7 +133,7 @@ class VerticalThumb extends WorldObject {
   private computeHeight(
     viewportHeight: number,
     worldHeight: number,
-    parentHeight: number,
+    parentHeight: number
   ): number {
     const ratio = viewportHeight / worldHeight;
     return Math.max(parentHeight * ratio, 20);
@@ -138,12 +142,12 @@ class VerticalThumb extends WorldObject {
   public updateH(
     viewportHeight: number,
     worldHeight: number,
-    parentHeight: number,
+    parentHeight: number
   ): void {
     this.dimensions.h = this.computeHeight(
       viewportHeight,
       worldHeight,
-      parentHeight,
+      parentHeight
     );
   }
 
@@ -151,7 +155,7 @@ class VerticalThumb extends WorldObject {
     viewportHeight: number,
     worldHeight: number,
     camY: number,
-    parentHeight: number,
+    parentHeight: number
   ): void {
     const scrollableWorld = worldHeight - viewportHeight;
     this.point.y =

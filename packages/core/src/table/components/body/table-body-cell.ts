@@ -14,13 +14,14 @@ export class TableBodyCell extends TableCell {
 
     const y = this.point.y + padding.top + clippedDimensions.h / 2;
 
-    const textContent = this.data?.getDisplayableContent() ?? "NA";
-    painter.writeText(textContent, Point.at(x, y), {
-      font: this.style?.text?.font,
-      color: this.style?.text?.color,
-      baseline: "middle",
-      alignment: textAlign,
-    });
+    if (this.data) {
+      painter.writeText(this.data, Point.at(x, y), {
+        font: this.style?.text?.font,
+        color: this.style?.text?.color,
+        baseline: "middle",
+        alignment: textAlign,
+      });
+    }
   }
 
   public drawGlobal(painter: Painter): void {

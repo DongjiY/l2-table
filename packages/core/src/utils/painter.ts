@@ -1,17 +1,26 @@
+import { TableWorker } from "../table/table-worker";
 import { Padding } from "../types/styles";
 import { DEFAULT_FONT_STRING, DEFAULT_TEXT_COLOR } from "./cell-style-defaults";
+import { ContentWidthCache } from "./content-width-cache";
 import { Dimensions } from "./dimensions";
 import { Layouter } from "./layouter";
 import { Point } from "./point";
+import { TableData } from "./table-data";
 
 export class Painter {
   private ctx: CanvasRenderingContext2D;
 
   constructor(
     ctx: CanvasRenderingContext2D,
-    private readonly layouter: Layouter
+    private readonly layouter: Layouter,
+    private readonly contentCache: ContentWidthCache,
+    private readonly tableWorker: TableWorker
   ) {
     this.ctx = ctx;
+  }
+
+  public layout(w: number): void {
+    this.layouter.layout(w);
   }
 
   public dangerouslyDrawWithCanvasCtx(
@@ -50,7 +59,7 @@ export class Painter {
   }
 
   public writeText(
-    text: string,
+    content: string | TableData<unknown>,
     point: Point,
     opts?: Partial<{
       font: string;
@@ -58,17 +67,42 @@ export class Painter {
       baseline: CanvasTextBaseline;
       alignment: CanvasTextAlign;
     }>
-  ): void {
+  ): number {
+    const isDynamic = content instanceof TableData;
+
     this.ctx.save();
 
     this.ctx.textAlign = opts?.alignment ?? "right";
-    this.ctx.font = opts?.font ?? DEFAULT_FONT_STRING;
+    const font = opts?.font ?? DEFAULT_FONT_STRING;
+    this.ctx.font = font;
     this.ctx.fillStyle = opts?.color ?? DEFAULT_TEXT_COLOR;
     this.ctx.textBaseline = opts?.baseline ?? "middle";
+
+    const text = isDynamic ? content.getDisplayableContent() : content;
+    const contentKey = ContentWidthCache.generateKey(text, font);
+
+    if (
+      isDynamic ||
+      this.contentCache.getStaticContentWidth(contentKey) === undefined
+    ) {
+      this.tableWorker.send({
+        type: "MEASURE_CONTENT",
+        payload: {
+          content: text,
+          font: font,
+          type: isDynamic ? "dynamic" : "static",
+        },
+      });
+    }
 
     this.ctx.fillText(text, point.x, point.y);
 
     this.ctx.restore();
+
+    const contentWidth = isDynamic
+      ? this.contentCache.getDynamicContentWidth(contentKey)
+      : this.contentCache.getStaticContentWidth(contentKey);
+    return contentWidth ?? 0; // todo - should this cancel this draw?
   }
 
   public clipArea(

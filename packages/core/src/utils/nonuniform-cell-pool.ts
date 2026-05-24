@@ -19,7 +19,7 @@ export class NonUniformCellPool {
   public addColumnCells(
     columnId: string,
     cellCount: number,
-    cellFactory: () => TableCell,
+    cellFactory: () => TableCell
   ): void {
     let cellPool = this.cellPools.get(columnId);
     if (!cellPool) {
