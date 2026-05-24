@@ -77,13 +77,15 @@ export class TableHeaderCell extends TableCell {
       alignment: textAlign,
     });
 
-    const filterX = this.point.x + this.dimensions.w - padding.right - 6;
-    const filterY = this.point.y + padding.top + innerHeight / 2;
+    painter.dangerouslyDrawWithCanvasCtx((ctx) => {
+      const filterX = this.point.x + this.dimensions.w - padding.right - 6;
+      const filterY = this.point.y + padding.top + innerHeight / 2;
 
-    painter.dangerouslyGetRenderingContext().save();
-    painter.dangerouslyGetRenderingContext().translate(filterX, filterY);
-    this.headerFilter.draw(painter);
-    painter.dangerouslyGetRenderingContext().restore();
+      ctx.save();
+      ctx.translate(filterX, filterY);
+      this.headerFilter.draw(painter);
+      ctx.restore();
+    });
   }
 
   public drawGlobal(painter: Painter): void {
@@ -91,11 +93,13 @@ export class TableHeaderCell extends TableCell {
       painter.drawRect(this.point, this.dimensions, this.style.backgroundColor);
     }
 
-    const resizerX = this.point.x + this.dimensions.w - this.headerResizer.w;
+    painter.dangerouslyDrawWithCanvasCtx((ctx) => {
+      const resizerX = this.point.x + this.dimensions.w - this.headerResizer.w;
 
-    painter.dangerouslyGetRenderingContext().save();
-    painter.dangerouslyGetRenderingContext().translate(resizerX, this.point.y);
-    this.headerResizer.draw(painter);
-    painter.dangerouslyGetRenderingContext().restore();
+      ctx.save();
+      ctx.translate(resizerX, this.point.y);
+      this.headerResizer.draw(painter);
+      ctx.restore();
+    });
   }
 }
