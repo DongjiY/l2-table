@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 1.1.1
+
+### Patch Changes
+
+- c3af4b9: apply minimum width on manual resize
+
 ## 1.1.0
 
 ### Minor Changes
