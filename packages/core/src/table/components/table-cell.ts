@@ -70,16 +70,18 @@ export abstract class TableCell extends WorldObject {
 
     const padding = getPadding(this.style?.padding);
 
-    painter.clipArea(this.point, this.dimensions, padding, () => {
-      this.drawClipped(
-        painter,
-        new Dimensions(
-          this.dimensions.w - padding.left - padding.right,
-          this.dimensions.h - padding.top - padding.bottom
-        ),
-        padding
-      );
-    });
+    painter
+      .clipArea(this.point, this.dimensions, padding, () => {
+        this.drawClipped(
+          painter,
+          new Dimensions(
+            this.dimensions.w - padding.left - padding.right,
+            this.dimensions.h - padding.top - padding.bottom
+          ),
+          padding
+        );
+      })
+      .layout(padding.left + padding.right);
   }
 
   protected getAlignment(innerWidth: number): {

@@ -57,7 +57,7 @@ export class TableBody<TDataRow extends TableRow>
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     private readonly cellDataStore: CellDataStore<TDataRow>,
-    dimensions: Dimensions,
+    dimensions: Dimensions
   ) {
     super(dimensions);
 
@@ -67,14 +67,14 @@ export class TableBody<TDataRow extends TableRow>
     this.canvasWrapperDiv.style.position = "relative";
     this.overlay = new TableBodyOverlay(
       this.canvasWrapperDiv,
-      this.config.style.body.row.height,
+      this.config.style.body.row.height
     );
 
     this.cellPool = this.createCellPool();
 
     this.sourceSubscription = this.source.subscribe(this.handleRecvSourceData);
     this.columnResizeSubscription = this.getColumnResizeObservables(
-      this.config.columns,
+      this.config.columns
     ).subscribe(() => {
       this.requestRedraw();
     });
@@ -88,7 +88,7 @@ export class TableBody<TDataRow extends TableRow>
           dy: e.deltaY,
         });
       },
-      { passive: false },
+      { passive: false }
     );
 
     this.camera.onCameraFocusChange(() => {
@@ -99,7 +99,7 @@ export class TableBody<TDataRow extends TableRow>
 
     this.mouse.onMouseMove(
       this.mouseMove,
-      new Point(0, -1 * this.config.style.header.row.height),
+      new Point(0, -1 * this.config.style.header.row.height)
     );
     this.mouse.onMouseLost(this.mouseLost);
 
@@ -118,7 +118,7 @@ export class TableBody<TDataRow extends TableRow>
       minColumnWidth: this.columnSizes.getMinColumnWidth(),
       cellFactories: extractRenderCellFactories(
         this.config.columns,
-        this.config.style.body.cell,
+        this.config.style.body.cell
       ),
     });
   }
@@ -187,7 +187,7 @@ export class TableBody<TDataRow extends TableRow>
   }
 
   private getHoveredRowIndexFromMousePoint(
-    mousePoint: Point,
+    mousePoint: Point
   ): number | undefined {
     const worldY = mousePoint.y + this.camera.y;
     const rowHeight = this.config.style.body.row.height;
@@ -199,10 +199,10 @@ export class TableBody<TDataRow extends TableRow>
   }
 
   private getColumnResizeObservables(
-    columns: Array<TableColumnDef<TDataRow>>,
+    columns: Array<TableColumnDef<TDataRow>>
   ): Observable<{ columnId: string; width: number }> {
     const obs = columns.map((col) =>
-      this.columnSizes.getColumnWidthObservable(col.columnId),
+      this.columnSizes.getColumnWidthObservable(col.columnId)
     );
     return merge(...obs);
   }
@@ -221,7 +221,7 @@ export class TableBody<TDataRow extends TableRow>
 
   private getVirtualBounds(
     bufferX: number = 1,
-    bufferY: number = 1,
+    bufferY: number = 1
   ): VirtualBounds {
     const columnBoundingBoxes = this.columnSizes.getBoundingBoxes();
     const viewportBoundingBox = this.camera.boundingBox;
@@ -229,13 +229,13 @@ export class TableBody<TDataRow extends TableRow>
     const leftBound = boundaryBinarySearchLeftOrTop(
       columnBoundingBoxes,
       viewportBoundingBox,
-      Axis.X,
+      Axis.X
     );
 
     const rightBound = boundaryBinarySearchRightOrBottom(
       columnBoundingBoxes,
       viewportBoundingBox,
-      Axis.X,
+      Axis.X
     );
 
     const { topIndex: topBound, bottomIndex: bottomBound } =
@@ -243,24 +243,24 @@ export class TableBody<TDataRow extends TableRow>
         this.config.style.body.row.height,
         this.sortedRowModel.length,
         this.camera.y,
-        this.camera.viewportHeight,
+        this.camera.viewportHeight
       );
 
     const leftColumnIndex = Math.max(
       0,
-      (leftBound?.meta.columnIndex ?? 0) - bufferX,
+      (leftBound?.meta.columnIndex ?? 0) - bufferX
     );
 
     const rightColumnIndex = Math.min(
       columnBoundingBoxes.length - 1,
-      (rightBound?.meta.columnIndex ?? 0) + bufferX,
+      (rightBound?.meta.columnIndex ?? 0) + bufferX
     );
 
     const topRowIndex = Math.max(0, topBound - bufferY);
 
     const bottomRowIndex = Math.min(
       this.sortedRowModel.length - 1,
-      bottomBound + bufferY,
+      bottomBound + bufferY
     );
 
     return {
@@ -290,11 +290,13 @@ export class TableBody<TDataRow extends TableRow>
           data: this.cellDataStore.getCellData(
             row.rowId,
             column.columnId,
-            tableDataFactoryWithPlaceholder(column, row),
+            tableDataFactoryWithPlaceholder(column, row)
           ),
           isHovered: this.hoveredRowIndex === r,
         });
+        this.layouter.start();
         cell.draw(painter);
+        this.layouter.stop();
       }
     }
   }
@@ -308,7 +310,7 @@ export class TableBody<TDataRow extends TableRow>
 
 function tableDataFactoryWithPlaceholder<TDataRow extends TableRow>(
   column: TableColumnDef<TDataRow>,
-  row: TDataRow,
+  row: TDataRow
 ): () => TableData<unknown> {
   return () => {
     const cellData = column.cellData();
@@ -320,7 +322,7 @@ function tableDataFactoryWithPlaceholder<TDataRow extends TableRow>(
 
 function extractRenderCellFactories<TDataRow extends TableRow>(
   columnDefs: Array<TableColumnDef<TDataRow>>,
-  tableCellStyles: TableCellStyles | undefined,
+  tableCellStyles: TableCellStyles | undefined
 ): Record<string, () => TableCell> {
   const defaultTableBodyCellFactory = () => new TableBodyCell(tableCellStyles);
   const accumulator: Record<string, () => TableCell> = {};

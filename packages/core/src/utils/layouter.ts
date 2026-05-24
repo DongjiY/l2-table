@@ -3,7 +3,9 @@ export class Layouter {
   private layoutWidth: number = 0;
 
   public layout(width: number): void {
-    if (!this.recordingLayout) return;
+    if (!this.recordingLayout) {
+      console.warn("Layouting skipped... did you call start?");
+    }
     this.layoutWidth += width;
   }
 
