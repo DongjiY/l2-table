@@ -4,15 +4,18 @@ import { Drawable } from "./drawable";
 import { Canvas } from "./canvas";
 import { Dimensions } from "./dimensions";
 import { Painter } from "./painter";
+import { Layouter } from "./layouter";
 
 export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
   private readonly painter: Painter;
   private drawQueue$: ReplaySubject<void>;
+  private readonly layouter: Layouter;
 
   constructor(dimensions: Dimensions) {
     super(dimensions);
 
-    this.painter = new Painter(this.canvas.getContext("2d")!);
+    this.layouter = new Layouter();
+    this.painter = new Painter(this.canvas.getContext("2d")!, this.layouter);
     this.drawQueue$ = new ReplaySubject(1);
   }
 
@@ -38,6 +41,8 @@ export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
   public abstract draw(painter: Painter): void;
 
   public _drawImpl(): void {
+    this.layouter.start();
+
     this.painter.dangerouslyDrawWithCanvasCtx((ctx) => {
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -45,6 +50,8 @@ export abstract class DrawCanvas extends Canvas implements Closeable, Drawable {
       this.draw(this.painter);
       ctx.restore();
     });
+
+    this.layouter.stop();
   }
 
   public close(): void {
