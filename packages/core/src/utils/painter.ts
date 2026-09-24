@@ -1,33 +1,23 @@
-import { TableWorker } from "../table/table-worker";
 import { Padding } from "../types/styles";
 import { DEFAULT_FONT_STRING, DEFAULT_TEXT_COLOR } from "./cell-style-defaults";
-import { ContentWidthCache } from "./content-width-cache";
 import { Dimensions } from "./dimensions";
-import { Layouter } from "./layouter";
 import { Point } from "./point";
 import { TableData } from "./table-data";
+import { TextMeasurer } from "./text-measurer";
 
 export class Painter {
   private ctx: CanvasRenderingContext2D;
+  private readonly textMeasurer: TextMeasurer;
 
-  constructor(
-    ctx: CanvasRenderingContext2D,
-    private readonly layouter: Layouter,
-    private readonly contentCache: ContentWidthCache,
-    private readonly tableWorker: TableWorker
-  ) {
+  constructor(ctx: CanvasRenderingContext2D) {
     this.ctx = ctx;
-  }
-
-  public layout(w: number): void {
-    this.layouter.layout(w);
+    this.textMeasurer = new TextMeasurer();
   }
 
   public dangerouslyDrawWithCanvasCtx(
     cb: (ctx: CanvasRenderingContext2D) => void
-  ): Layouter {
+  ): void {
     cb(this.ctx);
-    return this.layouter;
   }
 
   public translateFromViewport(x: number, y: number): void {
@@ -37,11 +27,7 @@ export class Painter {
     );
   }
 
-  public drawRect(
-    point: Point,
-    dimensions: Dimensions,
-    color: string
-  ): Layouter {
+  public drawRect(point: Point, dimensions: Dimensions, color: string): void {
     this.ctx.save();
 
     this.ctx.fillStyle = color;
@@ -54,8 +40,6 @@ export class Painter {
     this.ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
 
     this.ctx.restore();
-
-    return this.layouter;
   }
 
   public writeText(
@@ -79,38 +63,21 @@ export class Painter {
     this.ctx.textBaseline = opts?.baseline ?? "middle";
 
     const text = isDynamic ? content.getDisplayableContent() : content;
-    const contentKey = ContentWidthCache.generateKey(text, font);
-
-    if (
-      isDynamic ||
-      this.contentCache.getStaticContentWidth(contentKey) === undefined
-    ) {
-      this.tableWorker.send({
-        type: "MEASURE_CONTENT",
-        payload: {
-          content: text,
-          font: font,
-          type: isDynamic ? "dynamic" : "static",
-        },
-      });
-    }
+    const contentWidth = this.textMeasurer.measure(text, font);
 
     this.ctx.fillText(text, point.x, point.y);
 
     this.ctx.restore();
 
-    const contentWidth = isDynamic
-      ? this.contentCache.getDynamicContentWidth(contentKey)
-      : this.contentCache.getStaticContentWidth(contentKey);
-    return contentWidth ?? 0; // todo - should this cancel this draw?
+    return contentWidth;
   }
 
-  public clipArea(
+  public clipArea<T>(
     point: Point,
     dimensions: Dimensions,
     padding: Required<Padding>,
-    clippedContent: () => void
-  ): Layouter {
+    clippedContent: () => T
+  ): T {
     this.ctx.save();
 
     this.ctx.beginPath();
@@ -124,10 +91,10 @@ export class Painter {
     );
     this.ctx.clip();
 
-    clippedContent();
+    const result = clippedContent();
 
     this.ctx.restore();
 
-    return this.layouter;
+    return result;
   }
 }

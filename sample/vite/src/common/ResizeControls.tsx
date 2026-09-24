@@ -3,7 +3,10 @@ type ResizeControlsProps = {
   onToggleHeight: () => void;
 };
 
-export function ResizeControls({ onToggleWidth, onToggleHeight }: ResizeControlsProps) {
+export function ResizeControls({
+  onToggleWidth,
+  onToggleHeight,
+}: ResizeControlsProps) {
   return (
     <div
       style={{

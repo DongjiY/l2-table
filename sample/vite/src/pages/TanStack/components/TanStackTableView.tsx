@@ -1,4 +1,11 @@
-import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  memo,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -32,7 +39,11 @@ type BodyRowProps = {
   onMouseLeave: () => void;
 };
 
-function SortIndicator({ direction }: { direction: false | "asc" | "desc" }): ReactNode {
+function SortIndicator({
+  direction,
+}: {
+  direction: false | "asc" | "desc";
+}): ReactNode {
   const upColor = direction === "asc" ? "#1d4ed8" : "#cbd5e1";
   const downColor = direction === "desc" ? "#1d4ed8" : "#cbd5e1";
   return (
@@ -109,7 +120,10 @@ function BodyRow({
       }}
     >
       {columnIds.map((columnId) => (
-        <MemoizedBodyCell key={`${row.rowId}-${columnId}`} value={row[columnId]} />
+        <MemoizedBodyCell
+          key={`${row.rowId}-${columnId}`}
+          value={row[columnId]}
+        />
       ))}
     </div>
   );
@@ -123,7 +137,7 @@ const MemoizedBodyRow = memo(
     prev.gridTemplateColumns === next.gridTemplateColumns &&
     prev.virtualRowStart === next.virtualRowStart &&
     prev.virtualRowSize === next.virtualRowSize &&
-    prev.isHovered === next.isHovered,
+    prev.isHovered === next.isHovered
 );
 
 export function TanStackTableView({
@@ -157,14 +171,16 @@ export function TanStackTableView({
   });
 
   const rowModel = table.getRowModel();
-  const visibleLeafColumns = table.getAllLeafColumns().filter((column) => column.id !== "rowId");
+  const visibleLeafColumns = table
+    .getAllLeafColumns()
+    .filter((column) => column.id !== "rowId");
   const visibleColumnIds = useMemo(
     () => visibleLeafColumns.map((column) => column.id as CellColumnId),
-    [visibleLeafColumns],
+    [visibleLeafColumns]
   );
   const gridTemplateColumns = useMemo(
     () => visibleLeafColumns.map((column) => `${column.getSize()}px`).join(" "),
-    [visibleLeafColumns],
+    [visibleLeafColumns]
   );
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -233,7 +249,11 @@ export function TanStackTableView({
                     userSelect: "none",
                   }}
                   onMouseEnter={() => setHoveredHeaderId(header.id)}
-                  onMouseLeave={() => setHoveredHeaderId((current) => (current === header.id ? null : current))}
+                  onMouseLeave={() =>
+                    setHoveredHeaderId((current) =>
+                      current === header.id ? null : current
+                    )
+                  }
                   onClick={header.column.getToggleSortingHandler()}
                 >
                   {header.isPlaceholder ? null : (
@@ -248,11 +268,13 @@ export function TanStackTableView({
                       <span>
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext(),
+                          header.getContext()
                         )}
                       </span>
                       {header.column.getCanSort() ? (
-                        <SortIndicator direction={header.column.getIsSorted()} />
+                        <SortIndicator
+                          direction={header.column.getIsSorted()}
+                        />
                       ) : null}
                     </span>
                   )}
@@ -262,7 +284,10 @@ export function TanStackTableView({
                     onClick={(event) => event.stopPropagation()}
                     style={{
                       opacity:
-                        hoveredHeaderId === header.id || header.column.getIsResizing() ? 1 : 0,
+                        hoveredHeaderId === header.id ||
+                        header.column.getIsResizing()
+                          ? 1
+                          : 0,
                       position: "absolute",
                       right: 0,
                       top: 0,
@@ -275,8 +300,8 @@ export function TanStackTableView({
                       backgroundColor: header.column.getIsResizing()
                         ? "red"
                         : hoveredHeaderId === header.id
-                          ? "rgba(255, 0, 0, 0.35)"
-                          : "transparent",
+                        ? "rgba(255, 0, 0, 0.35)"
+                        : "transparent",
                     }}
                   />
                 </div>
@@ -300,7 +325,9 @@ export function TanStackTableView({
                 isHovered={hoveredRowId === row.id}
                 onMouseEnter={() => setHoveredRowId(row.id)}
                 onMouseLeave={() =>
-                  setHoveredRowId((current) => (current === row.id ? null : current))
+                  setHoveredRowId((current) =>
+                    current === row.id ? null : current
+                  )
                 }
               />
             );

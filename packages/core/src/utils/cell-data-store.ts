@@ -19,7 +19,7 @@ export class CellDataStore<TDataRow extends TableRow> {
   public getCellData(
     rowId: string,
     columnId: string,
-    dataFactory?: () => TableData<unknown>,
+    dataFactory?: () => TableData<unknown>
   ): TableData<unknown> {
     let cellData = this.cellData.get(this.toKey(rowId, columnId));
     if (!cellData) {
@@ -30,7 +30,7 @@ export class CellDataStore<TDataRow extends TableRow> {
         cellData = columnFactory();
       } else {
         throw new Error(
-          `No factory method found for ${columnId}. Is this columnId defined?`,
+          `No factory method found for ${columnId}. Is this columnId defined?`
         );
       }
       this.cellData.set(this.toKey(rowId, columnId), cellData);

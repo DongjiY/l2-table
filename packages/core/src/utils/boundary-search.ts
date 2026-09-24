@@ -3,11 +3,11 @@ import { BoundingBox } from "./bounding-box";
 
 export function boundaryBinarySearchLeftOrTop<
   TBoundingBoxA extends BoundingBox,
-  TBoundingBoxB extends BoundingBox,
+  TBoundingBoxB extends BoundingBox
 >(
   arr: Array<TBoundingBoxA>,
   target: TBoundingBoxB,
-  axis: Axis,
+  axis: Axis
 ): TBoundingBoxA | undefined {
   let lp = 0;
   let rp = arr.length - 1;
@@ -29,11 +29,11 @@ export function boundaryBinarySearchLeftOrTop<
 
 export function boundaryBinarySearchRightOrBottom<
   TBoundingBoxA extends BoundingBox,
-  TBoundingBoxB extends BoundingBox,
+  TBoundingBoxB extends BoundingBox
 >(
   arr: Array<TBoundingBoxA>,
   target: TBoundingBoxB,
-  axis: Axis,
+  axis: Axis
 ): TBoundingBoxA | undefined {
   let lp = 0;
   let rp = arr.length - 1;
@@ -57,7 +57,7 @@ export function calculateTopAndBottomRowBounds(
   rowHeight: number,
   rowCount: number,
   cameraY: number,
-  viewportHeight: number,
+  viewportHeight: number
 ): {
   topIndex: number;
   bottomIndex: number;

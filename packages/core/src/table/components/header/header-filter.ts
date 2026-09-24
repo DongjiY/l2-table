@@ -12,37 +12,37 @@ export class HeaderFilter implements Drawable {
     this.direction = direction;
   }
 
-  public draw(painter: Painter): void {
+  public draw(painter: Painter): number {
     const x = 0;
     const y = -HEADER_FILTER_WIDTH;
 
-    painter
-      .dangerouslyDrawWithCanvasCtx((ctx) => {
-        ctx.save();
+    painter.dangerouslyDrawWithCanvasCtx((ctx) => {
+      ctx.save();
 
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x - HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
-        ctx.lineTo(x + HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
-        ctx.closePath();
-        ctx.fillStyle =
-          this.direction === "ASC" ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.3)";
-        ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
+      ctx.lineTo(x + HEADER_FILTER_WIDTH, y + HEADER_FILTER_WIDTH);
+      ctx.closePath();
+      ctx.fillStyle =
+        this.direction === "ASC" ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.3)";
+      ctx.fill();
 
-        const downY = y + HEADER_FILTER_WIDTH + HEADER_FILTER_SPACING;
+      const downY = y + HEADER_FILTER_WIDTH + HEADER_FILTER_SPACING;
 
-        ctx.beginPath();
-        ctx.moveTo(x, downY + HEADER_FILTER_WIDTH);
-        ctx.lineTo(x - HEADER_FILTER_WIDTH, downY);
-        ctx.lineTo(x + HEADER_FILTER_WIDTH, downY);
-        ctx.closePath();
-        ctx.fillStyle =
-          this.direction === "DESC" ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.3)";
-        ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x, downY + HEADER_FILTER_WIDTH);
+      ctx.lineTo(x - HEADER_FILTER_WIDTH, downY);
+      ctx.lineTo(x + HEADER_FILTER_WIDTH, downY);
+      ctx.closePath();
+      ctx.fillStyle =
+        this.direction === "DESC" ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.3)";
+      ctx.fill();
 
-        ctx.restore();
-      })
-      .layout(HEADER_FILTER_BUFFER);
+      ctx.restore();
+    });
+
+    return HEADER_FILTER_BUFFER;
   }
 
   public setDirection(direction: "ASC" | "DESC" | undefined) {

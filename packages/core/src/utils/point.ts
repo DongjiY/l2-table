@@ -1,8 +1,5 @@
 export class Point {
-  constructor(
-    public x: number = 0,
-    public y: number = 0,
-  ) {}
+  constructor(public x: number = 0, public y: number = 0) {}
 
   public static at(x: number, y: number): Point {
     return new Point(x, y);

@@ -2,7 +2,7 @@ import { interval, map, mergeMap, from, Observable } from "rxjs";
 import type { TableConfig, TableRow, TableSourceData } from "@dongjiy/l2-table";
 
 export function numberSource<TDataRow extends TableRow>(
-  tableConfig: TableConfig<TDataRow>,
+  tableConfig: TableConfig<TDataRow>
 ): Observable<TableSourceData> {
   const cells: Array<{ rowId: string; columnId: string }> = [];
 
@@ -36,6 +36,6 @@ export function numberSource<TDataRow extends TableRow>(
 
       return batch;
     }),
-    mergeMap((batch) => from(batch)),
+    mergeMap((batch) => from(batch))
   );
 }

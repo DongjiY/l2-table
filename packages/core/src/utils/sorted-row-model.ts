@@ -12,10 +12,10 @@ export class SortedRowModel<TDataRow extends TableRow> {
 
   constructor(
     private readonly cellDataStore: CellDataStore<TDataRow>,
-    private readonly rowDefinition: Array<TDataRow>,
+    private readonly rowDefinition: Array<TDataRow>
   ) {
     this.rowIdToIndexMap = new Map(
-      rowDefinition.map((row, index) => [row.rowId, index]),
+      rowDefinition.map((row, index) => [row.rowId, index])
     );
     this.sortedRows = rowDefinition.map((row) => ({
       rowDefinition: row,
@@ -74,7 +74,7 @@ export class SortedRowModel<TDataRow extends TableRow> {
       const placeholder = row.placeholders[this.columnIdUnderSort!];
       const cellData = this.cellDataStore.getCellData(
         row.rowId,
-        this.columnIdUnderSort!,
+        this.columnIdUnderSort!
       );
       if (cellData.getValue() === undefined) {
         cellData.setValue(placeholder);
@@ -100,7 +100,7 @@ export class SortedRowModel<TDataRow extends TableRow> {
     };
 
     this.sortedRows.sort((a, b) =>
-      compareProxy(a.columnUnderSortValue, b.columnUnderSortValue),
+      compareProxy(a.columnUnderSortValue, b.columnUnderSortValue)
     );
 
     this.rowIdToIndexMap.clear();

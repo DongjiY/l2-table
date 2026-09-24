@@ -66,15 +66,15 @@ export class HeaderResizer extends WorldObject {
     return this.resizerBoundingBox;
   }
 
-  public draw(painter: Painter): void {
-    painter.layout(this.resizerWidth);
-
-    if (!this.isShowResizer) return;
+  public draw(painter: Painter): number {
+    if (!this.isShowResizer) return this.resizerWidth;
 
     painter.drawRect(
       Point.at(0, 0),
       Dimensions.of(this.resizerWidth, this.resizerHeight),
       this.styles?.color ?? RESIZER_DEFAULT_COLOR
     );
+
+    return this.resizerWidth;
   }
 }

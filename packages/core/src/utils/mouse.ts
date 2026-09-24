@@ -33,7 +33,7 @@ export class Mouse implements Closeable {
     this.container.removeEventListener("mousemove", this.boundHandleMouseMove);
     this.container.removeEventListener(
       "mouseleave",
-      this.handleMouseLeave.bind(this),
+      this.handleMouseLeave.bind(this)
     );
     this.container.removeEventListener("mousedown", this.boundHandleMouseDown);
     this.container.removeEventListener("mouseup", this.boundHandleMouseUp);
@@ -47,7 +47,7 @@ export class Mouse implements Closeable {
    */
   public onMouseMove(
     fn: MouseCallbackFn,
-    transposition: Point = new Point(0, 0),
+    transposition: Point = new Point(0, 0)
   ): void {
     this.onMouseMoveCallbacks.set(fn, transposition);
   }
@@ -66,7 +66,7 @@ export class Mouse implements Closeable {
 
   public onMouseDown(
     fn: MouseCallbackFn,
-    transposition: Point = new Point(0, 0),
+    transposition: Point = new Point(0, 0)
   ): void {
     this.onMouseDownCallbacks.set(fn, transposition);
   }
@@ -77,14 +77,14 @@ export class Mouse implements Closeable {
 
   public onMouseUp(
     fn: MouseCallbackFn,
-    transposition: Point = new Point(0, 0),
+    transposition: Point = new Point(0, 0)
   ): void {
     this.onMouseUpCallbacks.set(fn, transposition);
   }
 
   public onMouseClick(
     fn: MouseCallbackFn,
-    transposition: Point = new Point(0, 0),
+    transposition: Point = new Point(0, 0)
   ) {
     this.onMouseClickCallbacks.set(fn, transposition);
   }

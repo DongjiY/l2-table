@@ -1,13 +1,11 @@
 import { BoundingBox } from "../../utils/bounding-box";
 import { Camera } from "../../utils/camera";
-import { ContentWidthCache } from "../../utils/content-width-cache";
 import { Dimensions } from "../../utils/dimensions";
 import { DrawCanvas } from "../../utils/draw-canvas";
 import { Mouse } from "../../utils/mouse";
 import { Painter } from "../../utils/painter";
 import { Point } from "../../utils/point";
 import { WorldObject } from "../../utils/world-object";
-import { TableWorker } from "../table-worker";
 
 export const VERTICAL_SCROLLBAR_WIDTH = 6;
 
@@ -19,11 +17,9 @@ export class VerticalScrollbar extends DrawCanvas {
     private readonly camera: Camera,
     private readonly mouse: Mouse,
     private readonly rootDimensions: Dimensions,
-    contentCache: ContentWidthCache,
-    tableWorker: TableWorker,
     dimensions: Dimensions
   ) {
-    super(dimensions, contentCache, tableWorker);
+    super(dimensions);
 
     this.thumb = new VerticalThumb(
       this.camera.viewportHeight,

@@ -61,17 +61,20 @@ export abstract class TableCell extends WorldObject {
     painter: Painter,
     clippedDimensions: Dimensions,
     padding: Required<Padding>
-  ): void;
+  ): number;
 
-  public abstract drawGlobal(painter: Painter): void;
+  public abstract drawGlobal(painter: Painter): number;
 
-  public draw(painter: Painter): void {
-    this.drawGlobal(painter);
+  public draw(painter: Painter): number {
+    const globalWidth = this.drawGlobal(painter);
 
     const padding = getPadding(this.style?.padding);
 
-    painter
-      .clipArea(this.point, this.dimensions, padding, () => {
+    const clippedWidth = painter.clipArea(
+      this.point,
+      this.dimensions,
+      padding,
+      () =>
         this.drawClipped(
           painter,
           new Dimensions(
@@ -79,9 +82,10 @@ export abstract class TableCell extends WorldObject {
             this.dimensions.h - padding.top - padding.bottom
           ),
           padding
-        );
-      })
-      .layout(padding.left + padding.right);
+        )
+    );
+
+    return globalWidth + clippedWidth + padding.left + padding.right;
   }
 
   protected getAlignment(innerWidth: number): {

@@ -77,7 +77,7 @@ export function useComparisonRows(): ComparisonRowsResult {
         return nextRows;
       });
     },
-    [rowIndexById],
+    [rowIndexById]
   );
 
   const flushVisibleUpdates = useCallback((): void => {
@@ -98,7 +98,7 @@ export function useComparisonRows(): ComparisonRowsResult {
     updatesMap: Map<string, RowPatch>,
     rowId: string,
     columnId: CellColumnId,
-    value: number,
+    value: number
   ): void => {
     const patch = updatesMap.get(rowId) ?? {};
     patch[columnId] = value;
@@ -119,7 +119,12 @@ export function useComparisonRows(): ComparisonRowsResult {
       const rowId = update.rowId;
       const value = update.data as number;
       if (visibleRowIdsRef.current.has(rowId)) {
-        mergePatch(pendingVisibleUpdatesRef.current, rowId, cellColumnId, value);
+        mergePatch(
+          pendingVisibleUpdatesRef.current,
+          rowId,
+          cellColumnId,
+          value
+        );
         if (rafIdRef.current === undefined) {
           rafIdRef.current = window.requestAnimationFrame(flushVisibleUpdates);
         }
@@ -130,7 +135,7 @@ export function useComparisonRows(): ComparisonRowsResult {
       if (hiddenFlushTimerRef.current === undefined) {
         hiddenFlushTimerRef.current = window.setTimeout(
           flushHiddenUpdates,
-          HIDDEN_FLUSH_MS,
+          HIDDEN_FLUSH_MS
         );
       }
     });

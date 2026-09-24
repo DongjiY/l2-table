@@ -18,7 +18,6 @@ import { Axis } from "../../../utils/axis";
 import { Closeable } from "../../../utils/closeable";
 import { CellDataStore } from "../../../utils/cell-data-store";
 import { TableData } from "../../../utils/table-data";
-import { TableWorker } from "../../table-worker";
 import { Point } from "../../../utils/point";
 import { Mouse } from "../../../utils/mouse";
 import { TableBodyOverlay } from "../../table-body-overlay";
@@ -28,7 +27,6 @@ import { NonUniformCellPool } from "../../../utils/nonuniform-cell-pool";
 import { TableCell } from "../table-cell";
 import { TableCellStyles } from "../../../types/styles";
 import { Painter } from "../../../utils/painter";
-import { ContentWidthCache } from "../../../utils/content-width-cache";
 
 type VirtualBounds = {
   leftColumnIndex: number;
@@ -54,14 +52,12 @@ export class TableBody<TDataRow extends TableRow>
     private readonly config: TableConfig<TDataRow>,
     private readonly source: Observable<TableSourceData>,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
-    tableWorker: TableWorker,
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     private readonly cellDataStore: CellDataStore<TDataRow>,
-    contentCache: ContentWidthCache,
     dimensions: Dimensions
   ) {
-    super(dimensions, contentCache, tableWorker);
+    super(dimensions);
 
     this.canvasWrapperDiv = document.createElement("div");
     this.canvasWrapperDiv.appendChild(super.getElement());
@@ -132,21 +128,6 @@ export class TableBody<TDataRow extends TableRow>
   handleRecvSourceData = (v: TableSourceData) => {
     const cellData = this.cellDataStore.getCellData(v.rowId, v.columnId);
     cellData.setValue(v.data);
-    const { topRowIndex, bottomRowIndex } = this.getCachedVirtualBounds();
-    const rowIndex = this.sortedRowModel.getIndex(v.rowId);
-    const isVisibleRow =
-      rowIndex !== undefined &&
-      topRowIndex <= rowIndex &&
-      rowIndex <= bottomRowIndex;
-    if (isVisibleRow) {
-      this.tableWorker.send({
-        type: "CELL_SIZE",
-        payload: {
-          columnId: v.columnId,
-          content: cellData.getDisplayableContent(),
-        },
-      });
-    }
     this.sortedRowModel.resort({
       value: v.data,
       columnId: v.columnId,
@@ -212,13 +193,6 @@ export class TableBody<TDataRow extends TableRow>
   public close(): void {
     this.sourceSubscription.unsubscribe();
     this.columnResizeSubscription.unsubscribe();
-  }
-
-  private getCachedVirtualBounds(): VirtualBounds {
-    if (!this._cachedVirtualBounds) {
-      this._cachedVirtualBounds = this.getVirtualBounds();
-    }
-    return this._cachedVirtualBounds;
   }
 
   private getVirtualBounds(
@@ -296,16 +270,12 @@ export class TableBody<TDataRow extends TableRow>
           ),
           isHovered: this.hoveredRowIndex === r,
         });
-        this.layouter.start();
-        cell.draw(painter);
-        const layoutWidth = this.layouter.stop();
-        this.onLayoutComplete(column.columnId, layoutWidth);
+        this.columnSizes.updateIntrinsicContentWidth(
+          column.columnId,
+          cell.draw(painter)
+        );
       }
     }
-  }
-
-  private onLayoutComplete(columnId: string, layoutWidth: number): void {
-    this.columnSizes.updateStaticLayoutContent(columnId, layoutWidth);
   }
 
   public draw(painter: Painter): void {

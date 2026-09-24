@@ -17,6 +17,6 @@ export function toTanStackColumns(): Array<ColumnDef<ComparisonRow, number>> {
       id: column.columnId,
       header: column.name,
       cell: (info) => info.getValue().toString(),
-    }),
+    })
   );
 }

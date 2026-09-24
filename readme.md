@@ -25,9 +25,11 @@ npm install @dongjiy/l2-table-react
 The docs will focus on table usage in react moving forward. For details on the core library, visit LINK_HERE.
 
 ### Creating a Table
+
 A table is driven by a configuration object, hereafter referred to as a table configuration, which provides the blueprint for the table’s columns and rows, along with a source observable that serves as a single pipeline for data to flow into the table.
 
 #### Column Configuration
+
 The table config contains a collection of column configurations. Each column configuration is a declarative description of how to extract and render data for a column.
 
 ```ts
@@ -45,6 +47,7 @@ const columns = [
   },
 ];
 ```
+
 The details for each of the options are as follows
 
 ```ts
@@ -62,25 +65,28 @@ type TableColumnDef<TDataRow extends TableRow, TValue = unknown> = {
 ```
 
 #### Row Configuration
+
 The table config also contains a collection of row configurations. Each row configuration is an object that contains the row's id and a placeholder value.
 
 ```ts
 const rows = [
-    {
-        rowId: "BTC",
-        placeholders: {
-            price: Money.from("14.55") 
-        },
+  {
+    rowId: "BTC",
+    placeholders: {
+      price: Money.from("14.55"),
     },
-    {
-        rowId: "WETH",
-        placeholders: {
-            price: Money.from("22.93")
-        }
-    }
-]
+  },
+  {
+    rowId: "WETH",
+    placeholders: {
+      price: Money.from("22.93"),
+    },
+  },
+];
 ```
+
 The details for each of the options are as follows
+
 ```ts
 type TableRow<TPlaceholders extends Record<string, unknown> = {}> = {
   rowId: string; // Unique identifier for the column
@@ -89,19 +95,21 @@ type TableRow<TPlaceholders extends Record<string, unknown> = {}> = {
 ```
 
 #### Table Styling
-The table style object can be provided to give custom styling to certain components of the table, such as cell fonts, background colors, and padding. 
+
+The table style object can be provided to give custom styling to certain components of the table, such as cell fonts, background colors, and padding.
+
 ```ts
 type TableStyles = {
   body: {
     cell?: TableCellStyles;
     row: {
-      height: number;  // Provide a height for your table body rows
+      height: number; // Provide a height for your table body rows
     };
   };
   header: {
     cell?: TableCellStyles;
     row: {
-      height: number;  // Provide a height for your table header row
+      height: number; // Provide a height for your table header row
     };
   };
 };
@@ -111,7 +119,7 @@ type TableCellStyles = {
     alignment?: "left" | "middle" | "right";
     font?: string;
     color?: string;
-  },
+  };
   padding?: {
     top?: number;
     bottom?: number;
@@ -123,10 +131,13 @@ type TableCellStyles = {
   };
 };
 ```
+
 For table body cells, you can gain complete control over the rendered contents by extending a `TableCell` class and implementing the draw methods. For more information visit SECTION.
 
 #### Table Configuration
-With all of the subcomponents of the table now introduced, we can create a table configuration object as follows: 
+
+With all of the subcomponents of the table now introduced, we can create a table configuration object as follows:
+
 ```ts
 type TableConfig<TDataRow extends TableRow> = {
   columns: Array<TableColumnDef<TDataRow>>;
@@ -136,29 +147,34 @@ type TableConfig<TDataRow extends TableRow> = {
 ```
 
 #### Table Creation
+
 Tables can be created using the `L2Table` react component. The component takes the following props:
 
-| Prop Name | Type | Required |
-| ---: | ---: | ---: |
-| config | TableConfig | yes |
-| source | TableSource | yes |
-| width | number | no |
-| height | number | no |
+| Prop Name |        Type | Required |
+| --------: | ----------: | -------: |
+|    config | TableConfig |      yes |
+|    source | TableSource |      yes |
+|     width |      number |       no |
+|    height |      number |       no |
 
 The config and source object should be stable references. Do not provide inline instances of these objects. Instead, wrap them in a use memo or define them in a separate module.
+
 ```ts
 function MyComponent(): ReactNode {
-    return <L2Table config={CONFIG} source={SOURCE} width={300} height={400} />
+  return <L2Table config={CONFIG} source={SOURCE} width={300} height={400} />;
 }
 ```
 
 ## Contribution
 
 ### Getting Started
+
 Install dependencies by running
+
 ```sh
 pnpm install
 ```
+
 From the root directory.
 
 Source code is located in the `packages` subdirectory. After making changes, you can run
@@ -176,7 +192,9 @@ pnpm run dev
 ```
 
 ### PR Rules
+
 Before opening a PR you must create a new changeset. Run the following command and follow the interactive prompts
+
 ```sh
 pnpm changeset
 ```

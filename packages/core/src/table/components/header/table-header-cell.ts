@@ -61,7 +61,7 @@ export class TableHeaderCell extends TableCell {
     painter: Painter,
     clippedDimensions: Dimensions,
     padding: Required<Padding>
-  ): void {
+  ): number {
     const innerWidth = clippedDimensions.w;
     const innerHeight = clippedDimensions.h;
 
@@ -70,36 +70,42 @@ export class TableHeaderCell extends TableCell {
     const y = this.point.y + padding.top + innerHeight / 2;
     const textContent = this.data?.getDisplayableContent() ?? "NA";
 
-    painter.writeText(textContent, Point.at(x, y), {
+    const textWidth = painter.writeText(textContent, Point.at(x, y), {
       font: this.style?.text?.font,
       color: this.style?.text?.color,
       baseline: "middle",
       alignment: textAlign,
     });
 
+    let filterWidth = 0;
     painter.dangerouslyDrawWithCanvasCtx((ctx) => {
       const filterX = this.point.x + this.dimensions.w - padding.right - 6;
       const filterY = this.point.y + padding.top + innerHeight / 2;
 
       ctx.save();
       ctx.translate(filterX, filterY);
-      this.headerFilter.draw(painter);
+      filterWidth = this.headerFilter.draw(painter);
       ctx.restore();
     });
+
+    return textWidth + filterWidth;
   }
 
-  public drawGlobal(painter: Painter): void {
+  public drawGlobal(painter: Painter): number {
     if (this.style?.backgroundColor) {
       painter.drawRect(this.point, this.dimensions, this.style.backgroundColor);
     }
 
+    let resizerWidth = 0;
     painter.dangerouslyDrawWithCanvasCtx((ctx) => {
       const resizerX = this.point.x + this.dimensions.w - this.headerResizer.w;
 
       ctx.save();
       ctx.translate(resizerX, this.point.y);
-      this.headerResizer.draw(painter);
+      resizerWidth = this.headerResizer.draw(painter);
       ctx.restore();
     });
+
+    return resizerWidth;
   }
 }
