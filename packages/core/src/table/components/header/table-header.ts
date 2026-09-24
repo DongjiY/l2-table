@@ -213,4 +213,16 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       return undefined;
     return this.sortedRowModel.sortDirection;
   }
+
+  public reinitializeCellPool(): void {
+    this.cellPool = CellPool.fromCount({
+      count: this.config.columns.length,
+      cellFactory: () => {
+        return new TableHeaderCell(
+          this.config.style.header.cell,
+          this.config.style.header.resizer
+        );
+      },
+    });
+  }
 }
