@@ -1,5 +1,16 @@
 # @dongjiy/l2-table-react
 
+## 1.1.0
+
+### Minor Changes
+
+- 66207c4: Move text width calculation off worker thread
+
+### Patch Changes
+
+- Updated dependencies [66207c4]
+  - @dongjiy/l2-table@2.0.0
+
 ## 1.0.7
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 2.0.0
+
+### Major Changes
+
+- 66207c4: Move text width calculation off worker thread
+
 ## 1.1.1
 
 ### Patch Changes
