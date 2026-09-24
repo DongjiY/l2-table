@@ -5,14 +5,16 @@ import {
   TableRow,
   TableSourceObservable,
 } from "@dongjiy/l2-table";
-import { RefObject, useEffect, useRef } from "react";
+import { MutableRefObject, RefObject, useEffect, useRef } from "react";
 
 export function useL2Table<TDataRow extends TableRow>(
   config: TableConfig<TDataRow>,
   source: TableSourceObservable,
-  root: RefObject<HTMLDivElement | null>
+  root: RefObject<HTMLDivElement | null>,
+  externalTableRef?: MutableRefObject<Table<TDataRow> | null>
 ) {
-  const tableRef = useRef<Table<TDataRow>>(null);
+  const internalTableRef = useRef<Table<TDataRow>>(null);
+  const tableRef = externalTableRef ?? internalTableRef;
 
   useEffect(() => {
     if (root.current) {
@@ -27,8 +29,11 @@ export function useL2Table<TDataRow extends TableRow>(
     return () => {
       table?.close();
       table?.unmount();
+      if (tableRef.current === table) {
+        tableRef.current = null;
+      }
     };
-  }, [config, source, root]);
+  }, [config, source, root, tableRef]);
 
   return tableRef;
 }

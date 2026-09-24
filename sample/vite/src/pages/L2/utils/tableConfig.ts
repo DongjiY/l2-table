@@ -62,7 +62,7 @@ const columns: Array<TableColumnDef<StatsRow, number>> = [
   {
     columnId: "p50",
     name: "p50",
-    hidden: false,
+    hidden: true,
     autoResize: false,
     placeholderAccessorFn: (row) => row.placeholders.p50,
     cellData: () => new NumberTableData(),

@@ -33,6 +33,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
   private horizontalWrapper: HTMLDivElement;
 
   private tableConfig: TableConfig<TDataRow>;
+  private readonly columnVisibility: Map<string, boolean>;
   private resizeObserver: ResizeObserver;
   private camera: Camera;
   private readonly renderer: Renderer;
@@ -52,10 +53,16 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     private root: HTMLDivElement,
     private readonly opts: TableOptions<TDataRow>
   ) {
-    this.tableConfig = this.opts.config;
+    this.columnVisibility = new Map(
+      this.opts.config.columns.map((column) => [column.columnId, column.hidden])
+    );
+    this.tableConfig = {
+      ...this.opts.config,
+      columns: this.getVisibleColumns(),
+    };
 
     this.mouse = new Mouse(root);
-    this.cellDataStore = new CellDataStore(this.tableConfig.columns);
+    this.cellDataStore = new CellDataStore(this.opts.config.columns);
     this.sortedRowModel = new SortedRowModel(
       this.cellDataStore,
       this.tableConfig.rows
@@ -84,6 +91,9 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.columnSizes = new ColumnSizeMap(
       this.opts.config.columns,
       columnConstraints
+    );
+    this.columnSizes.setVisibleColumns(
+      this.tableConfig.columns.map((column) => column.columnId)
     );
     this.camera = new Camera({
       viewportWidth: this.rootDimensions.w,
@@ -207,6 +217,31 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
   public unmount(): void {
     this.root.childNodes.forEach((child) => this.root.removeChild(child));
+  }
+
+  public setColumnHidden(columnId: string, hidden: boolean): void {
+    if (!this.columnVisibility.has(columnId)) {
+      throw new Error(`Column ${columnId} is not defined`);
+    }
+    if (this.columnVisibility.get(columnId) === hidden) return;
+
+    this.columnVisibility.set(columnId, hidden);
+    this.tableConfig.columns = this.getVisibleColumns();
+    this.columnSizes.setVisibleColumns(
+      this.tableConfig.columns.map((column) => column.columnId)
+    );
+    this.camera.updateFocus({});
+    this.header.reinitializeCellPool();
+    this.body.reinitializeCellPool();
+    this.body.setVisibleColumns(this.tableConfig.columns);
+    this.header.requestRedraw();
+    this.body.requestRedraw();
+  }
+
+  private getVisibleColumns(): Array<TableColumnDef<TDataRow>> {
+    return this.opts.config.columns.filter(
+      (column) => !this.columnVisibility.get(column.columnId)
+    );
   }
 
   private getColumnConstraints(
