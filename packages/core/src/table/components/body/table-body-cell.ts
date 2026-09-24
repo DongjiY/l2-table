@@ -9,22 +9,24 @@ export class TableBodyCell extends TableCell {
     painter: Painter,
     clippedDimensions: Dimensions,
     padding: Required<Padding>
-  ): void {
+  ): number {
     const { x, textAlign } = this.getAlignment(clippedDimensions.w);
 
     const y = this.point.y + padding.top + clippedDimensions.h / 2;
 
     if (this.data) {
-      painter.writeText(this.data, Point.at(x, y), {
+      return painter.writeText(this.data, Point.at(x, y), {
         font: this.style?.text?.font,
         color: this.style?.text?.color,
         baseline: "middle",
         alignment: textAlign,
       });
     }
+
+    return 0;
   }
 
-  public drawGlobal(painter: Painter): void {
+  public drawGlobal(painter: Painter): number {
     if (this.style?.backgroundColor) {
       painter.drawRect(this.point, this.dimensions, this.style.backgroundColor);
     }
@@ -36,5 +38,7 @@ export class TableBodyCell extends TableCell {
         this.style.hovered.backgroundColor
       );
     }
+
+    return 0;
   }
 }

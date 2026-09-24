@@ -10,7 +10,7 @@ import { RefObject, useEffect, useRef } from "react";
 export function useL2Table<TDataRow extends TableRow>(
   config: TableConfig<TDataRow>,
   source: TableSourceObservable,
-  root: RefObject<HTMLDivElement | null>,
+  root: RefObject<HTMLDivElement | null>
 ) {
   const tableRef = useRef<Table<TDataRow>>(null);
 

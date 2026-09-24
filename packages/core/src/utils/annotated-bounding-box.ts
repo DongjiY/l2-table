@@ -3,7 +3,7 @@ import { Dimensions } from "./dimensions";
 import { Point } from "./point";
 
 export class AnnotatedBoundingBox<
-  TAnnotation extends Record<string, any>,
+  TAnnotation extends Record<string, any>
 > extends BoundingBox {
   public meta: TAnnotation;
 

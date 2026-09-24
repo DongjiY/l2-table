@@ -6,13 +6,10 @@ import { StringTableData } from "../../../utils/string-table-data";
 import { ColumnSizeMap } from "../../../utils/column-size-map";
 import { CellPool } from "../../../utils/cell-pool";
 import { SortedRowModel } from "../../../utils/sorted-row-model";
-import { TableWorker } from "../../table-worker";
 import { Mouse } from "../../../utils/mouse";
 import { Point } from "../../../utils/point";
 import { TableHeaderCell } from "./table-header-cell";
-import { BufferedStream } from "../../../utils/buffered-stream";
 import { Painter } from "../../../utils/painter";
-import { ContentWidthCache } from "../../../utils/content-width-cache";
 import {
   HeaderResizer,
   RESIZER_HOVER_BUFFER_LEFT,
@@ -21,7 +18,6 @@ import {
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;
-  private headerNameMap: Map<string, string>;
   private clickStartPosition: Point = new Point();
   private hoveredViewportPosition: Point | undefined = new Point();
 
@@ -34,23 +30,11 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     private readonly camera: Camera,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
     private readonly config: TableConfig<TDataRow>,
-    tableWorker: TableWorker,
     private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
-    private readonly autoSizedBufferedStream: BufferedStream<{
-      columnId: string;
-      size: number;
-    }>,
-    contentCache: ContentWidthCache,
     dimensions: Dimensions
   ) {
-    super(dimensions, contentCache, tableWorker);
-
-    this.headerNameMap = new Map(
-      this.config.columns.map(({ columnId, name }) => {
-        return [columnId, name];
-      })
-    );
+    super(dimensions);
 
     this.cellPool = CellPool.fromCount({
       count: this.config.columns.length,
@@ -60,16 +44,6 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
           this.config.style.header.resizer
         );
       },
-    });
-
-    this.config.columns.forEach(({ columnId, name }) => {
-      this.tableWorker.send({
-        type: "CELL_SIZE",
-        payload: {
-          columnId: columnId,
-          content: name,
-        },
-      });
     });
 
     this.getElement().addEventListener(
@@ -126,25 +100,15 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
 
     this.sortedRowModel.toggleSort(columnId);
 
-    this.tableWorker.send({
-      type: "CELL_SIZE",
-      payload: {
-        columnId,
-        content: `${this.headerNameMap.get(columnId)}`,
-      },
-    });
-
     this.requestRedraw();
   };
 
   private manualResizeEnd(): void {
     this.resizingColumnId = undefined;
-    this.autoSizedBufferedStream.resume();
   }
 
   private manualResizeStart(p: Point): void {
     if (!this.hoveredResizerColumnId) return;
-    this.autoSizedBufferedStream.pause();
     const worldPoint = this.camera.toWorldPoint(p);
     this.resizingColumnId = this.hoveredResizerColumnId;
     this.headerResizeStartWorldPoint = worldPoint;
@@ -221,10 +185,10 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         this.hoveredResizerColumnId = column.columnId;
       }
 
-      this.layouter.start();
-      cell.draw(painter);
-      const layoutWidth = this.layouter.stop();
-      this.onLayoutComplete(column.columnId, layoutWidth);
+      this.columnSizes.updateIntrinsicContentWidth(
+        column.columnId,
+        cell.draw(painter)
+      );
     }
 
     if (isMouseHoveringAnyResizer) {
@@ -233,10 +197,6 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       document.body.style.cursor = "default";
       this.hoveredResizerColumnId = undefined;
     }
-  }
-
-  private onLayoutComplete(columnId: string, layoutWidth: number): void {
-    this.columnSizes.updateStaticLayoutContent(columnId, layoutWidth);
   }
 
   public draw(painter: Painter): void {

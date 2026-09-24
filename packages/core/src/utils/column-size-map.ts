@@ -25,7 +25,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
 
   private columnSizeUpdates$: Subject<{ columnId: string; value: number }>;
   private columnSizes: Map<string, number>;
-  private staticLayoutContent: Map<string, number>;
+  private maxIntrinsicContentWidths: Map<string, number>;
 
   private columnXPos: Map<string, number>;
   private minColumnSize: number = Infinity;
@@ -40,7 +40,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
     this.totalColumnSizeUpdates$ = new ReplaySubject(1);
     this.columnSizeUpdates$ = new Subject();
     this.columnSizes = new Map();
-    this.staticLayoutContent = new Map();
+    this.maxIntrinsicContentWidths = new Map();
     this.columnXPos = new Map();
     this.boundingBoxes = [];
     this.manualControlledColumnIds = new Set();
@@ -54,19 +54,14 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
     }
   }
 
-  public updateStaticLayoutContent(
-    columnId: string,
-    staticLayoutWidth: number
-  ): void {
-    const currStaticLayoutWidth = this.staticLayoutContent.get(columnId) ?? 0;
-    this.staticLayoutContent.set(
-      columnId,
-      Math.max(currStaticLayoutWidth, staticLayoutWidth)
-    );
-  }
+  public updateIntrinsicContentWidth(columnId: string, width: number): void {
+    const previousWidth = this.maxIntrinsicContentWidths.get(columnId);
+    if (previousWidth !== undefined && width <= previousWidth) return;
 
-  public getStaticLayoutContentWidth(columnId: string): number {
-    return this.staticLayoutContent.get(columnId) ?? 0;
+    this.maxIntrinsicContentWidths.set(columnId, width);
+    if (!this.manualControlledColumnIds.has(columnId)) {
+      this.updateColumnSize(columnId, width);
+    }
   }
 
   /**

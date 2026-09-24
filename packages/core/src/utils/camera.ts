@@ -39,14 +39,14 @@ export class Camera {
   private clampX(x: number): number {
     return Math.max(
       0,
-      Math.min(x, this.worldDimensions.w - this.viewportDimensions.w),
+      Math.min(x, this.worldDimensions.w - this.viewportDimensions.w)
     );
   }
 
   private clampY(y: number): number {
     return Math.max(
       0,
-      Math.min(y, this.worldDimensions.h - this.viewportDimensions.h),
+      Math.min(y, this.worldDimensions.h - this.viewportDimensions.h)
     );
   }
 

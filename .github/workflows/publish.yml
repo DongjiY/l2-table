@@ -26,8 +26,8 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: 'pnpm'
-        
+          cache: "pnpm"
+
       - run: npm install -g npm@latest
 
       - name: Install Dependencies

@@ -3,10 +3,7 @@ import { Axis } from "./axis";
 import { Point } from "./point";
 
 export class BoundingBox {
-  constructor(
-    private point: Point,
-    private dimensions: Dimensions,
-  ) {}
+  constructor(private point: Point, private dimensions: Dimensions) {}
 
   public update(point: Point, dimensions: Dimensions) {
     this.point = point;
