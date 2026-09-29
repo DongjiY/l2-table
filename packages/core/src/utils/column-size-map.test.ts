@@ -28,4 +28,41 @@ describe("ColumnSizeMap intrinsic content widths", () => {
     sizes.updateIntrinsicContentWidth(columnId, 42);
     expect(sizes.getColumnWidth(columnId)).toBe(42);
   });
+
+  test("excludes hidden columns from geometry without discarding their widths", () => {
+    const columns = [
+      { columnId: "first", maxWidth: 100 },
+      { columnId: "second", maxWidth: 100 },
+    ] as Array<TableColumnDef<TableRow>>;
+    const sizes = new ColumnSizeMap(columns, {
+      first: { minWidth: 0, maxWidth: 100 },
+      second: { minWidth: 0, maxWidth: 100 },
+    });
+
+    sizes.updateColumnSize("first", 20);
+    sizes.updateColumnSize("second", 30);
+    sizes.setVisibleColumns(["first"]);
+
+    expect(sizes.getTotalColumnWidth()).toBe(20);
+    expect(sizes.getBoundingBoxes().map((box) => box.meta.columnId)).toEqual([
+      "first",
+    ]);
+
+    sizes.setVisibleColumns(["first", "second"]);
+
+    expect(sizes.getColumnWidth("second")).toBe(30);
+    expect(sizes.getTotalColumnWidth()).toBe(50);
+  });
+
+  test("supports an empty visible-column set", () => {
+    const sizes = new ColumnSizeMap(
+      [{ columnId: "only", maxWidth: 100 }] as Array<TableColumnDef<TableRow>>,
+      { only: { minWidth: 0, maxWidth: 100 } }
+    );
+
+    sizes.setVisibleColumns([]);
+
+    expect(sizes.getTotalColumnWidth()).toBe(0);
+    expect(sizes.getBoundingBoxes()).toEqual([]);
+  });
 });

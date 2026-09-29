@@ -108,6 +108,15 @@ export class TableBody<TDataRow extends TableRow>
     this.cellPool = this.createCellPool();
   }
 
+  public setVisibleColumns(columns: Array<TableColumnDef<TDataRow>>): void {
+    this.columnResizeSubscription.unsubscribe();
+    this.columnResizeSubscription = this.getColumnResizeObservables(
+      columns
+    ).subscribe(() => {
+      this.requestRedraw();
+    });
+  }
+
   private createCellPool(): NonUniformCellPool {
     return NonUniformCellPool.fromViewport({
       viewportHeight: this.camera.viewportHeight,

@@ -30,6 +30,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
   private columnXPos: Map<string, number>;
   private minColumnSize: number = Infinity;
   private boundingBoxes: Array<AnnotatedBoundingBox<BoundingBoxMetadata>>;
+  private visibleColumnIds: Set<string>;
 
   private manualControlledColumnIds: Set<string>;
 
@@ -44,6 +45,7 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
     this.columnXPos = new Map();
     this.boundingBoxes = [];
     this.manualControlledColumnIds = new Set();
+    this.visibleColumnIds = new Set(cols.map((col) => col.columnId));
 
     this.columnConstraints = columnConstraints;
 
@@ -78,9 +80,18 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
     const currColumnSize = this.columnSizes.get(columnId) ?? 0;
     this.columnSizes.set(columnId, clampedSize);
     this.minColumnSize = Math.min(clampedSize, this.minColumnSize);
-    this.updateTotalColumnSize(clampedSize - currColumnSize);
+    if (this.visibleColumnIds.has(columnId)) {
+      this.updateTotalColumnSize(clampedSize - currColumnSize);
+    }
     this.columnSizeUpdates$.next({ columnId, value: clampedSize });
     this.recomputeBoundingBoxesAndXPos();
+  }
+
+  public setVisibleColumns(columnIds: Iterable<string>): void {
+    this.visibleColumnIds = new Set(columnIds);
+    this.recomputeBoundingBoxesAndXPos();
+    this.recomputeTotalColumnSize();
+    this.recomputeMinColumnSize();
   }
 
   public updateTotalColumnSize(delta: number): void {
@@ -122,8 +133,10 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
 
   public getTotalColumnWidth(): number {
     let sum = 0;
-    for (const width of this.columnSizes.values()) {
-      sum += width;
+    for (const [columnId, width] of this.columnSizes.entries()) {
+      if (this.visibleColumnIds.has(columnId)) {
+        sum += width;
+      }
     }
     return sum;
   }
@@ -146,9 +159,11 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
 
   private recomputeBoundingBoxesAndXPos(): void {
     this.boundingBoxes = [];
+    this.columnXPos.clear();
     let x = 0;
     let i = 0;
     for (const [columnId, columnWidth] of this.columnSizes.entries()) {
+      if (!this.visibleColumnIds.has(columnId)) continue;
       this.boundingBoxes.push(
         new AnnotatedBoundingBox(
           new Point(x, 0),
@@ -162,6 +177,20 @@ export class ColumnSizeMap<TDataRow extends TableRow> implements Closeable {
       this.updateColumnXPos(columnId, x);
       i++;
       x += columnWidth;
+    }
+  }
+
+  private recomputeTotalColumnSize(): void {
+    this.totalColumnSize = this.getTotalColumnWidth();
+    this.totalColumnSizeUpdates$.next(this.totalColumnSize);
+  }
+
+  private recomputeMinColumnSize(): void {
+    this.minColumnSize = Infinity;
+    for (const [columnId, columnWidth] of this.columnSizes.entries()) {
+      if (this.visibleColumnIds.has(columnId)) {
+        this.minColumnSize = Math.min(this.minColumnSize, columnWidth);
+      }
     }
   }
 
