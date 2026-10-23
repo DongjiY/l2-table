@@ -2,23 +2,19 @@ import { BoundingBox } from "../../utils/bounding-box";
 import { Camera } from "../../utils/camera";
 import { Dimensions } from "../../utils/dimensions";
 import { DrawCanvas } from "../../utils/draw-canvas";
-import { Mouse } from "../../utils/mouse";
 import { Painter } from "../../utils/painter";
 import { Point } from "../../utils/point";
+import { Pointer } from "../../utils/pointer";
 import { WorldObject } from "../../utils/world-object";
 
 export const VERTICAL_SCROLLBAR_WIDTH = 6;
 
 export class VerticalScrollbar extends DrawCanvas {
   private thumb: VerticalThumb;
-  private dragStart: Point | undefined;
+  private isDraggingThumb: boolean = false;
+  private readonly pointer: Pointer;
 
-  constructor(
-    private readonly camera: Camera,
-    private readonly mouse: Mouse,
-    private readonly rootDimensions: Dimensions,
-    dimensions: Dimensions
-  ) {
+  constructor(private readonly camera: Camera, dimensions: Dimensions) {
     super(dimensions);
 
     this.thumb = new VerticalThumb(
@@ -38,47 +34,27 @@ export class VerticalScrollbar extends DrawCanvas {
       this.requestRedraw();
     });
 
-    this.mouse.onMouseLost(() => this.thumb.setIsHovered(false));
-    this.initMouseCallbacks();
+    this.pointer = new Pointer(this.getElement());
+    this.pointer.onPointerDown(this.handlePointerDown);
+    this.pointer.onPointerMove(this.handlePointerMove);
+    this.pointer.onPointerLeave(this.handlePointerLeave);
+    this.pointer.onDrag(this.handleDrag);
+    this.pointer.onPointerUp(this.handlePointerUp);
 
     this.requestRedraw();
   }
 
-  private initMouseCallbacks(): void {
-    this.mouse.onMouseMove(
-      this.mouseMove,
-      generateTransposePoint(this.rootDimensions.w)
-    );
-    this.mouse.onMouseDown(
-      this.mouseDown,
-      generateTransposePoint(this.rootDimensions.w)
-    );
-    this.mouse.onMouseUp(this.mouseUp);
-  }
-
-  mouseDown = (point: Point): void => {
-    if (this.thumb.getBoundingBox().intersects(point)) {
-      this.dragStart = Point.clone(point);
-      this.thumb.setIsActive(true);
-    }
+  private handlePointerDown = (point: Point): void => {
+    this.isDraggingThumb = this.thumb.getBoundingBox().intersects(point);
+    this.thumb.setIsActive(this.isDraggingThumb);
   };
 
-  mouseUp = (): void => {
-    this.dragStart = undefined;
+  private handlePointerUp = (): void => {
+    this.isDraggingThumb = false;
     this.thumb.setIsActive(false);
   };
 
-  mouseMove = (point: Point): void => {
-    if (this.dragStart) {
-      const trackDeltaY = point.y - this.dragStart.y;
-      const contentRange = this.camera.worldHeight - this.camera.viewportHeight;
-      const thumbRange = this.h - this.thumb.h;
-      const contentDelta = (trackDeltaY / thumbRange) * contentRange;
-      this.camera.updateFocus({
-        dy: contentDelta,
-      });
-      this.dragStart.y = point.y;
-    }
+  private handlePointerMove = (point: Point): void => {
     if (
       this.thumb.setIsHovered(this.thumb.getBoundingBox().intersects(point))
     ) {
@@ -86,22 +62,28 @@ export class VerticalScrollbar extends DrawCanvas {
     }
   };
 
-  public resize(w: number, h: number, dpr?: number): void {
-    this.mouse.removeMouseMoveListener(this.mouseMove);
-    this.mouse.removeMouseDownListener(this.mouseDown);
-    this.mouse.removeMouseUpListener(this.mouseUp);
-    super.resize(w, h, dpr);
-    this.initMouseCallbacks();
+  private handlePointerLeave = (): void => {
+    if (this.thumb.setIsHovered(false)) this.requestRedraw();
+  };
+
+  private handleDrag = (delta: Point): void => {
+    if (!this.isDraggingThumb) return;
+
+    const contentRange = this.camera.worldHeight - this.camera.viewportHeight;
+    const thumbRange = this.h - this.thumb.h;
+    const contentDelta = (delta.y / thumbRange) * contentRange;
+    this.camera.updateFocus({ dy: contentDelta });
+  };
+
+  public close(): void {
+    this.pointer.close();
+    super.close();
   }
 
   public draw(painter: Painter): void {
     painter.drawRect(Point.at(0, 0), Dimensions.of(this.w, this.h), "#fff");
     this.thumb.draw(painter);
   }
-}
-
-function generateTransposePoint(rootWidth: number): Point {
-  return new Point(-1 * (rootWidth - VERTICAL_SCROLLBAR_WIDTH), 0);
 }
 
 class VerticalThumb extends WorldObject {
