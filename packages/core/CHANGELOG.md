@@ -1,5 +1,12 @@
 # @dongjiy/l2-table
 
+## 2.1.2
+
+### Patch Changes
+
+- 5f5f704: fix sorted row model placeholders
+- bfcbd94: resize table on dpr changes
+
 ## 2.1.1
 
 ### Patch Changes
