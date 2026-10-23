@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 2.1.1
+
+### Patch Changes
+
+- c871edf: disable drag to scroll on non touch pointer events
+
 ## 2.1.0
 
 ### Minor Changes
