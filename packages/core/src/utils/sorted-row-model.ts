@@ -1,4 +1,4 @@
-import { TableRow } from "../types/table-config";
+import { TableColumnDef, TableRow } from "../types/table-config";
 import { CellDataStore } from "./cell-data-store";
 
 export class SortedRowModel<TDataRow extends TableRow> {
@@ -9,11 +9,16 @@ export class SortedRowModel<TDataRow extends TableRow> {
     rowDefinition: TDataRow;
     columnUnderSortValue: any;
   }>;
+  private readonly columnsById: Map<string, TableColumnDef<TDataRow>>;
 
   constructor(
     private readonly cellDataStore: CellDataStore<TDataRow>,
-    private readonly rowDefinition: Array<TDataRow>
+    private readonly rowDefinition: Array<TDataRow>,
+    columns: Array<TableColumnDef<TDataRow>>
   ) {
+    this.columnsById = new Map(
+      columns.map((column) => [column.columnId, column])
+    );
     this.rowIdToIndexMap = new Map(
       rowDefinition.map((row, index) => [row.rowId, index])
     );
@@ -69,22 +74,30 @@ export class SortedRowModel<TDataRow extends TableRow> {
       return;
     }
 
+    const column = this.columnsById.get(this.columnIdUnderSort);
+    if (!column) {
+      throw new Error(
+        `No column definition found for ${this.columnIdUnderSort}`
+      );
+    }
+
     let compareFn;
     this.sortedRows = this.rowDefinition.map((row) => {
-      const placeholder = row.placeholders[this.columnIdUnderSort!];
       const cellData = this.cellDataStore.getCellData(
         row.rowId,
-        this.columnIdUnderSort!
+        this.columnIdUnderSort!,
+        () => {
+          const initialCellData = column.cellData();
+          initialCellData.setValue(column.placeholderAccessorFn(row));
+          return initialCellData;
+        }
       );
-      if (cellData.getValue() === undefined) {
-        cellData.setValue(placeholder);
-      }
       compareFn = cellData.compare;
       const existingValue = cellData.getValue();
 
       return {
         rowDefinition: row,
-        columnUnderSortValue: existingValue ?? placeholder,
+        columnUnderSortValue: existingValue,
       };
     });
 

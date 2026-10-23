@@ -55,7 +55,8 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.cellDataStore = new CellDataStore(this.tableConfig.columns);
     this.sortedRowModel = new SortedRowModel(
       this.cellDataStore,
-      this.tableConfig.rows
+      this.tableConfig.rows,
+      this.tableConfig.columns
     );
 
     const { width, height } = this.root.getBoundingClientRect();
