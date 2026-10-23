@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 2.1.0
+
+### Minor Changes
+
+- cb3f5d4: support touchscreen gestures for scrolling and press
+
 ## 2.0.0
 
 ### Major Changes
