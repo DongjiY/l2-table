@@ -64,7 +64,9 @@ export class TableBody<TDataRow extends TableRow>
     this.canvasWrapperDiv.style.overflow = "hidden";
     this.canvasWrapperDiv.style.position = "relative";
     this.pointer = new Pointer(this.canvasWrapperDiv);
-    this.pointer.onDrag((delta) => {
+    this.pointer.onDrag((delta, pointerType) => {
+      if (pointerType !== "touch") return;
+
       this.camera.updateFocus({
         dx: -delta.x,
         dy: -delta.y,
