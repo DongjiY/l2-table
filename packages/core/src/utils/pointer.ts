@@ -2,13 +2,14 @@ import { Closeable } from "./closeable";
 import { Point } from "./point";
 
 type PointListener = (point: Point) => void;
-type DragListener = (delta: Point) => void;
+type DragListener = (delta: Point, pointerType: string) => void;
 
 /**
  * Normalizes primary-pointer input for one element.
  *
  * Pointer movement continues after the pointer leaves the element because the
- * element captures the pointer at the start of each press.
+ * element captures the pointer at the start of each press. Drag callbacks
+ * include the pointer source so consumers can choose which inputs to handle.
  */
 export class Pointer implements Closeable {
   private readonly downListeners: Set<PointListener> = new Set();
@@ -120,7 +121,9 @@ export class Pointer implements Closeable {
       this.clickStartPoint = undefined;
     }
     this.previousPoint = point;
-    this.dragListeners.forEach((listener) => listener(delta));
+    this.dragListeners.forEach((listener) =>
+      listener(delta, event.pointerType)
+    );
   };
 
   private handlePointerUp = (event: PointerEvent): void => {
