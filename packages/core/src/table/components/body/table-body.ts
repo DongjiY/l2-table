@@ -19,7 +19,6 @@ import { Closeable } from "../../../utils/closeable";
 import { CellDataStore } from "../../../utils/cell-data-store";
 import { TableData } from "../../../utils/table-data";
 import { Point } from "../../../utils/point";
-import { Mouse } from "../../../utils/mouse";
 import { TableBodyOverlay } from "../../table-body-overlay";
 import { SortedRowModel } from "../../../utils/sorted-row-model";
 import { TableBodyCell } from "./table-body-cell";
@@ -27,6 +26,7 @@ import { NonUniformCellPool } from "../../../utils/nonuniform-cell-pool";
 import { TableCell } from "../table-cell";
 import { TableCellStyles } from "../../../types/styles";
 import { Painter } from "../../../utils/painter";
+import { Pointer } from "../../../utils/pointer";
 
 type VirtualBounds = {
   leftColumnIndex: number;
@@ -43,16 +43,16 @@ export class TableBody<TDataRow extends TableRow>
   private sourceSubscription: Subscription;
   private columnResizeSubscription: Subscription;
   private hoveredRowIndex: number | undefined;
-  private _prevMousePoint: Point = new Point();
+  private _prevPointerPoint: Point = new Point();
   private overlay: TableBodyOverlay;
   private _cachedVirtualBounds: VirtualBounds | undefined;
+  private readonly pointer: Pointer;
 
   constructor(
     private readonly camera: Camera,
     private readonly config: TableConfig<TDataRow>,
     private readonly source: Observable<TableSourceData>,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
-    private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     private readonly cellDataStore: CellDataStore<TDataRow>,
     dimensions: Dimensions
@@ -63,6 +63,15 @@ export class TableBody<TDataRow extends TableRow>
     this.canvasWrapperDiv.appendChild(super.getElement());
     this.canvasWrapperDiv.style.overflow = "hidden";
     this.canvasWrapperDiv.style.position = "relative";
+    this.pointer = new Pointer(this.canvasWrapperDiv);
+    this.pointer.onDrag((delta) => {
+      this.camera.updateFocus({
+        dx: -delta.x,
+        dy: -delta.y,
+      });
+    });
+    this.pointer.onPointerMove(this.pointerMove);
+    this.pointer.onPointerLeave(this.pointerLeave);
     this.overlay = new TableBodyOverlay(
       this.canvasWrapperDiv,
       this.config.style.body.row.height
@@ -90,16 +99,10 @@ export class TableBody<TDataRow extends TableRow>
     );
 
     this.camera.onCameraFocusChange(() => {
-      this.mouseMove(this._prevMousePoint);
+      this.pointerMove(this._prevPointerPoint);
       this.requestRedraw();
     });
     this.camera.onCameraResize(() => this.requestRedraw());
-
-    this.mouse.onMouseMove(
-      this.mouseMove,
-      new Point(0, -1 * this.config.style.header.row.height)
-    );
-    this.mouse.onMouseLost(this.mouseLost);
 
     this.requestRedraw();
   }
@@ -137,14 +140,14 @@ export class TableBody<TDataRow extends TableRow>
     this.requestRedraw();
   };
 
-  mouseLost = () => {
+  pointerLeave = () => {
     this.overlay.hide();
     this.hoveredRowIndex = undefined;
     this.requestRedraw();
   };
 
-  mouseMove = (point: Point): void => {
-    this._prevMousePoint.copy(point);
+  pointerMove = (point: Point): void => {
+    this._prevPointerPoint.copy(point);
     this.updateHoveredRowState(point);
     this.requestRedraw();
   };
@@ -155,7 +158,7 @@ export class TableBody<TDataRow extends TableRow>
       this.hoveredRowIndex = undefined;
       return;
     }
-    const rowIndex = this.getHoveredRowIndexFromMousePoint(mousePoint);
+    const rowIndex = this.getHoveredRowIndexFromPointerPoint(mousePoint);
     if (rowIndex === undefined) {
       this.overlay.hide();
       this.hoveredRowIndex = undefined;
@@ -169,10 +172,10 @@ export class TableBody<TDataRow extends TableRow>
     this.hoveredRowIndex = rowIndex;
   }
 
-  private getHoveredRowIndexFromMousePoint(
-    mousePoint: Point
+  private getHoveredRowIndexFromPointerPoint(
+    pointerPoint: Point
   ): number | undefined {
-    const worldY = mousePoint.y + this.camera.y;
+    const worldY = pointerPoint.y + this.camera.y;
     const rowHeight = this.config.style.body.row.height;
     const rowIndex = Math.floor(worldY / rowHeight);
     if (rowIndex >= 0 && rowIndex < this.sortedRowModel.length) {
@@ -193,6 +196,7 @@ export class TableBody<TDataRow extends TableRow>
   public close(): void {
     this.sourceSubscription.unsubscribe();
     this.columnResizeSubscription.unsubscribe();
+    this.pointer.close();
   }
 
   private getVirtualBounds(

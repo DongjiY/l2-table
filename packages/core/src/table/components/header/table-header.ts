@@ -6,8 +6,8 @@ import { StringTableData } from "../../../utils/string-table-data";
 import { ColumnSizeMap } from "../../../utils/column-size-map";
 import { CellPool } from "../../../utils/cell-pool";
 import { SortedRowModel } from "../../../utils/sorted-row-model";
-import { Mouse } from "../../../utils/mouse";
 import { Point } from "../../../utils/point";
+import { Pointer } from "../../../utils/pointer";
 import { TableHeaderCell } from "./table-header-cell";
 import { Painter } from "../../../utils/painter";
 import {
@@ -25,12 +25,12 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private hoveredResizerColumnId: string | undefined;
   private headerResizeStartWidth: number | undefined;
   private headerResizeStartWorldPoint: Point = new Point();
+  private readonly pointer: Pointer;
 
   constructor(
     private readonly camera: Camera,
     private readonly columnSizes: ColumnSizeMap<TDataRow>,
     private readonly config: TableConfig<TDataRow>,
-    private readonly mouse: Mouse,
     private readonly sortedRowModel: SortedRowModel<TDataRow>,
     dimensions: Dimensions
   ) {
@@ -61,31 +61,33 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.camera.onCameraFocusChange(() => this.requestRedraw());
     this.camera.onCameraResize(() => this.requestRedraw());
 
-    this.mouse.onMouseClick(this.handleMouseClick);
-    this.mouse.onMouseDown(this.handleMouseDown);
-    this.mouse.onMouseMove(this.handleMouseMove);
-    this.mouse.onMouseUp(this.handleMouseUp);
+    this.pointer = new Pointer(this.getElement());
+    this.pointer.onClick(this.handlePointerClick);
+    this.pointer.onPointerDown(this.handlePointerDown);
+    this.pointer.onPointerMove(this.handlePointerMove);
+    this.pointer.onPointerLeave(this.handlePointerLeave);
+    this.pointer.onPointerUp(this.handlePointerUp);
     this.requestRedraw();
   }
 
-  handleMouseMove = (p: Point) => {
+  handlePointerMove = (p: Point) => {
     this.trackResizedColumnDistance(p);
     this.updateHoveredWorldXPosition(p);
     this.requestRedraw();
   };
 
-  handleMouseUp = () => {
+  handlePointerUp = () => {
     this.manualResizeEnd();
     this.requestRedraw();
   };
 
-  handleMouseDown = (p: Point) => {
+  handlePointerDown = (p: Point) => {
     this.manualResizeStart(p);
     this.clickStartPosition.copy(p);
     this.requestRedraw();
   };
 
-  handleMouseClick = (p: Point) => {
+  handlePointerClick = (p: Point) => {
     if (!this.clickStartPosition.equals(p)) return;
 
     const worldX = p.x + this.camera.x;
@@ -102,6 +104,16 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
 
     this.requestRedraw();
   };
+
+  handlePointerLeave = () => {
+    this.hoveredViewportPosition = undefined;
+    this.requestRedraw();
+  };
+
+  public close(): void {
+    this.pointer.close();
+    super.close();
+  }
 
   private manualResizeEnd(): void {
     this.resizingColumnId = undefined;
@@ -161,7 +173,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private drawCells(painter: Painter): void {
     this.cellPool.beginFrame();
 
-    let isMouseHoveringAnyResizer = false;
+    let isPointerHoveringAnyResizer = false;
     for (const column of this.config.columns) {
       const cell = this.cellPool.next();
 
@@ -174,14 +186,14 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
         sortDirection: this.getSortDirection(column.columnId),
       });
 
-      const isMouseHoveringThisResizer = cell.checkAndSetResizerHovered(
+      const isPointerHoveringThisResizer = cell.checkAndSetResizerHovered(
         this.hoveredViewportPosition
       );
 
-      isMouseHoveringAnyResizer =
-        isMouseHoveringAnyResizer || isMouseHoveringThisResizer;
+      isPointerHoveringAnyResizer =
+        isPointerHoveringAnyResizer || isPointerHoveringThisResizer;
 
-      if (isMouseHoveringThisResizer) {
+      if (isPointerHoveringThisResizer) {
         this.hoveredResizerColumnId = column.columnId;
       }
 
@@ -191,7 +203,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
       );
     }
 
-    if (isMouseHoveringAnyResizer) {
+    if (isPointerHoveringAnyResizer) {
       document.body.style.cursor = "col-resize";
     } else {
       document.body.style.cursor = "default";

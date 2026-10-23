@@ -10,7 +10,6 @@ import { Camera } from "../utils/camera";
 import { CellDataStore } from "../utils/cell-data-store";
 import { ColumnSizeMap } from "../utils/column-size-map";
 import { Dimensions } from "../utils/dimensions";
-import { Mouse } from "../utils/mouse";
 import { Renderer } from "../utils/renderer";
 import { SortedRowModel } from "../utils/sorted-row-model";
 import {
@@ -37,8 +36,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
   private camera: Camera;
   private readonly renderer: Renderer;
 
-  private mouse: Mouse;
-
   private body: TableBody<TDataRow>;
   private header: TableHeader<TDataRow>;
   private scrollXBar: HorizontalScrollbar;
@@ -54,7 +51,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
   ) {
     this.tableConfig = this.opts.config;
 
-    this.mouse = new Mouse(root);
     this.cellDataStore = new CellDataStore(this.tableConfig.columns);
     this.sortedRowModel = new SortedRowModel(
       this.cellDataStore,
@@ -109,7 +105,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.tableConfig,
       this.opts.source,
       this.columnSizes,
-      this.mouse,
       this.sortedRowModel,
       this.cellDataStore,
       new Dimensions(
@@ -123,7 +118,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
       this.camera,
       this.columnSizes,
       this.tableConfig,
-      this.mouse,
       this.sortedRowModel,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
@@ -132,8 +126,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     );
     this.scrollXBar = new HorizontalScrollbar(
       this.camera,
-      this.mouse,
-      this.rootDimensions,
       new Dimensions(
         this.rootDimensions.w - VERTICAL_SCROLLBAR_WIDTH,
         HORIZONTAL_SCROLLBAR_HEIGHT
@@ -141,8 +133,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     );
     this.scrollYBar = new VerticalScrollbar(
       this.camera,
-      this.mouse,
-      this.rootDimensions,
       new Dimensions(VERTICAL_SCROLLBAR_WIDTH, this.rootDimensions.h)
     );
     this.verticalWrapper.appendChild(this.header.getElement());
@@ -202,7 +192,6 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.scrollYBar.close();
     this.columnSizes.close();
     this.renderer.close();
-    this.mouse.close();
   }
 
   public unmount(): void {
