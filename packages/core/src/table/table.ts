@@ -33,6 +33,7 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
   private tableConfig: TableConfig<TDataRow>;
   private resizeObserver: ResizeObserver;
+  private devicePixelRatioMediaQuery: MediaQueryList | undefined;
   private camera: Camera;
   private readonly renderer: Renderer;
 
@@ -140,40 +141,10 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.verticalWrapper.appendChild(this.scrollXBar.getElement());
     this.horizontalWrapper.appendChild(this.scrollYBar.getElement());
 
-    this.resizeObserver = new ResizeObserver(() => {
-      const { width, height } = this.root.getBoundingClientRect();
-      this.rootDimensions.w = width;
-      this.rootDimensions.h = height;
-      this.body.resize(
-        width - VERTICAL_SCROLLBAR_WIDTH,
-        height -
-          this.opts.config.style.header.row.height -
-          HORIZONTAL_SCROLLBAR_HEIGHT,
-        window.devicePixelRatio
-      );
-      this.header.resize(
-        width - VERTICAL_SCROLLBAR_WIDTH,
-        this.opts.config.style.header.row.height,
-        window.devicePixelRatio
-      );
-      this.scrollXBar.resize(
-        width - VERTICAL_SCROLLBAR_WIDTH,
-        HORIZONTAL_SCROLLBAR_HEIGHT,
-        window.devicePixelRatio
-      );
-      this.scrollYBar.resize(
-        VERTICAL_SCROLLBAR_WIDTH,
-        height,
-        window.devicePixelRatio
-      );
-      this.camera.updateViewportDimensions({
-        w: width,
-        h: height,
-      });
-      this.body.reinitializeCellPool();
-    });
+    this.resizeObserver = new ResizeObserver(() => this.resize());
 
     this.resizeObserver.observe(this.root);
+    this.watchDevicePixelRatio();
 
     this.renderer = new Renderer([
       this.body,
@@ -185,6 +156,10 @@ export class Table<TDataRow extends TableRow> implements Closeable {
 
   public close(): void {
     this.resizeObserver.disconnect();
+    this.devicePixelRatioMediaQuery?.removeEventListener(
+      "change",
+      this.handleDevicePixelRatioChange
+    );
     this.totalColumnWidthSubscription.unsubscribe();
     this.body.close();
     this.header.close();
@@ -197,6 +172,55 @@ export class Table<TDataRow extends TableRow> implements Closeable {
   public unmount(): void {
     this.root.childNodes.forEach((child) => this.root.removeChild(child));
   }
+
+  private resize(): void {
+    const { width, height } = this.root.getBoundingClientRect();
+    const devicePixelRatio = window.devicePixelRatio;
+    this.rootDimensions.w = width;
+    this.rootDimensions.h = height;
+    this.body.resize(
+      width - VERTICAL_SCROLLBAR_WIDTH,
+      height -
+        this.opts.config.style.header.row.height -
+        HORIZONTAL_SCROLLBAR_HEIGHT,
+      devicePixelRatio
+    );
+    this.header.resize(
+      width - VERTICAL_SCROLLBAR_WIDTH,
+      this.opts.config.style.header.row.height,
+      devicePixelRatio
+    );
+    this.scrollXBar.resize(
+      width - VERTICAL_SCROLLBAR_WIDTH,
+      HORIZONTAL_SCROLLBAR_HEIGHT,
+      devicePixelRatio
+    );
+    this.scrollYBar.resize(VERTICAL_SCROLLBAR_WIDTH, height, devicePixelRatio);
+    this.camera.updateViewportDimensions({
+      w: width,
+      h: height,
+    });
+    this.body.reinitializeCellPool();
+  }
+
+  private watchDevicePixelRatio(): void {
+    this.devicePixelRatioMediaQuery?.removeEventListener(
+      "change",
+      this.handleDevicePixelRatioChange
+    );
+    this.devicePixelRatioMediaQuery = window.matchMedia(
+      `(resolution: ${window.devicePixelRatio}dppx)`
+    );
+    this.devicePixelRatioMediaQuery.addEventListener(
+      "change",
+      this.handleDevicePixelRatioChange
+    );
+  }
+
+  private handleDevicePixelRatioChange = (): void => {
+    this.resize();
+    this.watchDevicePixelRatio();
+  };
 
   private getColumnConstraints(
     columns: Array<TableColumnDef<TDataRow>>
