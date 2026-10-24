@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 2.1.3
+
+### Patch Changes
+
+- 4e15e8d: add momentum scroll to table drag
+
 ## 2.1.2
 
 ### Patch Changes
