@@ -8,6 +8,7 @@ import { CellPool } from "../../../utils/cell-pool";
 import { SortedRowModel } from "../../../utils/sorted-row-model";
 import { Point } from "../../../utils/point";
 import { Pointer } from "../../../utils/pointer";
+import { MomentumScroller } from "../../../utils/momentum-scroller";
 import { TableHeaderCell } from "./table-header-cell";
 import { Painter } from "../../../utils/painter";
 import {
@@ -15,6 +16,8 @@ import {
   RESIZER_HOVER_BUFFER_LEFT,
   RESIZER_HOVER_BUFFER_RIGHT,
 } from "./header-resizer";
+
+const HEADER_MOMENTUM_FRICTION = 0.016;
 
 export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private cellPool: CellPool<TableHeaderCell>;
@@ -26,6 +29,7 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
   private headerResizeStartWidth: number | undefined;
   private headerResizeStartWorldPoint: Point = new Point();
   private readonly pointer: Pointer;
+  private readonly momentum: MomentumScroller;
 
   constructor(
     private readonly camera: Camera,
@@ -62,11 +66,17 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.camera.onCameraResize(() => this.requestRedraw());
 
     this.pointer = new Pointer(this.getElement());
+    this.momentum = new MomentumScroller(
+      (delta) => this.camera.updateFocus({ dx: delta.x }),
+      { friction: HEADER_MOMENTUM_FRICTION }
+    );
     this.pointer.onClick(this.handlePointerClick);
     this.pointer.onPointerDown(this.handlePointerDown);
     this.pointer.onPointerMove(this.handlePointerMove);
     this.pointer.onPointerLeave(this.handlePointerLeave);
     this.pointer.onPointerUp(this.handlePointerUp);
+    this.pointer.onPointerCancel(this.handlePointerCancel);
+    this.pointer.onDrag(this.handleDrag);
     this.requestRedraw();
   }
 
@@ -76,12 +86,17 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.requestRedraw();
   };
 
-  handlePointerUp = () => {
+  handlePointerUp = (pointerType: string) => {
+    const wasResizingColumn = this.resizingColumnId !== undefined;
     this.manualResizeEnd();
+    if (pointerType === "touch" && !wasResizingColumn) {
+      this.momentum.release();
+    }
     this.requestRedraw();
   };
 
   handlePointerDown = (p: Point) => {
+    this.momentum.start();
     this.manualResizeStart(p);
     this.clickStartPosition.copy(p);
     this.requestRedraw();
@@ -110,7 +125,19 @@ export class TableHeader<TDataRow extends TableRow> extends DrawCanvas {
     this.requestRedraw();
   };
 
+  handlePointerCancel = () => {
+    this.manualResizeEnd();
+    this.momentum.stop();
+    this.requestRedraw();
+  };
+
+  handleDrag = (delta: Point, pointerType: string) => {
+    if (pointerType !== "touch" || this.resizingColumnId !== undefined) return;
+    this.momentum.drag(new Point(-delta.x, 0));
+  };
+
   public close(): void {
+    this.momentum.stop();
     this.pointer.close();
     super.close();
   }

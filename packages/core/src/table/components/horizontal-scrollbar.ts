@@ -76,8 +76,7 @@ export class HorizontalScrollbar extends DrawCanvas {
 
     const contentRange = this.camera.worldWidth - this.camera.viewportWidth;
     const thumbRange = this.w - this.thumb.w;
-    const contentDelta = (delta.x / thumbRange) * contentRange;
-    this.camera.updateFocus({ dx: contentDelta });
+    this.camera.updateFocus({ dx: (delta.x / thumbRange) * contentRange });
   };
 
   public close(): void {

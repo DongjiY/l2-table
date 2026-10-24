@@ -27,6 +27,7 @@ import { TableCell } from "../table-cell";
 import { TableCellStyles } from "../../../types/styles";
 import { Painter } from "../../../utils/painter";
 import { Pointer } from "../../../utils/pointer";
+import { MomentumScroller } from "../../../utils/momentum-scroller";
 
 type VirtualBounds = {
   leftColumnIndex: number;
@@ -47,6 +48,7 @@ export class TableBody<TDataRow extends TableRow>
   private overlay: TableBodyOverlay;
   private _cachedVirtualBounds: VirtualBounds | undefined;
   private readonly pointer: Pointer;
+  private readonly momentum: MomentumScroller;
 
   constructor(
     private readonly camera: Camera,
@@ -64,14 +66,13 @@ export class TableBody<TDataRow extends TableRow>
     this.canvasWrapperDiv.style.overflow = "hidden";
     this.canvasWrapperDiv.style.position = "relative";
     this.pointer = new Pointer(this.canvasWrapperDiv);
-    this.pointer.onDrag((delta, pointerType) => {
-      if (pointerType !== "touch") return;
-
-      this.camera.updateFocus({
-        dx: -delta.x,
-        dy: -delta.y,
-      });
-    });
+    this.momentum = new MomentumScroller((delta) =>
+      this.camera.updateFocus({ dx: delta.x, dy: delta.y })
+    );
+    this.pointer.onPointerDown(() => this.momentum.start());
+    this.pointer.onDrag(this.handleDrag);
+    this.pointer.onPointerUp(this.handlePointerUp);
+    this.pointer.onPointerCancel(() => this.momentum.stop());
     this.pointer.onPointerMove(this.pointerMove);
     this.pointer.onPointerLeave(this.pointerLeave);
     this.overlay = new TableBodyOverlay(
@@ -112,6 +113,16 @@ export class TableBody<TDataRow extends TableRow>
   public reinitializeCellPool(): void {
     this.cellPool = this.createCellPool();
   }
+
+  private handleDrag = (delta: Point, pointerType: string): void => {
+    if (pointerType !== "touch") return;
+
+    this.momentum.drag(new Point(-delta.x, -delta.y));
+  };
+
+  private handlePointerUp = (pointerType: string): void => {
+    if (pointerType === "touch") this.momentum.release();
+  };
 
   private createCellPool(): NonUniformCellPool {
     return NonUniformCellPool.fromViewport({
@@ -198,6 +209,7 @@ export class TableBody<TDataRow extends TableRow>
   public close(): void {
     this.sourceSubscription.unsubscribe();
     this.columnResizeSubscription.unsubscribe();
+    this.momentum.stop();
     this.pointer.close();
   }
 

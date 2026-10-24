@@ -3,6 +3,7 @@ import { Point } from "./point";
 
 type PointListener = (point: Point) => void;
 type DragListener = (delta: Point, pointerType: string) => void;
+type EndListener = (pointerType: string) => void;
 
 /**
  * Normalizes primary-pointer input for one element.
@@ -15,7 +16,8 @@ export class Pointer implements Closeable {
   private readonly downListeners: Set<PointListener> = new Set();
   private readonly moveListeners: Set<PointListener> = new Set();
   private readonly dragListeners: Set<DragListener> = new Set();
-  private readonly upListeners: Set<VoidFunction> = new Set();
+  private readonly upListeners: Set<EndListener> = new Set();
+  private readonly cancelListeners: Set<EndListener> = new Set();
   private readonly leaveListeners: Set<VoidFunction> = new Set();
   private readonly clickListeners: Set<PointListener> = new Set();
   private activePointerId: number | undefined;
@@ -50,8 +52,12 @@ export class Pointer implements Closeable {
     this.dragListeners.add(listener);
   }
 
-  public onPointerUp(listener: VoidFunction): void {
+  public onPointerUp(listener: EndListener): void {
     this.upListeners.add(listener);
+  }
+
+  public onPointerCancel(listener: EndListener): void {
+    this.cancelListeners.add(listener);
   }
 
   public onPointerLeave(listener: VoidFunction): void {
@@ -79,6 +85,7 @@ export class Pointer implements Closeable {
     this.moveListeners.clear();
     this.dragListeners.clear();
     this.upListeners.clear();
+    this.cancelListeners.clear();
     this.leaveListeners.clear();
     this.clickListeners.clear();
   }
@@ -138,6 +145,7 @@ export class Pointer implements Closeable {
     if (isClick) {
       this.clickListeners.forEach((listener) => listener(point));
     }
+    this.upListeners.forEach((listener) => listener(event.pointerType));
   };
 
   private handlePointerCancel = (event: PointerEvent): void => {
@@ -147,6 +155,7 @@ export class Pointer implements Closeable {
     if (this.element.hasPointerCapture(event.pointerId)) {
       this.element.releasePointerCapture(event.pointerId);
     }
+    this.cancelListeners.forEach((listener) => listener(event.pointerType));
   };
 
   private handlePointerLeave = (): void => {
@@ -156,6 +165,7 @@ export class Pointer implements Closeable {
   private handleLostPointerCapture = (event: PointerEvent): void => {
     if (event.pointerId === this.activePointerId) {
       this.finishDrag();
+      this.cancelListeners.forEach((listener) => listener(event.pointerType));
     }
   };
 
@@ -165,7 +175,6 @@ export class Pointer implements Closeable {
     this.activePointerId = undefined;
     this.previousPoint = undefined;
     this.clickStartPoint = undefined;
-    this.upListeners.forEach((listener) => listener());
   }
 
   private getPoint(event: PointerEvent): Point {

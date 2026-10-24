@@ -71,8 +71,7 @@ export class VerticalScrollbar extends DrawCanvas {
 
     const contentRange = this.camera.worldHeight - this.camera.viewportHeight;
     const thumbRange = this.h - this.thumb.h;
-    const contentDelta = (delta.y / thumbRange) * contentRange;
-    this.camera.updateFocus({ dy: contentDelta });
+    this.camera.updateFocus({ dy: (delta.y / thumbRange) * contentRange });
   };
 
   public close(): void {
