@@ -79,4 +79,23 @@ describe("Pointer", () => {
 
     pointer.close();
   });
+
+  it("reports pointer type when a drag ends or is cancelled", () => {
+    const element = new PointerElement();
+    const pointer = new Pointer(element as unknown as HTMLElement);
+    const up = jest.fn();
+    const cancel = jest.fn();
+    pointer.onPointerUp(up);
+    pointer.onPointerCancel(cancel);
+
+    element.dispatch("pointerdown", { pointerType: "touch" });
+    element.dispatch("pointerup", { pointerType: "touch" });
+    element.dispatch("pointerdown", { pointerType: "pen" });
+    element.dispatch("pointercancel", { pointerType: "pen" });
+
+    expect(up).toHaveBeenCalledWith("touch");
+    expect(cancel).toHaveBeenCalledWith("pen");
+
+    pointer.close();
+  });
 });
