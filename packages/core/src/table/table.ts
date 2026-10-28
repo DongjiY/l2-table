@@ -70,6 +70,9 @@ export class Table<TDataRow extends TableRow> implements Closeable {
     this.horizontalWrapper.style.display = "flex";
     this.horizontalWrapper.style.width = "100%";
     this.horizontalWrapper.style.height = "100%";
+    this.horizontalWrapper.style.userSelect = "none";
+    this.horizontalWrapper.style.setProperty("-webkit-user-select", "none");
+    this.horizontalWrapper.style.setProperty("-webkit-touch-callout", "none");
     this.root.appendChild(this.horizontalWrapper);
 
     this.verticalWrapper = document.createElement("div");
