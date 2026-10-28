@@ -1,5 +1,11 @@
 # @dongjiy/l2-table
 
+## 2.1.4
+
+### Patch Changes
+
+- a16afd0: prevent selection on table container
+
 ## 2.1.3
 
 ### Patch Changes
